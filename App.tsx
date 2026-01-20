@@ -1,0 +1,993 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database } from 'lucide-react';
+import { Endpoint, ApiTag, SecurityScheme } from './types';
+import { EndpointCard } from './components/EndpointCard';
+import { parseOpenApi } from './services/openapiParser';
+import { MethodBadge } from './components/MethodBadge';
+import { WebSocketTester } from './components/WebSocketTester';
+import { SocketIoTester } from './components/SocketIoTester';
+import { McpTester } from './components/McpTester';
+
+// ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
+// However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
+// BUT wrapping the new navigation logic.
+
+interface TagSectionProps {
+    tag: ApiTag;
+    endpoints: Endpoint[];
+    baseUrl: string;
+    securitySchemes?: Record<string, SecurityScheme>;
+    authCredentials: Record<string, string>;
+}
+
+const TagSection: React.FC<TagSectionProps> = ({ 
+    tag, 
+    endpoints, 
+    baseUrl,
+    securitySchemes,
+    authCredentials
+}) => {
+    const [isOpen, setIsOpen] = useState(true);
+
+    if (endpoints.length === 0) return null;
+
+    return (
+        <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 border border-slate-800 rounded-lg overflow-hidden bg-slate-900/30">
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between p-4 bg-slate-900/50 hover:bg-slate-800/50 transition-colors border-b border-slate-800"
+            >
+                <div className="flex items-baseline gap-3 overflow-hidden">
+                    <h3 className="text-lg font-bold text-slate-200 truncate">{tag.name}</h3>
+                    <p className="text-xs text-slate-500 truncate hidden sm:block">{tag.description}</p>
+                </div>
+                <div className="text-slate-500">
+                    {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                </div>
+            </button>
+            
+            {isOpen && (
+                <div className="p-4 space-y-4">
+                    {endpoints.map(endpoint => (
+                        <EndpointCard 
+                            key={endpoint.id} 
+                            endpoint={endpoint} 
+                            baseUrl={baseUrl} 
+                            securitySchemes={securitySchemes}
+                            authCredentials={authCredentials}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Auth Modal Component
+interface AuthModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    baseUrl: string;
+    securitySchemes: Record<string, SecurityScheme>;
+    credentials: Record<string, string>;
+    setCredentials: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+}
+
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securitySchemes, credentials, setCredentials }) => {
+    // Local state for OAuth2 and Basic Auth forms: { schemeName: { username: '', password: '', ... } }
+    const [oauthForms, setOauthForms] = useState<Record<string, Record<string, string>>>({});
+    const [oauthLoading, setOauthLoading] = useState<Record<string, boolean>>({});
+    const [oauthError, setOauthError] = useState<Record<string, string | null>>({});
+
+    if (!isOpen) return null;
+
+    const handleInputChange = (key: string, value: string) => {
+        setCredentials(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleOauthFormChange = (schemeName: string, field: string, value: string) => {
+        setOauthForms(prev => ({
+            ...prev,
+            [schemeName]: {
+                ...(prev[schemeName] || {}),
+                [field]: value
+            }
+        }));
+    };
+
+    const handleBasicAuthLogin = (schemeName: string) => {
+        const formData = oauthForms[schemeName] || {};
+        if (!formData.username || !formData.password) {
+             setOauthError(prev => ({ ...prev, [schemeName]: "Username and password are required." }));
+             return;
+        }
+        
+        // Basic Auth: base64(username:password)
+        try {
+            const token = btoa(`${formData.username}:${formData.password}`);
+            setCredentials(prev => ({ ...prev, [schemeName]: token }));
+            setOauthError(prev => ({ ...prev, [schemeName]: null }));
+        } catch (e) {
+            setOauthError(prev => ({ ...prev, [schemeName]: "Failed to encode credentials." }));
+        }
+    };
+
+    const handleOauthLogin = async (schemeName: string, tokenUrl: string) => {
+        const formData = oauthForms[schemeName] || {};
+        if (!formData.username || !formData.password) {
+             setOauthError(prev => ({ ...prev, [schemeName]: "Username and password are required." }));
+             return;
+        }
+
+        setOauthLoading(prev => ({ ...prev, [schemeName]: true }));
+        setOauthError(prev => ({ ...prev, [schemeName]: null }));
+
+        try {
+            // Construct absolute URL for token endpoint
+            let url = tokenUrl;
+            if (!url.startsWith('http')) {
+                // Remove trailing slash from base and leading slash from path
+                const base = baseUrl.replace(/\/$/, '');
+                const path = tokenUrl.startsWith('/') ? tokenUrl : '/' + tokenUrl;
+                url = base + path;
+            }
+
+            const body = new URLSearchParams();
+            body.append('grant_type', 'password');
+            body.append('username', formData.username);
+            body.append('password', formData.password);
+            if (formData.client_id) body.append('client_id', formData.client_id);
+            if (formData.client_secret) body.append('client_secret', formData.client_secret);
+            if (formData.scope) body.append('scope', formData.scope);
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                },
+                body: body
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(`Failed to login: ${res.status} ${res.statusText} - ${errText}`);
+            }
+
+            const data = await res.json();
+            const token = data.access_token;
+            if (token) {
+                setCredentials(prev => ({ ...prev, [schemeName]: token }));
+                setOauthError(prev => ({ ...prev, [schemeName]: null }));
+            } else {
+                 throw new Error("No access_token found in response.");
+            }
+
+        } catch (error: any) {
+            console.error("OAuth Login Error:", error);
+            setOauthError(prev => ({ ...prev, [schemeName]: error.message }));
+        } finally {
+            setOauthLoading(prev => ({ ...prev, [schemeName]: false }));
+        }
+    };
+
+    const schemeKeys = Object.keys(securitySchemes);
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 shrink-0">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Lock size={18} /> Available Authorizations
+                    </h2>
+                    <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+                
+                <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                    {schemeKeys.length === 0 ? (
+                        <p className="text-slate-500 text-sm italic">No security schemes defined in this spec.</p>
+                    ) : (
+                        <div className="space-y-6">
+                            {schemeKeys.map(key => {
+                                const scheme = securitySchemes[key];
+                                const isOAuth2Password = scheme.type === 'oauth2' && scheme.flows?.password;
+                                const isBasicAuth = scheme.type === 'http' && scheme.scheme === 'basic';
+                                const isLoggedIn = !!credentials[key];
+
+                                return (
+                                    <div key={key} className="bg-slate-950 p-5 rounded-lg border border-slate-800 shadow-sm">
+                                        <div className="mb-4 pb-3 border-b border-slate-800/50">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-base text-slate-200">{key}</span>
+                                                    <span className="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono">
+                                                        {scheme.type === 'http' ? scheme.scheme : scheme.type}
+                                                        {scheme.in ? ` (${scheme.in})` : ''}
+                                                    </span>
+                                                </div>
+                                                {isLoggedIn && (
+                                                     <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+                                                         <Check size={12} /> Authorized
+                                                     </div>
+                                                )}
+                                            </div>
+                                            {scheme.description && <p className="text-sm text-slate-400 mt-2">{scheme.description}</p>}
+                                        </div>
+
+                                        {/* Render Logic based on Type */}
+                                        {isOAuth2Password ? (
+                                            <div className="space-y-4">
+                                                <div className="text-xs text-slate-500 font-mono mb-2">
+                                                    <div className="flex gap-2"><span className="w-20 text-slate-400">Flow:</span> password</div>
+                                                    <div className="flex gap-2"><span className="w-20 text-slate-400">Token URL:</span> {scheme.flows?.password?.tokenUrl}</div>
+                                                </div>
+
+                                                {!isLoggedIn ? (
+                                                    <form 
+                                                        className="space-y-3 bg-slate-900/50 p-4 rounded border border-slate-800"
+                                                        onSubmit={(e) => {
+                                                            e.preventDefault();
+                                                            handleOauthLogin(key, scheme.flows?.password?.tokenUrl!);
+                                                        }}
+                                                    >
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                            <div className="space-y-1">
+                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Username *</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    placeholder="username"
+                                                                    value={oauthForms[key]?.username || ''}
+                                                                    onChange={(e) => handleOauthFormChange(key, 'username', e.target.value)}
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Password *</label>
+                                                                <input 
+                                                                    type="password" 
+                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    placeholder="password"
+                                                                    value={oauthForms[key]?.password || ''}
+                                                                    onChange={(e) => handleOauthFormChange(key, 'password', e.target.value)}
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Client ID</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    placeholder="client_id"
+                                                                    value={oauthForms[key]?.client_id || ''}
+                                                                    onChange={(e) => handleOauthFormChange(key, 'client_id', e.target.value)}
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Client Secret</label>
+                                                                <input 
+                                                                    type="password" 
+                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    placeholder="client_secret"
+                                                                    value={oauthForms[key]?.client_secret || ''}
+                                                                    onChange={(e) => handleOauthFormChange(key, 'client_secret', e.target.value)}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="pt-2">
+                                                            <button 
+                                                                type="submit"
+                                                                disabled={oauthLoading[key]}
+                                                                className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold text-sm transition-all shadow-lg shadow-emerald-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                                            >
+                                                                {oauthLoading[key] ? <Loader2 size={16} className="animate-spin"/> : 'Authorize'}
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        {oauthError[key] && (
+                                                            <div className="p-2 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded mt-2">
+                                                                Error: {oauthError[key]}
+                                                            </div>
+                                                        )}
+                                                    </form>
+                                                ) : (
+                                                    <div className="flex gap-2 items-end">
+                                                        <div className="flex-1 space-y-1">
+                                                            <label className="text-[10px] font-bold uppercase text-slate-500">Access Token</label>
+                                                            <input 
+                                                                type="text" 
+                                                                className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-400 font-mono truncate"
+                                                                value={credentials[key] || ''}
+                                                                disabled
+                                                            />
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => handleInputChange(key, '')}
+                                                            className="px-4 py-2 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded text-sm border border-slate-700 transition-colors h-[38px] font-medium"
+                                                        >
+                                                            Logout
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : isBasicAuth ? (
+                                            // HTTP Basic Auth Form
+                                            <div className="space-y-4">
+                                                {!isLoggedIn ? (
+                                                    <form 
+                                                        className="space-y-3 bg-slate-900/50 p-4 rounded border border-slate-800"
+                                                        onSubmit={(e) => {
+                                                            e.preventDefault();
+                                                            handleBasicAuthLogin(key);
+                                                        }}
+                                                    >
+                                                        <div className="space-y-3">
+                                                            <div className="space-y-1">
+                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Username</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    placeholder="username"
+                                                                    value={oauthForms[key]?.username || ''}
+                                                                    onChange={(e) => handleOauthFormChange(key, 'username', e.target.value)}
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Password</label>
+                                                                <input 
+                                                                    type="password" 
+                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    placeholder="password"
+                                                                    value={oauthForms[key]?.password || ''}
+                                                                    onChange={(e) => handleOauthFormChange(key, 'password', e.target.value)}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="pt-2">
+                                                            <button 
+                                                                type="submit"
+                                                                className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold text-sm transition-all shadow-lg shadow-emerald-900/20"
+                                                            >
+                                                                Authorize
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        {oauthError[key] && (
+                                                            <div className="p-2 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded mt-2">
+                                                                Error: {oauthError[key]}
+                                                            </div>
+                                                        )}
+                                                    </form>
+                                                ) : (
+                                                    <div className="flex gap-2 items-end">
+                                                        <div className="flex-1 space-y-1">
+                                                            <label className="text-[10px] font-bold uppercase text-slate-500">Credentials (Base64)</label>
+                                                            <input 
+                                                                type="text" 
+                                                                className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-400 font-mono truncate"
+                                                                value={credentials[key] || ''}
+                                                                disabled
+                                                            />
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => handleInputChange(key, '')}
+                                                            className="px-4 py-2 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded text-sm border border-slate-700 transition-colors h-[38px] font-medium"
+                                                        >
+                                                            Logout
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            // Standard API Key / Bearer Token Input
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold uppercase text-slate-500">
+                                                    Value {scheme.in === 'header' ? '(Header)' : ''}
+                                                </label>
+                                                <div className="flex gap-2">
+                                                    <input 
+                                                        type="text" 
+                                                        className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                        placeholder={scheme.type === 'http' && scheme.scheme === 'bearer' ? 'e.g. eyJhbGci...' : 'Required'}
+                                                        value={credentials[key] || ''}
+                                                        onChange={(e) => handleInputChange(key, e.target.value)}
+                                                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                                                    />
+                                                    {credentials[key] && (
+                                                        <button 
+                                                            onClick={() => handleInputChange(key, '')}
+                                                            className="px-4 py-2 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded text-sm border border-slate-700 transition-colors font-medium"
+                                                        >
+                                                            Logout
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <p className="text-[10px] text-slate-500 pt-1">
+                                                    Enter the {scheme.type === 'http' ? 'token' : 'key'} value directly.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-4 border-t border-slate-800 bg-slate-900 flex justify-end gap-2 shrink-0">
+                    <button onClick={onClose} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors shadow-lg shadow-blue-900/20">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Settings Modal Component for URL Input
+interface SettingsModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    currentUrl: string;
+    onLoad: (url: string) => void;
+}
+
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentUrl, onLoad }) => {
+    const [inputValue, setInputValue] = useState(currentUrl);
+
+    useEffect(() => {
+        setInputValue(currentUrl);
+    }, [currentUrl, isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onLoad(inputValue);
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-lg overflow-hidden">
+                 <div className="flex items-center justify-between p-4 border-b border-slate-800">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Settings size={18} /> API Configuration
+                    </h2>
+                    <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+                        <X size={20} />
+                    </button>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                     <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-2">OpenAPI Specification URL</label>
+                        <div className="relative">
+                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                            <input 
+                                type="text" 
+                                placeholder="http://localhost:8000/openapi.json" 
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                className="w-full h-11 bg-slate-950 border border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600"
+                            />
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2">
+                            Enter the URL to a JSON format OpenAPI (Swagger) v2 or v3 definition.
+                        </p>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button 
+                            type="button"
+                            onClick={() => { setInputValue(''); onLoad(''); onClose(); }}
+                            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-sm font-medium transition-colors border border-slate-700"
+                        >
+                            Reset to Demo
+                        </button>
+                        <button 
+                            type="submit"
+                            className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors shadow-lg shadow-blue-900/20"
+                        >
+                            Load Spec
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default function App() {
+  // Navigation State
+  const [activeModule, setActiveModule] = useState<'api' | 'ws' | 'io' | 'mcp'>('api');
+
+  // App State
+  const defaultUrl = '';
+  const [currentSpecUrl, setCurrentSpecUrl] = useState('');
+  
+  // Sidebar Resize State
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [isResizing, setIsResizing] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent text selection
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback(
+    (mouseMoveEvent: MouseEvent) => {
+      if (isResizing) {
+        const newWidth = mouseMoveEvent.clientX - 64; // Adjust for Activity Bar width
+        if (newWidth >= 200 && newWidth <= 600) {
+            setSidebarWidth(newWidth);
+        }
+      }
+    },
+    [isResizing]
+  );
+
+  useEffect(() => {
+    if (isResizing) {
+        window.addEventListener("mousemove", resize);
+        window.addEventListener("mouseup", stopResizing);
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    } else {
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+    }
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing, resize, stopResizing]);
+  
+  // Loaded Data
+  const [apiTitle, setApiTitle] = useState("Nexus API Docs");
+  const [apiVersion, setApiVersion] = useState("1.0.0");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
+  const [tags, setTags] = useState<ApiTag[]>([]);
+  const [securitySchemes, setSecuritySchemes] = useState<Record<string, SecurityScheme>>({});
+  
+  // UI State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
+  const [activeEndpointId, setActiveEndpointId] = useState<string | null>(null);
+  const [expandedSidebarTags, setExpandedSidebarTags] = useState<Record<string, boolean>>({});
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Auth & Settings State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [authCredentials, setAuthCredentials] = useState<Record<string, string>>({});
+
+  // Load default on mount
+  useEffect(() => {
+    loadSpec(defaultUrl); 
+  }, []);
+
+  const loadSpec = async (url: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const spec = await parseOpenApi(url);
+      setApiTitle(spec.title);
+      setApiVersion(spec.version);
+      setBaseUrl(spec.baseUrl);
+      setEndpoints(spec.endpoints);
+      setTags(spec.tags);
+      setSecuritySchemes(spec.securitySchemes || {});
+      setCurrentSpecUrl(url);
+      
+      // Reset states
+      setSelectedTag('All');
+      setAuthCredentials({});
+      
+      // Auto-select first endpoint for better focused view experience
+      if (spec.endpoints.length > 0) {
+          setActiveEndpointId(spec.endpoints[0].id);
+      } else {
+          setActiveEndpointId(null);
+      }
+      
+      // Default expand all tags in sidebar for focused mode
+      const initialExpanded: Record<string, boolean> = {};
+      spec.tags.forEach(t => initialExpanded[t.name] = true);
+      setExpandedSidebarTags(initialExpanded);
+
+    } catch (e: any) {
+      let msg = e.message;
+      if (msg.includes('Failed to fetch') || msg.includes('CORS')) {
+          msg = `Failed to fetch API spec from ${url}. The server may have CORS disabled.`;
+      }
+      
+      setError(msg);
+      
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleSidebarTag = (tagName: string) => {
+    setExpandedSidebarTags(prev => ({...prev, [tagName]: !prev[tagName]}));
+  };
+
+  // Filter logic
+  const filteredEndpoints = endpoints.filter(ep => {
+    const matchesSearch = ep.path.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          ep.summary.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (viewMode === 'list') {
+        const matchesTag = selectedTag === 'All' || ep.tags.includes(selectedTag);
+        return matchesSearch && matchesTag;
+    }
+    
+    return matchesSearch;
+  });
+
+  // Check if any credentials are set
+  const isAuthorized = Object.values(authCredentials).some((v: string) => v.length > 0);
+
+  // Get active endpoint object for focused mode
+  const activeEndpoint = activeEndpointId ? endpoints.find(e => e.id === activeEndpointId) : null;
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-row font-sans overflow-hidden">
+      
+      {/* 1. Activity Bar (Module Switcher) */}
+      <nav className="w-16 bg-slate-950 border-r border-slate-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/50 shrink-0 mb-6">
+             <Box size={20} className="text-white" />
+          </div>
+          
+          <div className="flex flex-col gap-4 w-full px-2">
+             <button 
+                onClick={() => setActiveModule('api')}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'api' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'}`}
+                title="REST API Documentation"
+             >
+                <Layers size={22} />
+                {activeModule === 'api' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
+             </button>
+             
+             <button 
+                onClick={() => setActiveModule('ws')}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'ws' ? 'bg-slate-800 text-purple-400' : 'text-slate-500 hover:text-purple-300 hover:bg-slate-900'}`}
+                title="WebSocket Tester"
+             >
+                <Activity size={22} />
+                {activeModule === 'ws' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-500 rounded-r-full" />}
+             </button>
+
+             <button 
+                onClick={() => setActiveModule('io')}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'io' ? 'bg-slate-800 text-blue-400' : 'text-slate-500 hover:text-blue-300 hover:bg-slate-900'}`}
+                title="Socket.IO Tester"
+             >
+                <Radio size={22} />
+                {activeModule === 'io' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
+             </button>
+
+             <button 
+                onClick={() => setActiveModule('mcp')}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'mcp' ? 'bg-slate-800 text-orange-400' : 'text-slate-500 hover:text-orange-300 hover:bg-slate-900'}`}
+                title="MCP Inspector"
+             >
+                <Database size={22} />
+                {activeModule === 'mcp' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-orange-500 rounded-r-full" />}
+             </button>
+          </div>
+          
+          <div className="mt-auto px-2">
+              <button 
+                  onClick={() => setIsSettingsModalOpen(true)}
+                  className="p-3 rounded-xl flex justify-center transition-all text-slate-500 hover:text-slate-200 hover:bg-slate-900"
+              >
+                  <Settings size={22} />
+              </button>
+          </div>
+      </nav>
+
+      {/* 2. Secondary Sidebar (Only for REST API) */}
+      {activeModule === 'api' && (
+        <aside 
+            ref={sidebarRef}
+            className="w-[var(--sidebar-width)] bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+        >
+            {/* Resize Handle */}
+            <div 
+            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-500/50 transition-colors z-40 active:bg-blue-600 group-hover/sidebar:bg-blue-500/10"
+            onMouseDown={startResizing}
+            />
+
+            <div className="p-4 border-b border-slate-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-white truncate mb-3">Nexus<span className="text-blue-500">Docs</span></h1>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+                        <span className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">v{apiVersion}</span>
+                    </div>
+                    
+                    <div className="flex bg-slate-800 rounded p-0.5 border border-slate-700">
+                        <button 
+                            onClick={() => setViewMode('list')}
+                            className={`p-1 rounded ${viewMode === 'list' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            title="List View"
+                        >
+                            <LayoutList size={14} />
+                        </button>
+                        <button 
+                            onClick={() => setViewMode('focused')}
+                            className={`p-1 rounded ${viewMode === 'focused' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            title="Focused View"
+                        >
+                            <Sidebar size={14} />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
+            {viewMode === 'list' ? (
+                // List Mode Sidebar
+                <>
+                    <div className="mb-4 px-1">
+                        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Resources</h3>
+                        <button 
+                            onClick={() => setSelectedTag('All')}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${selectedTag === 'All' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
+                        >
+                            <span className="flex items-center gap-2 truncate"><Layers size={14} /> All Resources</span>
+                            <span className="text-[10px] bg-slate-950 px-1.5 py-0.5 rounded-full text-slate-500">{endpoints.length}</span>
+                        </button>
+                    </div>
+
+                    <div className="px-1 space-y-0.5">
+                        {tags.map(tag => (
+                            <button
+                                key={tag.name}
+                                onClick={() => setSelectedTag(tag.name)}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedTag === tag.name ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
+                            >
+                                <Terminal size={12} className="opacity-70 shrink-0" />
+                                <span className="truncate">{tag.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                </>
+            ) : (
+                // Focused Mode Sidebar
+                <div className="px-1 space-y-4">
+                    {tags.map(tag => {
+                        const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
+                        if (tagEndpoints.length === 0) return null;
+                        
+                        const isExpanded = expandedSidebarTags[tag.name] !== false; // Default true
+
+                        return (
+                            <div key={tag.name} className="space-y-1">
+                                <button 
+                                    onClick={() => toggleSidebarTag(tag.name)}
+                                    className="w-full flex items-center justify-between text-xs font-bold text-slate-300 hover:text-white px-2 py-1.5 rounded hover:bg-slate-800/50 transition-colors group uppercase tracking-wide"
+                                >
+                                    <span>{tag.name}</span>
+                                    {isExpanded ? <ChevronDown size={12} className="opacity-50 group-hover:opacity-100"/> : <ChevronRight size={12} className="opacity-50 group-hover:opacity-100"/>}
+                                </button>
+                                
+                                {isExpanded && (
+                                    <div className="pl-2 space-y-0.5 border-l border-slate-800 ml-3">
+                                        {tagEndpoints.map(ep => (
+                                            <button
+                                                key={ep.id}
+                                                onClick={() => setActiveEndpointId(ep.id)}
+                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] ${activeEndpointId === ep.id ? 'bg-slate-800 text-white border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-800/30'}`}
+                                            >
+                                                <div className="w-14 shrink-0">
+                                                    <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
+                                                </div>
+                                                <span className="truncate font-mono opacity-80">{ep.path}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+            </div>
+            
+            <div className="p-4 border-t border-slate-800 bg-slate-900 shrink-0">
+                <button 
+                    onClick={() => setIsAuthModalOpen(true)}
+                    className={`w-full py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
+                        isAuthorized 
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20' 
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-slate-500'
+                    }`}
+                >
+                    {isAuthorized ? <Unlock size={14} /> : <Lock size={14} />}
+                    <span>{isAuthorized ? 'Authorized' : 'Authorize'}</span>
+                </button>
+            </div>
+        </aside>
+      )}
+
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto h-screen bg-slate-950 relative w-full flex flex-col">
+        
+        {activeModule === 'api' ? (
+            <>
+                {/* REST API Header */}
+                <header className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+                    <div className="px-6 py-4 border-b border-slate-800/50 bg-slate-900/30">
+                        <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
+                            <div className="flex flex-1 w-full gap-3 items-center min-w-0">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                                        <input 
+                                            type="text"
+                                            placeholder="Filter endpoints by path or summary..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full h-10 bg-slate-950 border border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600"
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={() => setIsSettingsModalOpen(true)}
+                                        className="h-10 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md border border-slate-700 hover:border-slate-500 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
+                                        title="Configure API Specification URL"
+                                    >
+                                        <Settings size={16} />
+                                        <span className="hidden sm:inline">Configure URL</span>
+                                    </button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                {/* REST API Content */}
+                <div className="p-4 md:p-8 w-full mx-auto pb-20 min-w-0 flex-1">
+                    {error ? (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-start gap-4 text-red-400">
+                            <AlertCircle size={24} className="shrink-0" />
+                            <div>
+                                <h3 className="font-bold text-lg mb-1">Failed to load specification</h3>
+                                <p className="text-sm opacity-90">{error}</p>
+                                <button onClick={() => loadSpec('')} className="mt-4 text-xs font-bold underline hover:text-red-300">Return to Demo API</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {viewMode === 'list' && (
+                                <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                    <div className="flex flex-wrap items-center gap-4 mb-2">
+                                        <h2 className="text-2xl font-bold text-white break-words">{apiTitle}</h2>
+                                        {currentSpecUrl && (
+                                            <a 
+                                                href={currentSpecUrl} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                title="View Raw Specification"
+                                                className="text-xs font-mono text-blue-400 hover:text-blue-300 flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all"
+                                            >
+                                                <span>raw spec</span>
+                                                <ExternalLink size={12} />
+                                            </a>
+                                        )}
+                                    </div>
+                                    <p className="text-slate-400 text-sm leading-relaxed max-w-3xl">
+                                        {apiTitle === "Cosmos Store API" ? 
+                                            "This is a demonstration of a next-generation API documentation interface. It features interactive request building, simulated responses, and AI-assisted payload generation powered by Gemini." : 
+                                            `Documentation for ${apiTitle} v${apiVersion}. Explore endpoints, generate payloads, and execute requests below.`
+                                        }
+                                    </p>
+                                </div>
+                            )}
+
+                            {isLoading ? (
+                                <div className="flex flex-col items-center justify-center py-20 opacity-50">
+                                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
+                                    <p className="text-slate-500 text-sm">Parsing Specification...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {viewMode === 'list' ? (
+                                        <div className="space-y-6">
+                                            {tags.filter(tag => selectedTag === 'All' || selectedTag === tag.name).map(tag => {
+                                                const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
+                                                return (
+                                                    <TagSection 
+                                                        key={tag.name} 
+                                                        tag={tag} 
+                                                        endpoints={tagEndpoints} 
+                                                        baseUrl={baseUrl}
+                                                        securitySchemes={securitySchemes}
+                                                        authCredentials={authCredentials}
+                                                    />
+                                                );
+                                            })}
+                                            {filteredEndpoints.length === 0 && (
+                                                <div className="text-center py-20">
+                                                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 mb-4">
+                                                        <Search className="text-slate-600" size={32} />
+                                                    </div>
+                                                    <h3 className="text-slate-300 font-medium">No endpoints found</h3>
+                                                    <p className="text-slate-500 text-sm mt-1">Try adjusting your search criteria.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                            {activeEndpoint ? (
+                                                <EndpointCard 
+                                                    key={activeEndpoint.id} 
+                                                    endpoint={activeEndpoint} 
+                                                    baseUrl={baseUrl} 
+                                                    securitySchemes={securitySchemes}
+                                                    authCredentials={authCredentials}
+                                                    forcedOpen={true}
+                                                />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center py-32 border border-slate-800 rounded-lg bg-slate-900/20 border-dashed">
+                                                    <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
+                                                        <Terminal className="text-slate-600" size={32} />
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-slate-300">Select an Endpoint</h3>
+                                                    <p className="text-slate-500 mt-2 max-w-sm text-center">
+                                                        Choose an endpoint from the sidebar to view its details, build requests, and test responses.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
+                </div>
+            </>
+        ) : activeModule === 'ws' ? (
+            <WebSocketTester />
+        ) : activeModule === 'io' ? (
+            <SocketIoTester />
+        ) : (
+            <McpTester />
+        )}
+
+        {/* Auth Modal Overlay */}
+        <AuthModal 
+            isOpen={isAuthModalOpen} 
+            onClose={() => setIsAuthModalOpen(false)}
+            baseUrl={baseUrl}
+            securitySchemes={securitySchemes}
+            credentials={authCredentials}
+            setCredentials={setAuthCredentials}
+        />
+
+        {/* Settings/URL Modal Overlay */}
+        <SettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+            currentUrl={currentSpecUrl}
+            onLoad={loadSpec}
+        />
+
+      </main>
+    </div>
+  );
+}
