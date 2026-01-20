@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Database, Play, StopCircle, Box, Wrench, MessageSquare, Terminal, ChevronRight, ChevronDown, Search, X, Server, Activity, Loader2, Code, AlertTriangle, Settings2, Zap, Check, Copy, ArrowRightLeft, Globe, Plus, Trash2 } from 'lucide-react';
+import { mcpSdkService } from '../services/mcpSdkService';
 
 // --- Types for MCP Protocol ---
 
@@ -326,17 +327,22 @@ const McpItemCard: React.FC<{
 // --- Main Page ---
 
 export const McpTester: React.FC = () => {
-  // Transport State
-  const [transportMode, setTransportMode] = useState<'sse' | 'http'>('sse');
-
+  // View Mode
+  const [viewMode, setViewMode] = useState<'simple' | 'advanced'>('simple');
+  
   // Connection State
-  const [url, setUrl] = useState('http://localhost:8000/sse');
-  const [manualPostUrl, setManualPostUrl] = useState('');
+  const [url, setUrl] = useState('http://localhost:8000/mcp');
   const [includeCredentials, setIncludeCredentials] = useState(false);
   const [customHeaders, setCustomHeaders] = useState<HeaderEntry[]>([]);
   
+  // Auth State
+  const [authToken, setAuthToken] = useState('');
+  const [showAuthHelper, setShowAuthHelper] = useState(false);
+  const [authUsername, setAuthUsername] = useState('admin');
+  const [authPassword, setAuthPassword] = useState('admin');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  
   // Internal State
-  const [activePostUrl, setActivePostUrl] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [showLogs, setShowLogs] = useState(true);
@@ -349,22 +355,10 @@ export const McpTester: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   
   // Refs
-  const eventSourceRef = useRef<EventSource | null>(null);
   const requestIdRef = useRef(1);
   
   // Filter State
   const [filter, setFilter] = useState('');
-  
-  // Reset URL default when switching modes
-  useEffect(() => {
-      if (transportMode === 'sse') {
-          if (!url.includes('/sse')) setUrl('http://localhost:8000/sse');
-      } else {
-          // HTTP mode defaults
-          if (url.includes('/sse')) setUrl(url.replace('/sse', '')); // Strip SSE for http mode guess
-          else if (url === 'http://localhost:8000/sse') setUrl('http://localhost:8000/mcp');
-      }
-  }, [transportMode]);
 
   const addLog = useCallback((msg: string, type: 'info' | 'error' | 'traffic' = 'info') => {
       const prefix = type === 'traffic' ? '[RPC]' : `[${new Date().toLocaleTimeString()}]`;
@@ -383,10 +377,51 @@ export const McpTester: React.FC = () => {
       setCustomHeaders(prev => prev.filter(h => h.id !== id));
   };
 
+  // Auth Helper
+  const handleLogin = async () => {
+      setIsAuthenticating(true);
+      try {
+          const baseUrl = url.includes('://') ? url.split('/').slice(0, 3).join('/') : 'http://localhost:8000';
+          const tokenUrl = `${baseUrl}/token`;
+          
+          addLog(`Attempting login at ${tokenUrl}...`);
+          
+          const formData = new URLSearchParams();
+          formData.append('username', authUsername);
+          formData.append('password', authPassword);
+          
+          const res = await fetch(tokenUrl, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: formData
+          });
+          
+          if (!res.ok) {
+              const error = await res.text();
+              throw new Error(`Login failed: ${error}`);
+          }
+          
+          const data = await res.json();
+          setAuthToken(data.access_token);
+          addLog(`✅ Login successful! Token received.`);
+          setShowAuthHelper(false);
+      } catch (e: any) {
+          addLog(`❌ Login failed: ${getErrorMessage(e)}`, 'error');
+      } finally {
+          setIsAuthenticating(false);
+      }
+  };
+
   // --- RPC Methods ---
 
   const sendJsonRpc = async (targetUrl: string, method: string, params?: any): Promise<any> => {
-      const id = requestIdRef.current++;
+      // Use UUID for request ID as suggested by user
+      const id = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
       const payload: JsonRpcRequest = {
           jsonrpc: "2.0",
           id,
@@ -400,8 +435,19 @@ export const McpTester: React.FC = () => {
           // Construct headers
           const headers: Record<string, string> = {
               'Content-Type': 'application/json',
-              'Accept': 'application/json' 
+              'Accept': 'application/json, text/event-stream'
           };
+          
+          // Add MCP session ID if we have one (after initialization)
+          if (mcpSessionId) {
+              headers['MCP-Session-Id'] = mcpSessionId;
+          }
+          
+          // Add Authorization token if available
+          if (authToken) {
+              headers['Authorization'] = `Bearer ${authToken}`;
+          }
+          
           customHeaders.forEach(h => {
               if (h.key.trim()) headers[h.key.trim()] = h.value;
           });
@@ -417,11 +463,18 @@ export const McpTester: React.FC = () => {
                let errorText = res.statusText;
                try { errorText = await res.text() || res.statusText; } catch {}
                
-               if (res.status === 400 && errorText.includes("session ID")) {
-                   addLog(`HINT: The server requires a session ID. Ensure you have established a session (SSE) or provided the session ID in headers/query.`, 'info');
-               }
+                if (res.status === 400 && errorText.includes("session ID")) {
+                    addLog(`HINT: The server rejected the Session ID. It may require a valid session established via SSE first.`, 'info');
+                }
 
                throw new Error(`HTTP Error ${res.status}: ${errorText}`);
+          }
+
+          // Check for MCP-Session-Id in response (during initialization)
+          const sessionIdFromServer = res.headers.get('MCP-Session-Id');
+          if (sessionIdFromServer && !mcpSessionId) {
+              setMcpSessionId(sessionIdFromServer);
+              addLog(`Received session ID from server: ${sessionIdFromServer}`);
           }
 
           const text = await res.text();
@@ -452,177 +505,104 @@ export const McpTester: React.FC = () => {
       }
   };
 
-  const connect = () => {
+  const connect = async () => {
       if (isConnected || isConnecting) return;
       
       setIsConnecting(true);
       setResources([]);
       setTools([]);
       setPrompts([]);
-      setActivePostUrl(null);
       setLogs([]);
 
-      // HTTP Mode (Stateless / Direct POST)
-      if (transportMode === 'http') {
-           addLog(`Initializing HTTP session at ${url}...`);
-           // For HTTP mode, the URL entered IS the POST URL.
-           setActivePostUrl(url);
-           setIsConnected(true);
-           setIsConnecting(false);
-           initializeMcp(url);
-           return;
-      }
-
-      // SSE Mode
+      addLog(`Connecting to ${url}...`);
+      
       try {
-          addLog(`Connecting SSE to ${url}...`);
-          // Note: EventSource doesn't support custom headers natively.
-          // If the SSE endpoint requires headers, users might need a polyfill or proxy, 
-          // or pass query params (which can be done in the URL input).
-          const es = new EventSource(url, { withCredentials: includeCredentials });
-          
-          es.onopen = () => {
-              addLog("SSE Connection opened.");
-              
-              if (manualPostUrl) {
-                  addLog(`Using manual POST URL: ${manualPostUrl}`);
-                  setActivePostUrl(manualPostUrl);
-                  setIsConnected(true);
-                  setIsConnecting(false);
-                  initializeMcp(manualPostUrl);
-              }
-          };
-
-          es.onerror = (e) => {
-              const errMsg = getErrorMessage(e);
-              const state = es.readyState === EventSource.CONNECTING ? "Connecting" : 
-                            es.readyState === EventSource.CLOSED ? "Closed" : "Open";
-              
-              addLog(`SSE connection failed (State: ${state}). Cause: ${errMsg}`, 'error');
-              
-              if (state === "Closed" && !isConnected) {
-                  if (!url.endsWith('/sse')) {
-                       addLog(`HINT: Many MCP servers host SSE at "/sse". Did you mean to use SSE mode?`, 'info');
-                  }
-                  addLog(`HINT: If this is a plain HTTP endpoint (not SSE), try switching Transport to "HTTP".`, 'info');
-              }
-              
-              disconnect();
-          };
-
-          // MCP over SSE: Server sends 'endpoint' event with the POST URL
-          es.addEventListener('endpoint', async (e: MessageEvent) => {
-              if (manualPostUrl) return; 
-
-              const endpointUri = e.data;
-              addLog(`Received endpoint URI: ${endpointUri}`);
-              
-              let resolvedPostUrl = endpointUri;
-              try {
-                  resolvedPostUrl = new URL(endpointUri, url).toString();
-              } catch (e) { }
-              
-              setActivePostUrl(resolvedPostUrl);
-              setIsConnected(true);
-              setIsConnecting(false);
-
-              await initializeMcp(resolvedPostUrl);
+          // Prepare custom headers
+          const headers: Record<string, string> = {};
+          customHeaders.forEach(h => {
+              if (h.key.trim()) headers[h.key.trim()] = h.value;
           });
 
-          es.onmessage = (e) => {
-             try {
-                const msg = JSON.parse(e.data);
-                addLog(`<< NOTIFICATION: ${msg.method}`, 'traffic');
-             } catch {}
-          };
+          // Connect using SDK
+          await mcpSdkService.connect({
+              url,
+              authToken,
+              customHeaders: headers,
+              includeCredentials,
+          });
 
-          eventSourceRef.current = es;
-
-      } catch (e: any) {
-          addLog(`Connection Exception: ${getErrorMessage(e)}`, 'error');
+          addLog('✅ Connected successfully!');
+          setIsConnected(true);
           setIsConnecting(false);
+
+          // Discover tools, resources, and prompts
+          await discover();
+
+      } catch (error: any) {
+          addLog(`❌ Connection failed: ${getErrorMessage(error)}`, 'error');
+          setIsConnecting(false);
+          setIsConnected(false);
       }
   };
 
-  const initializeMcp = async (targetUrl: string) => {
+  const discover = async () => {
       try {
-          addLog("Initializing MCP Client...");
+          addLog("Discovering tools, resources, and prompts...");
           
-          const initResult = await sendJsonRpc(targetUrl, "initialize", {
-              protocolVersion: "2024-11-05",
-              capabilities: {
-                  roots: { listChanged: true },
-                  sampling: {}
-              },
-              clientInfo: {
-                  name: "Nexus-Inspector",
-                  version: "1.0.0"
+          // List tools
+          try {
+              const toolsList = await mcpSdkService.listTools();
+              setTools(toolsList);
+              if (toolsList.length > 0) {
+                  addLog(`✅ Found ${toolsList.length} tools.`);
+              } else {
+                  addLog("No tools available.", 'info');
               }
-          });
-          
-          addLog(`Server Initialized. Capabilities: ${JSON.stringify(initResult.capabilities)}`);
+          } catch (e) {
+              addLog("Server does not support tools/list", 'info');
+          }
 
-          await sendJsonRpc(targetUrl, "notifications/initialized");
-          discover(targetUrl);
+          // List resources
+          try {
+              const resourcesList = await mcpSdkService.listResources();
+              setResources(resourcesList);
+              if (resourcesList.length > 0) {
+                  addLog(`✅ Found ${resourcesList.length} resources.`);
+              }
+          } catch (e) {
+              addLog("Server does not support resources/list", 'info');
+          }
+
+          // List prompts
+          try {
+              const promptsList = await mcpSdkService.listPrompts();
+              setPrompts(promptsList);
+              if (promptsList.length > 0) {
+                  addLog(`✅ Found ${promptsList.length} prompts.`);
+              }
+          } catch (e) {
+              addLog("Server does not support prompts/list", 'info');
+          }
 
       } catch (e: any) {
-          addLog(`Initialization failed: ${getErrorMessage(e)}`, 'error');
-          disconnect();
+          addLog(`Discovery error: ${getErrorMessage(e)}`, 'error');
       }
   };
 
-  const discover = async (targetUrl: string) => {
-      try {
-          addLog("Discovering resources, tools, and prompts...");
-          
-          try {
-              const toolsRes = await sendJsonRpc(targetUrl, "tools/list");
-              if (toolsRes && toolsRes.tools) {
-                  setTools(toolsRes.tools);
-                  addLog(`Found ${toolsRes.tools.length} tools.`);
-              }
-          } catch (e) { addLog("Failed to list tools", 'error'); }
-
-          try {
-              const resRes = await sendJsonRpc(targetUrl, "resources/list");
-              if (resRes && resRes.resources) {
-                  setResources(resRes.resources);
-                  addLog(`Found ${resRes.resources.length} resources.`);
-              }
-          } catch (e) { addLog("Failed to list resources", 'error'); }
-
-           try {
-              const promptRes = await sendJsonRpc(targetUrl, "prompts/list");
-              if (promptRes && promptRes.prompts) {
-                  setPrompts(promptRes.prompts);
-                  addLog(`Found ${promptRes.prompts.length} prompts.`);
-              }
-          } catch (e) { addLog("Failed to list prompts", 'error'); }
-
-      } catch (e: any) {
-           addLog(`Discovery error: ${getErrorMessage(e)}`, 'error');
-      }
-  };
-
-  const disconnect = () => {
-      if (eventSourceRef.current) {
-          eventSourceRef.current.close();
-          eventSourceRef.current = null;
-      }
+  const disconnect = async () => {
+      await mcpSdkService.disconnect();
       setIsConnected(false);
       setIsConnecting(false);
-      setActivePostUrl(null);
       addLog("Disconnected.");
   };
 
   const runTool = async (name: string, args: any): Promise<any> => {
-      if (!activePostUrl) throw new Error("Not connected to MCP POST endpoint");
+      if (!mcpSdkService.isConnected()) {
+          throw new Error("Not connected to MCP server");
+      }
       
-      const res = await sendJsonRpc(activePostUrl, "tools/call", {
-          name: name,
-          arguments: args
-      });
-      return res;
+      const result = await mcpSdkService.callTool(name, args);
+      return result;
   };
 
   const filteredResources = resources.filter(r => r.name.toLowerCase().includes(filter.toLowerCase()));
@@ -632,6 +612,128 @@ export const McpTester: React.FC = () => {
   return (
       <div className="flex h-full bg-slate-950 text-slate-200 overflow-hidden relative">
           
+          {/* View Mode Toggle - Top Right */}
+          <div className="absolute top-4 right-4 z-50 flex gap-2 bg-slate-900 rounded-lg p-1 border border-slate-700">
+              <button
+                  onClick={() => setViewMode('simple')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
+                      viewMode === 'simple' 
+                      ? 'bg-orange-600 text-white shadow-lg' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+              >
+                  Simple
+              </button>
+              <button
+                  onClick={() => setViewMode('advanced')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
+                      viewMode === 'advanced' 
+                      ? 'bg-orange-600 text-white shadow-lg' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+              >
+                  Advanced
+              </button>
+          </div>
+
+          {/* Conditional Rendering based on View Mode */}
+          {viewMode === 'simple' ? (
+              // Simple Mode - Clean UI
+              <div className="flex-1 flex flex-col">
+                  <div className="flex-1 flex items-center justify-center p-8">
+                      <div className="max-w-2xl w-full space-y-6">
+                          <div className="text-center mb-8">
+                              <Database className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+                              <h1 className="text-3xl font-bold text-white mb-2">MCP Inspector</h1>
+                              <p className="text-slate-400">Connect to your Model Context Protocol server</p>
+                          </div>
+
+                          <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 shadow-2xl">
+                              <div className="space-y-4">
+                                  <div>
+                                      <label className="block text-sm font-medium text-slate-300 mb-2">Server URL</label>
+                                      <input 
+                                          type="text" 
+                                          value={url}
+                                          onChange={(e) => setUrl(e.target.value)}
+                                          className="w-full h-12 bg-slate-950 border border-slate-700 rounded-lg px-4 text-sm text-slate-200 focus:outline-none focus:border-orange-500 transition-colors font-mono"
+                                          placeholder="http://localhost:8000/mcp"
+                                          disabled={isConnected || isConnecting}
+                                      />
+                                  </div>
+
+                                  {authToken && (
+                                      <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-2 rounded border border-emerald-500/20">
+                                          <Check size={14} />
+                                          <span>Authenticated</span>
+                                      </div>
+                                  )}
+
+                                  <button 
+                                      onClick={isConnected ? disconnect : connect}
+                                      disabled={isConnecting}
+                                      className={`w-full h-12 rounded-lg font-bold flex items-center justify-center gap-3 transition-all shadow-lg text-base ${
+                                          isConnected 
+                                          ? 'bg-red-500/10 text-red-400 border-2 border-red-500/20 hover:bg-red-500/20' 
+                                          : isConnecting 
+                                              ? 'bg-slate-800 text-slate-400 cursor-not-allowed border-2 border-slate-700'
+                                              : 'bg-orange-600 hover:bg-orange-500 text-white border-2 border-orange-500 shadow-orange-900/20'
+                                      }`}
+                                  >
+                                      {isConnecting ? (
+                                          <><Loader2 size={20} className="animate-spin" /> Connecting...</>
+                                      ) : isConnected ? (
+                                          <><StopCircle size={20}/> Disconnect</>
+                                      ) : (
+                                          <><Play size={20} fill="currentColor"/> Connect</>
+                                      )}
+                                  </button>
+                              </div>
+                          </div>
+
+                          {isConnected && (
+                              <div className="grid grid-cols-3 gap-4">
+                                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-800 text-center">
+                                      <div className="text-2xl font-bold text-emerald-400">{tools.length}</div>
+                                      <div className="text-xs text-slate-500 mt-1">Tools</div>
+                                  </div>
+                                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-800 text-center">
+                                      <div className="text-2xl font-bold text-blue-400">{resources.length}</div>
+                                      <div className="text-xs text-slate-500 mt-1">Resources</div>
+                                  </div>
+                                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-800 text-center">
+                                      <div className="text-2xl font-bold text-purple-400">{prompts.length}</div>
+                                      <div className="text-xs text-slate-500 mt-1">Prompts</div>
+                                  </div>
+                              </div>
+                          )}
+
+                          {isConnected && tools.length > 0 && (
+                              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+                                  <h3 className="text-lg font-bold text-white mb-4">Available Tools</h3>
+                                  <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+                                      {tools.map(tool => (
+                                          <div key={tool.name} className="bg-slate-950 rounded-lg p-4 border border-slate-800 hover:border-emerald-500/50 transition-colors">
+                                              <div className="flex items-start justify-between">
+                                                  <div className="flex-1">
+                                                      <div className="font-mono text-sm text-emerald-400 font-medium">{tool.name}</div>
+                                                      {tool.description && (
+                                                          <div className="text-xs text-slate-400 mt-1">{tool.description}</div>
+                                                      )}
+                                                  </div>
+                                                  <Wrench size={16} className="text-emerald-500/50 ml-2" />
+                                              </div>
+                                          </div>
+                                      ))}
+                                  </div>
+                              </div>
+                          )}
+                      </div>
+                  </div>
+              </div>
+          ) : (
+              // Advanced Mode - Full Inspector UI
+              <>
           {/* Internal Sidebar for MCP Items */}
           <aside className="w-64 bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col hidden md:flex">
                 <div className="p-4 border-b border-slate-800">
@@ -715,35 +817,17 @@ export const McpTester: React.FC = () => {
              <header className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shadow-lg px-6 py-4">
                  <div className="max-w-5xl mx-auto space-y-3">
                      <div className="flex items-center gap-3 w-full">
-                         
-                        {/* Transport Toggle */}
-                        <div className="flex bg-slate-900 rounded-md p-1 border border-slate-700 shrink-0">
-                             <button
-                                 onClick={() => !isConnected && setTransportMode('sse')}
-                                 disabled={isConnected}
-                                 className={`px-3 py-1.5 text-xs font-bold rounded flex items-center gap-2 transition-all ${transportMode === 'sse' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
-                             >
-                                 <Activity size={12} /> SSE
-                             </button>
-                             <button
-                                 onClick={() => !isConnected && setTransportMode('http')}
-                                 disabled={isConnected}
-                                 className={`px-3 py-1.5 text-xs font-bold rounded flex items-center gap-2 transition-all ${transportMode === 'http' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
-                             >
-                                 <Globe size={12} /> HTTP
-                             </button>
-                        </div>
 
                         <div className="flex-1 relative group">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 group-focus-within:text-orange-500 transition-colors">
-                                {transportMode === 'sse' ? 'SSE URL' : 'POST URL'}
+                                MCP URL
                             </span>
                             <input 
                                 type="text" 
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
                                 className="w-full h-10 bg-slate-900 border border-slate-700 rounded-md pl-24 pr-4 text-sm text-slate-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-slate-600 font-mono"
-                                placeholder={transportMode === 'sse' ? "http://localhost:8000/sse" : "http://localhost:8000/mcp"}
+                                placeholder="http://localhost:8000/mcp"
                                 disabled={isConnected || isConnecting}
                             />
                         </div>
@@ -769,7 +853,7 @@ export const McpTester: React.FC = () => {
                             }`}
                         >
                             {isConnecting ? <Loader2 size={16} className="animate-spin" /> : 
-                            isConnected ? <><StopCircle size={16}/> Disconnect</> : <><Play size={16}/> {transportMode === 'http' ? 'Initialize' : 'Connect'}</>}
+                            isConnected ? <><StopCircle size={16}/> Disconnect</> : <><Play size={16}/> Connect</>}
                         </button>
                      </div>
                      
@@ -777,20 +861,6 @@ export const McpTester: React.FC = () => {
                      {showSettings && !isConnected && (
                          <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-md animate-in fade-in slide-in-from-top-2">
                              <div className="grid gap-4">
-                                 {transportMode === 'sse' && (
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Manual POST URL (Optional)</label>
-                                        <input 
-                                            type="text" 
-                                            value={manualPostUrl}
-                                            onChange={(e) => setManualPostUrl(e.target.value)}
-                                            className="w-full h-9 bg-slate-950 border border-slate-700 rounded px-3 text-xs text-slate-300 focus:outline-none focus:border-orange-500 font-mono"
-                                            placeholder="e.g. http://localhost:8000/messages (Overrides auto-discovery)"
-                                        />
-                                        <p className="text-[10px] text-slate-500 mt-1">If your server doesn't emit the `endpoint` event, specify the JSON-RPC POST endpoint here manually.</p>
-                                    </div>
-                                 )}
-
                                  <div className="flex items-center gap-2 pt-1">
                                     <input 
                                         type="checkbox" 
@@ -838,6 +908,66 @@ export const McpTester: React.FC = () => {
                                          {customHeaders.length === 0 && <p className="text-[10px] text-slate-600 italic">No custom headers</p>}
                                      </div>
                                  </div>
+
+                                 {/* OAuth2 Authentication Helper */}
+                                 <div className="border-t border-slate-800 pt-4">
+                                     <div className="flex items-center justify-between mb-3">
+                                         <label className="text-xs font-bold text-slate-500 uppercase">OAuth2 Authentication</label>
+                                         <button 
+                                             onClick={() => setShowAuthHelper(!showAuthHelper)}
+                                             className="text-xs text-emerald-400 hover:text-emerald-300"
+                                         >
+                                             {showAuthHelper ? 'Hide' : 'Show'} Helper
+                                         </button>
+                                     </div>
+                                     
+                                     {authToken && (
+                                         <div className="mb-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded text-xs">
+                                             <div className="flex items-center gap-2 text-emerald-400 mb-1">
+                                                 <Check size={12} /> Token Active
+                                             </div>
+                                             <div className="text-[10px] text-slate-400 font-mono truncate">
+                                                 {authToken.substring(0, 40)}...
+                                             </div>
+                                             <button 
+                                                 onClick={() => setAuthToken('')}
+                                                 className="text-[10px] text-red-400 hover:text-red-300 mt-1"
+                                             >
+                                                 Clear Token
+                                             </button>
+                                         </div>
+                                     )}
+                                     
+                                     {showAuthHelper && (
+                                         <div className="space-y-2 bg-slate-950 p-3 rounded border border-slate-800">
+                                             <input 
+                                                 type="text" 
+                                                 placeholder="Username (default: admin)" 
+                                                 value={authUsername}
+                                                 onChange={(e) => setAuthUsername(e.target.value)}
+                                                 className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
+                                             />
+                                             <input 
+                                                 type="password" 
+                                                 placeholder="Password (default: admin)" 
+                                                 value={authPassword}
+                                                 onChange={(e) => setAuthPassword(e.target.value)}
+                                                 className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
+                                             />
+                                             <button 
+                                                 onClick={handleLogin}
+                                                 disabled={isAuthenticating}
+                                                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded px-3 py-1.5 text-xs font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                                             >
+                                                 {isAuthenticating ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                                                 {isAuthenticating ? 'Logging in...' : 'Get Token'}
+                                             </button>
+                                             <p className="text-[10px] text-slate-500 italic">
+                                                 Token will be automatically added to all MCP requests
+                                             </p>
+                                         </div>
+                                     )}
+                                 </div>
                              </div>
                          </div>
                      )}
@@ -865,10 +995,7 @@ export const McpTester: React.FC = () => {
                                 {isConnecting ? 'Connecting...' : 'Ready to Connect'}
                             </h3>
                             <p className="text-slate-500 mt-2 max-w-sm text-center text-sm">
-                                {transportMode === 'sse' 
-                                  ? "Enter your MCP Server SSE URL to start inspecting resources, tools, and prompts."
-                                  : "Enter your MCP Server JSON-RPC POST URL to initialize a stateless session."
-                                }
+                                Enter your MCP Server URL. Auto-detects SSE or HTTP transport.
                             </p>
                         </div>
                      ) : (
@@ -960,6 +1087,8 @@ export const McpTester: React.FC = () => {
                  </div>
              )}
           </div>
+          </>
+          )}
       </div>
   );
 };
