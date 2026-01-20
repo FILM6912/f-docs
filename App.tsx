@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare } from 'lucide-react';
+import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon } from 'lucide-react';
+import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme } from './types';
 import { EndpointCard } from './components/EndpointCard';
 import { parseOpenApi } from './services/openapiParser';
@@ -34,16 +35,16 @@ const TagSection: React.FC<TagSectionProps> = ({
     if (endpoints.length === 0) return null;
 
     return (
-        <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 border border-slate-800 rounded-lg overflow-hidden bg-slate-900/30">
+        <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900/30">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between p-4 bg-slate-900/50 hover:bg-slate-800/50 transition-colors border-b border-slate-800"
+                className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200 dark:border-slate-800"
             >
                 <div className="flex items-baseline gap-3 overflow-hidden">
-                    <h3 className="text-lg font-bold text-slate-200 truncate">{tag.name}</h3>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 truncate">{tag.name}</h3>
                     <p className="text-xs text-slate-500 truncate hidden sm:block">{tag.description}</p>
                 </div>
-                <div className="text-slate-500">
+                <div className="text-slate-500 dark:text-slate-400">
                     {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                 </div>
             </button>
@@ -177,12 +178,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                <div className="flex items-center justify-between p-4 border-b border-slate-800 shrink-0">
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         <Lock size={18} /> Available Authorizations
                     </h2>
-                    <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -199,12 +200,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                 const isLoggedIn = !!credentials[key];
 
                                 return (
-                                    <div key={key} className="bg-slate-950 p-5 rounded-lg border border-slate-800 shadow-sm">
-                                        <div className="mb-4 pb-3 border-b border-slate-800/50">
+                                    <div key={key} className="bg-slate-50 dark:bg-slate-950 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+                                        <div className="mb-4 pb-3 border-b border-slate-200 dark:border-slate-800/50">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-base text-slate-200">{key}</span>
-                                                    <span className="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono">
+                                                    <span className="font-bold text-base text-slate-800 dark:text-slate-200">{key}</span>
+                                                    <span className="text-xs bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono">
                                                         {scheme.type === 'http' ? scheme.scheme : scheme.type}
                                                         {scheme.in ? ` (${scheme.in})` : ''}
                                                     </span>
@@ -228,7 +229,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
 
                                                 {!isLoggedIn ? (
                                                     <form 
-                                                        className="space-y-3 bg-slate-900/50 p-4 rounded border border-slate-800"
+                                                        className="space-y-3 bg-white dark:bg-slate-900/50 p-4 rounded border border-slate-200 dark:border-slate-800"
                                                         onSubmit={(e) => {
                                                             e.preventDefault();
                                                             handleOauthLogin(key, scheme.flows?.password?.tokenUrl!);
@@ -239,7 +240,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                                 <label className="text-[10px] font-bold uppercase text-slate-500">Username *</label>
                                                                 <input 
                                                                     type="text" 
-                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="username"
                                                                     value={oauthForms[key]?.username || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'username', e.target.value)}
@@ -249,7 +250,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                                 <label className="text-[10px] font-bold uppercase text-slate-500">Password *</label>
                                                                 <input 
                                                                     type="password" 
-                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="password"
                                                                     value={oauthForms[key]?.password || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'password', e.target.value)}
@@ -259,7 +260,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                                 <label className="text-[10px] font-bold uppercase text-slate-500">Client ID</label>
                                                                 <input 
                                                                     type="text" 
-                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="client_id"
                                                                     value={oauthForms[key]?.client_id || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'client_id', e.target.value)}
@@ -269,7 +270,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                                 <label className="text-[10px] font-bold uppercase text-slate-500">Client Secret</label>
                                                                 <input 
                                                                     type="password" 
-                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="client_secret"
                                                                     value={oauthForms[key]?.client_secret || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'client_secret', e.target.value)}
@@ -299,14 +300,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                             <label className="text-[10px] font-bold uppercase text-slate-500">Access Token</label>
                                                             <input 
                                                                 type="text" 
-                                                                className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-400 font-mono truncate"
+                                                                className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-500 dark:text-slate-400 font-mono truncate"
                                                                 value={credentials[key] || ''}
                                                                 disabled
                                                             />
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
-                                                            className="px-4 py-2 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded text-sm border border-slate-700 transition-colors h-[38px] font-medium"
+                                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 text-slate-600 dark:text-slate-400 rounded text-sm border border-slate-200 dark:border-slate-700 transition-colors h-[38px] font-medium"
                                                         >
                                                             Logout
                                                         </button>
@@ -318,7 +319,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                             <div className="space-y-4">
                                                 {!isLoggedIn ? (
                                                     <form 
-                                                        className="space-y-3 bg-slate-900/50 p-4 rounded border border-slate-800"
+                                                        className="space-y-3 bg-white dark:bg-slate-900/50 p-4 rounded border border-slate-200 dark:border-slate-800"
                                                         onSubmit={(e) => {
                                                             e.preventDefault();
                                                             handleBasicAuthLogin(key);
@@ -329,7 +330,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                                 <label className="text-[10px] font-bold uppercase text-slate-500">Username</label>
                                                                 <input 
                                                                     type="text" 
-                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="username"
                                                                     value={oauthForms[key]?.username || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'username', e.target.value)}
@@ -339,7 +340,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                                 <label className="text-[10px] font-bold uppercase text-slate-500">Password</label>
                                                                 <input 
                                                                     type="password" 
-                                                                    className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="password"
                                                                     value={oauthForms[key]?.password || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'password', e.target.value)}
@@ -368,14 +369,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                             <label className="text-[10px] font-bold uppercase text-slate-500">Credentials (Base64)</label>
                                                             <input 
                                                                 type="text" 
-                                                                className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-400 font-mono truncate"
+                                                                className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-600 dark:text-slate-400 font-mono truncate transition-colors"
                                                                 value={credentials[key] || ''}
                                                                 disabled
                                                             />
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
-                                                            className="px-4 py-2 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded text-sm border border-slate-700 transition-colors h-[38px] font-medium"
+                                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-500 dark:text-slate-400 rounded text-sm border border-slate-200 dark:border-slate-700 transition-colors h-[38px] font-medium"
                                                         >
                                                             Logout
                                                         </button>
@@ -391,7 +392,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                 <div className="flex gap-2">
                                                     <input 
                                                         type="text" 
-                                                        className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                                                        className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                         placeholder={scheme.type === 'http' && scheme.scheme === 'bearer' ? 'e.g. eyJhbGci...' : 'Required'}
                                                         value={credentials[key] || ''}
                                                         onChange={(e) => handleInputChange(key, e.target.value)}
@@ -400,7 +401,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     {credentials[key] && (
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
-                                                            className="px-4 py-2 bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded text-sm border border-slate-700 transition-colors font-medium"
+                                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-500 dark:text-slate-400 rounded text-sm border border-slate-200 dark:border-slate-700 transition-colors font-medium"
                                                         >
                                                             Logout
                                                         </button>
@@ -418,7 +419,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                     )}
                 </div>
 
-                <div className="p-4 border-t border-slate-800 bg-slate-900 flex justify-end gap-2 shrink-0">
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-end gap-2 shrink-0">
                     <button onClick={onClose} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors shadow-lg shadow-blue-900/20">
                         Done
                     </button>
@@ -453,27 +454,27 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-lg overflow-hidden">
-                 <div className="flex items-center justify-between p-4 border-b border-slate-800">
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-lg overflow-hidden">
+                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         <Settings size={18} /> API Configuration
                     </h2>
-                    <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
+                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
                         <X size={20} />
                     </button>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                      <div>
-                        <label className="block text-sm font-medium text-slate-400 mb-2">OpenAPI Specification URL</label>
+                        <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">OpenAPI Specification URL</label>
                         <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
                             <input 
                                 type="text" 
                                 placeholder="http://localhost:8000/openapi.json" 
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                className="w-full h-11 bg-slate-950 border border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600"
+                                className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600"
                             />
                         </div>
                         <p className="text-xs text-slate-500 mt-2">
@@ -485,7 +486,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                         <button 
                             type="button"
                             onClick={() => { setInputValue(''); onLoad(''); onClose(); }}
-                            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-sm font-medium transition-colors border border-slate-700"
+                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-sm font-medium transition-colors border border-slate-200 dark:border-slate-700"
                         >
                             Reset to Demo
                         </button>
@@ -566,6 +567,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
+  const { theme, toggleTheme } = useTheme();
   const [activeEndpointId, setActiveEndpointId] = useState<string | null>(null);
   const [expandedSidebarTags, setExpandedSidebarTags] = useState<Record<string, boolean>>({});
 
@@ -661,10 +663,10 @@ export default function App() {
   const activeEndpoint = activeEndpointId ? endpoints.find(e => e.id === activeEndpointId) : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-row font-sans overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 flex flex-row font-sans overflow-hidden">
       
       {/* 1. Activity Bar (Module Switcher) */}
-      <nav className="w-16 bg-slate-950 border-r border-slate-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
+      <nav className="w-16 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/50 shrink-0 mb-6">
              <Box size={20} className="text-white" />
           </div>
@@ -672,7 +674,7 @@ export default function App() {
           <div className="flex flex-col gap-4 w-full px-2">
              <button 
                 onClick={() => setActiveModule('api')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'api' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900'}`}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'api' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                 title="REST API Documentation"
              >
                 <Layers size={22} />
@@ -681,7 +683,7 @@ export default function App() {
              
              <button 
                 onClick={() => setActiveModule('ws')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'ws' ? 'bg-slate-800 text-purple-400' : 'text-slate-500 hover:text-purple-300 hover:bg-slate-900'}`}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'ws' ? 'bg-purple-100 text-purple-600 dark:bg-slate-800 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                 title="WebSocket Tester"
              >
                 <Activity size={22} />
@@ -690,7 +692,7 @@ export default function App() {
 
              <button 
                 onClick={() => setActiveModule('io')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'io' ? 'bg-slate-800 text-blue-400' : 'text-slate-500 hover:text-blue-300 hover:bg-slate-900'}`}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'io' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                 title="Socket.IO Tester"
              >
                 <Radio size={22} />
@@ -699,7 +701,7 @@ export default function App() {
 
              <button 
                 onClick={() => setActiveModule('mcp')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'mcp' ? 'bg-slate-800 text-orange-400' : 'text-slate-500 hover:text-orange-300 hover:bg-slate-900'}`}
+                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'mcp' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                 title="MCP Inspector"
              >
                 <Database size={22} />
@@ -710,7 +712,7 @@ export default function App() {
           <div className="mt-auto px-2">
               <button 
                   onClick={() => setIsSettingsModalOpen(true)}
-                  className="p-3 rounded-xl flex justify-center transition-all text-slate-500 hover:text-slate-200 hover:bg-slate-900"
+                  className="p-3 rounded-xl flex justify-center transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-900"
               >
                   <Settings size={22} />
               </button>
@@ -721,7 +723,7 @@ export default function App() {
       {activeModule === 'api' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -730,24 +732,24 @@ export default function App() {
             onMouseDown={startResizing}
             />
 
-            <div className="p-4 border-b border-slate-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-white truncate mb-3">Nexus<span className="text-blue-500">Docs</span></h1>
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3">Nexus<span className="text-blue-500">Docs</span></h1>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                        <span className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">v{apiVersion}</span>
+                        <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-slate-600 dark:text-slate-400">v{apiVersion}</span>
                     </div>
                     
-                    <div className="flex bg-slate-800 rounded p-0.5 border border-slate-700">
+                    <div className="flex bg-slate-200 dark:bg-slate-800 rounded p-0.5 border border-slate-300 dark:border-slate-700">
                         <button 
                             onClick={() => setViewMode('list')}
-                            className={`p-1 rounded ${viewMode === 'list' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`p-1 rounded ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
                             title="List View"
                         >
                             <LayoutList size={14} />
                         </button>
                         <button 
                             onClick={() => setViewMode('focused')}
-                            className={`p-1 rounded ${viewMode === 'focused' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`p-1 rounded ${viewMode === 'focused' ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
                             title="Focused View"
                         >
                             <Sidebar size={14} />
@@ -764,10 +766,10 @@ export default function App() {
                         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Resources</h3>
                         <button 
                             onClick={() => setSelectedTag('All')}
-                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${selectedTag === 'All' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${selectedTag === 'All' ? 'bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
                         >
                             <span className="flex items-center gap-2 truncate"><Layers size={14} /> All Resources</span>
-                            <span className="text-[10px] bg-slate-950 px-1.5 py-0.5 rounded-full text-slate-500">{endpoints.length}</span>
+                            <span className="text-[10px] bg-slate-200 dark:bg-slate-950 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-500">{endpoints.length}</span>
                         </button>
                     </div>
 
@@ -776,7 +778,7 @@ export default function App() {
                             <button
                                 key={tag.name}
                                 onClick={() => setSelectedTag(tag.name)}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedTag === tag.name ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedTag === tag.name ? 'bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
                             >
                                 <Terminal size={12} className="opacity-70 shrink-0" />
                                 <span className="truncate">{tag.name}</span>
@@ -797,19 +799,19 @@ export default function App() {
                             <div key={tag.name} className="space-y-1">
                                 <button 
                                     onClick={() => toggleSidebarTag(tag.name)}
-                                    className="w-full flex items-center justify-between text-xs font-bold text-slate-300 hover:text-white px-2 py-1.5 rounded hover:bg-slate-800/50 transition-colors group uppercase tracking-wide"
+                                    className="w-full flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group uppercase tracking-wide"
                                 >
                                     <span>{tag.name}</span>
                                     {isExpanded ? <ChevronDown size={12} className="opacity-50 group-hover:opacity-100"/> : <ChevronRight size={12} className="opacity-50 group-hover:opacity-100"/>}
                                 </button>
                                 
                                 {isExpanded && (
-                                    <div className="pl-2 space-y-0.5 border-l border-slate-800 ml-3">
+                                    <div className="pl-2 space-y-0.5 border-l border-slate-200 dark:border-slate-800 ml-3">
                                         {tagEndpoints.map(ep => (
                                             <button
                                                 key={ep.id}
                                                 onClick={() => setActiveEndpointId(ep.id)}
-                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] ${activeEndpointId === ep.id ? 'bg-slate-800 text-white border-blue-500' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-800/30'}`}
+                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] ${activeEndpointId === ep.id ? 'bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-white border-blue-500' : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/30'}`}
                                             >
                                                 <div className="w-14 shrink-0">
                                                     <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
@@ -826,13 +828,13 @@ export default function App() {
             )}
             </div>
             
-            <div className="p-4 border-t border-slate-800 bg-slate-900 shrink-0">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
                 <button 
                     onClick={() => setIsAuthModalOpen(true)}
                     className={`w-full py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
                         isAuthorized 
                         ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20' 
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-slate-500'
+                        : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
                     }`}
                 >
                     {isAuthorized ? <Unlock size={14} /> : <Lock size={14} />}
@@ -846,7 +848,7 @@ export default function App() {
       {activeModule === 'mcp' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -855,21 +857,21 @@ export default function App() {
             onMouseDown={startResizing}
             />
 
-            <div className="p-4 border-b border-slate-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-white truncate mb-3 flex items-center gap-2">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3 flex items-center gap-2">
                     <Database size={18} className="text-orange-500" />
                     <span>MCP Inspector</span>
                 </h1>
                 
                 {/* Search Bar */}
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={14} />
                     <input 
                         type="text" 
                         placeholder="Filter items..." 
                         value={mcp.filter}
                         onChange={(e) => mcp.setFilter(e.target.value)}
-                        className="w-full h-8 bg-slate-950 border border-slate-700 rounded pl-8 pr-2 text-xs text-slate-200 focus:outline-none focus:border-orange-500"
+                        className="w-full h-8 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded pl-8 pr-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-orange-500"
                     />
                 </div>
             </div>
@@ -881,14 +883,14 @@ export default function App() {
                         <div>
                             <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
                                 <span>Tools</span>
-                                <span className="bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">{mcp.tools.length}</span>
+                                <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{mcp.tools.length}</span>
                             </div>
                             {mcp.filteredTools.length === 0 && <p className="px-2 text-xs text-slate-600 italic">No tools found</p>}
                             {mcp.filteredTools.map(t => (
                                 <button
                                     key={t.name}
                                     onClick={() => setActiveMcpItem({ type: 'TOOL', data: t })}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === t.name ? 'bg-slate-800 text-emerald-400 border-l-2 border-emerald-500' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'}`}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === t.name ? 'bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border-l-2 border-emerald-500' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 border-l-2 border-transparent'}`}
                                 >
                                     <Wrench size={12} className="shrink-0 opacity-70" />
                                     <span className="truncate">{t.name}</span>
@@ -907,7 +909,7 @@ export default function App() {
                                 <button
                                     key={r.uri}
                                     onClick={() => setActiveMcpItem({ type: 'RESOURCE', data: r })}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.uri === r.uri ? 'bg-slate-800 text-blue-400 border-l-2 border-blue-500' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'}`}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.uri === r.uri ? 'bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400 border-l-2 border-blue-500' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 border-l-2 border-transparent'}`}
                                 >
                                     <Box size={12} className="shrink-0 opacity-70" />
                                     <span className="truncate">{r.name}</span>
@@ -920,7 +922,7 @@ export default function App() {
                             <div>
                                 <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
                                     <span>Prompts</span>
-                                    <span className="bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">{mcp.prompts.length}</span>
+                                    <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{mcp.prompts.length}</span>
                                 </div>
                                 {mcp.filteredPrompts.map(p => (
                                     <button
@@ -944,7 +946,7 @@ export default function App() {
             </div>
             
             {/* Footer Connection Status */}
-             <div className="p-4 border-t border-slate-800 bg-slate-900 shrink-0">
+             <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
                  {mcp.isConnected ? (
                      <button 
                         onClick={() => mcp.disconnect()}
@@ -968,28 +970,35 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto h-screen bg-slate-950 relative w-full flex flex-col">
+      <main className="flex-1 overflow-y-auto h-screen bg-slate-50 dark:bg-slate-950 relative w-full flex flex-col transition-colors">
         
         {activeModule === 'api' ? (
             <>
                 {/* REST API Header */}
-                <header className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
-                    <div className="px-6 py-4 border-b border-slate-800/50 bg-slate-900/30">
+                <header className="sticky top-0 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg transition-colors">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 transition-colors">
                         <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
                             <div className="flex flex-1 w-full gap-3 items-center min-w-0">
                                     <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
                                         <input 
                                             type="text"
                                             placeholder="Filter endpoints by path or summary..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full h-10 bg-slate-950 border border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-600"
+                                            className="w-full h-10 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
                                         />
                                     </div>
                                     <button 
+                                        onClick={toggleTheme}
+                                        className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 transition-all shadow-sm"
+                                        title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                                    >
+                                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                                    </button>
+                                    <button 
                                         onClick={() => setIsSettingsModalOpen(true)}
-                                        className="h-10 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md border border-slate-700 hover:border-slate-500 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
+                                        className="h-10 px-4 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
                                         title="Configure API Specification URL"
                                     >
                                         <Settings size={16} />
@@ -1016,21 +1025,21 @@ export default function App() {
                             {viewMode === 'list' && (
                                 <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     <div className="flex flex-wrap items-center gap-4 mb-2">
-                                        <h2 className="text-2xl font-bold text-white break-words">{apiTitle}</h2>
+                                        <h2 className="text-2xl font-bold text-slate-800 dark:text-white break-words">{apiTitle}</h2>
                                         {currentSpecUrl && (
                                             <a 
                                                 href={currentSpecUrl} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
                                                 title="View Raw Specification"
-                                                className="text-xs font-mono text-blue-400 hover:text-blue-300 flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all"
+                                                className="text-xs font-mono text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all font-bold"
                                             >
                                                 <span>raw spec</span>
                                                 <ExternalLink size={12} />
                                             </a>
                                         )}
                                     </div>
-                                    <p className="text-slate-400 text-sm leading-relaxed max-w-3xl">
+                                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">
                                         {apiTitle === "Cosmos Store API" ? 
                                             "This is a demonstration of a next-generation API documentation interface. It features interactive request building, simulated responses, and AI-assisted payload generation powered by Gemini." : 
                                             `Documentation for ${apiTitle} v${apiVersion}. Explore endpoints, generate payloads, and execute requests below.`
@@ -1083,12 +1092,12 @@ export default function App() {
                                                     forcedOpen={true}
                                                 />
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-32 border border-slate-800 rounded-lg bg-slate-900/20 border-dashed">
-                                                    <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
-                                                        <Terminal className="text-slate-600" size={32} />
+                                                <div className="flex flex-col items-center justify-center py-32 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900/20 border-dashed transition-colors">
+                                                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800 transition-colors">
+                                                        <Terminal className="text-slate-400 dark:text-slate-600" size={32} />
                                                     </div>
-                                                    <h3 className="text-xl font-bold text-slate-300">Select an Endpoint</h3>
-                                                    <p className="text-slate-500 mt-2 max-w-sm text-center">
+                                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-300">Select an Endpoint</h3>
+                                                    <p className="text-slate-600 dark:text-slate-500 mt-2 max-w-sm text-center">
                                                         Choose an endpoint from the sidebar to view its details, build requests, and test responses.
                                                     </p>
                                                 </div>
@@ -1109,23 +1118,30 @@ export default function App() {
              mcp.isConnected ? (
                 <>
                     {/* MCP Header */}
-                    <header className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
-                        <div className="px-6 py-4 border-b border-slate-800/50 bg-slate-900/30">
+                    <header className="sticky top-0 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg transition-colors">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 transition-colors">
                             <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
                                 <div className="flex flex-1 w-full gap-3 items-center min-w-0">
                                         <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
                                             <input 
                                                 type="text"
                                                 placeholder="Filter tools, resources, and prompts..."
                                                 value={mcp.filter}
                                                 onChange={(e) => mcp.setFilter(e.target.value)}
-                                                className="w-full h-10 bg-slate-950 border border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-slate-600"
+                                                className="w-full h-10 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
                                             />
                                         </div>
                                         <button 
+                                            onClick={toggleTheme}
+                                            className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 transition-all shadow-sm"
+                                            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                                        >
+                                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                                        </button>
+                                        <button 
                                             onClick={() => mcp.disconnect()}
-                                            className="h-10 px-4 bg-slate-800 hover:bg-red-950/30 text-slate-300 hover:text-red-400 rounded-md border border-slate-700 hover:border-red-500/50 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
+                                            className="h-10 px-4 bg-white hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-950/30 text-slate-700 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400 rounded-md border border-slate-300 hover:border-red-200 dark:border-slate-700 dark:hover:border-red-500/50 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
                                             title="Disconnect from MCP Server"
                                         >
                                             <Database size={16} />
@@ -1146,12 +1162,12 @@ export default function App() {
                                     forcedOpen={true}
                                 />
                             ) : (
-                                <div className="flex flex-col items-center justify-center py-32 border border-slate-800 rounded-lg bg-slate-900/20 border-dashed">
-                                    <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
-                                        <Wrench className="text-slate-600" size={32} />
+                                <div className="flex flex-col items-center justify-center py-32 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900/20 border-dashed transition-colors">
+                                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800">
+                                        <Wrench className="text-slate-400 dark:text-slate-600" size={32} />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-300">Select an Item</h3>
-                                    <p className="text-slate-500 mt-2 max-w-sm text-center">
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-300">Select an Item</h3>
+                                    <p className="text-slate-600 dark:text-slate-500 mt-2 max-w-sm text-center">
                                         Choose a tool or resource from the sidebar to view details and execute.
                                     </p>
                                 </div>
@@ -1189,28 +1205,29 @@ export default function App() {
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
             onLoad={loadSpec}
+            currentUrl={currentSpecUrl}
         />
 
         {/* MCP Connect Modal */}
         {isMcpConnectModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
-                    <div className="p-6 border-b border-slate-800 bg-slate-900/50">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                         <div className="flex items-center justify-between mb-2">
-                             <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                             <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <Database className="text-orange-500" size={24} />
                                 Connect to MCP Server
                              </h2>
-                             <button onClick={() => setIsMcpConnectModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                             <button onClick={() => setIsMcpConnectModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
                                 <X size={20} />
                              </button>
                         </div>
-                        <p className="text-slate-400 text-sm">Enter the URL of your Model Context Protocol server.</p>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm">Enter the URL of your Model Context Protocol server.</p>
                     </div>
                     
                     <div className="p-6 space-y-4">
                         {mcp.error && (
-                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md flex items-center gap-3 text-red-400 text-xs shadow-sm animate-in fade-in slide-in-from-top-1">
+                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md flex items-center gap-3 text-red-500 dark:text-red-400 text-xs shadow-sm animate-in fade-in slide-in-from-top-1">
                                 <AlertCircle size={16} className="shrink-0" />
                                 <div className="flex-1 min-w-0 font-medium break-words leading-relaxed">
                                     {mcp.error}
@@ -1225,7 +1242,7 @@ export default function App() {
                                 value={mcp.url}
                                 onChange={(e) => mcp.setUrl(e.target.value)}
                                 placeholder="http://localhost:8000/mcp"
-                                className={`w-full h-10 bg-slate-950 border rounded-md px-3 text-sm text-slate-200 focus:outline-none transition-colors placeholder:text-slate-600 ${mcp.error ? 'border-red-500/50 focus:border-red-500' : 'border-slate-700 focus:border-orange-500'}`}
+                                className={`w-full h-10 bg-slate-50 dark:bg-slate-950 border rounded-md px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 ${mcp.error ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-orange-500'}`}
                                 onKeyDown={async (e) => {
                                     if(e.key === 'Enter') {
                                         const success = await mcp.connect();
@@ -1250,7 +1267,7 @@ export default function App() {
                         </div>
                     </div>
                     
-                    <div className="p-4 bg-slate-950/50 border-t border-slate-800 text-xs text-slate-500 text-center">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-950/50 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 text-center">
                         Make sure your server supports SSE (Server-Sent Events).
                     </div>
                 </div>

@@ -88,19 +88,19 @@ export const WebSocketTester: React.FC = () => {
   return (
     <div className="p-6 h-full flex flex-col max-w-5xl mx-auto w-full">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-          <Activity className="text-purple-400" /> WebSocket Tester
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+          <Activity className="text-purple-600 dark:text-purple-400" /> WebSocket Tester
         </h2>
-        <p className="text-slate-400 mt-1">Test real-time WebSocket connections and messages.</p>
+        <p className="text-slate-600 dark:text-slate-400 mt-1">Test real-time WebSocket connections and messages.</p>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 mb-4 flex gap-3 flex-wrap sm:flex-nowrap">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 mb-4 flex gap-3 flex-wrap sm:flex-nowrap shadow-sm">
         <div className="flex-1 relative">
            <input 
              type="text" 
              value={url}
              onChange={(e) => setUrl(e.target.value)}
-             className="w-full bg-slate-950 border border-slate-700 rounded-md px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-purple-500"
              placeholder="wss://example.com/socket"
              disabled={isConnected}
            />
@@ -117,10 +117,10 @@ export const WebSocketTester: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-lg overflow-hidden relative">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950">
-          <div className="text-xs font-bold text-slate-500 uppercase">Message Log</div>
-          <button onClick={clearLogs} className="text-slate-500 hover:text-white transition-colors" title="Clear Logs">
+      <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden relative shadow-sm">
+        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+          <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">Message Log</div>
+          <button onClick={clearLogs} className="text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-white transition-colors" title="Clear Logs">
             <Trash2 size={16} />
           </button>
         </div>
@@ -135,9 +135,9 @@ export const WebSocketTester: React.FC = () => {
             logs.map(log => (
               <div key={log.id} className={`flex ${log.type === 'sent' ? 'justify-end' : 'justify-start'}`}>
                  <div className={`max-w-[80%] rounded-lg p-3 text-sm ${
-                   log.type === 'system' ? 'w-full bg-slate-800/50 text-slate-400 text-center font-mono text-xs border border-dashed border-slate-700' :
-                   log.type === 'sent' ? 'bg-purple-500/10 text-purple-200 border border-purple-500/20' :
-                   'bg-slate-800 text-slate-200 border border-slate-700'
+                   log.type === 'system' ? 'w-full bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-center font-mono text-xs border border-dashed border-slate-200 dark:border-slate-700' :
+                   log.type === 'sent' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-purple-500/20 shadow-sm' :
+                   'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm'
                  }`}>
                    {log.type !== 'system' && (
                      <div className="flex items-center gap-2 mb-1 text-[10px] opacity-60 font-mono">
@@ -153,20 +153,20 @@ export const WebSocketTester: React.FC = () => {
           <div ref={logsEndRef} />
         </div>
 
-        <div className="p-4 bg-slate-950 border-t border-slate-800">
+        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
           <form onSubmit={sendMessage} className="flex gap-2">
             <input 
               type="text" 
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={isConnected ? "Type a message..." : "Connect to send messages"}
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white focus:outline-none focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 disabled:bg-slate-100 dark:disabled:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!isConnected}
             />
             <button 
               type="submit" 
               disabled={!isConnected || !message}
-              className="bg-purple-600 hover:bg-purple-500 text-white p-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-purple-600 hover:bg-purple-500 text-white p-2.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-purple-900/10"
             >
               <Send size={20} />
             </button>

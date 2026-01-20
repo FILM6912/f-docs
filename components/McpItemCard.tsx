@@ -103,7 +103,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
     const description = data.description || (type === 'RESOURCE' ? data.uri : 'No description available.');
 
     return (
-        <div className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? 'ring-1 ring-opacity-50 shadow-lg' : ''} ${theme.border} bg-slate-950`}>
+        <div className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? 'ring-1 ring-opacity-50 shadow-lg' : ''} ${theme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none`}>
              {/* Header - Full colored bar like Swagger */}
              <div 
                 className={`flex items-center justify-between p-3 px-4 select-none group ${theme.bg} ${!forcedOpen ? 'cursor-pointer hover:brightness-110' : ''} transition-all ${!isOpen ? 'rounded-lg' : 'rounded-t-lg'}`}
@@ -113,19 +113,19 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                     <div className="w-20 shrink-0">
                         <McpBadge type={type} className="shadow-sm w-full block text-center" />
                     </div>
-                    <span className="font-mono text-slate-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
+                    <span className="font-mono text-slate-700 dark:text-slate-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
                         <span className="opacity-90">{name}</span>
                     </span>
                 </div>
                  {!forcedOpen && (
-                    <div className="text-slate-400 group-hover:text-slate-200 transition-colors ml-4">
+                    <div className="text-slate-500 dark:text-slate-400 transition-colors ml-4">
                         {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                     </div>
                  )}
             </div>
 
             {isOpen && (
-                <div className="bg-slate-900/30 p-4 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-1 rounded-b-lg">
+                <div className="bg-slate-50/50 dark:bg-slate-900/30 p-4 border-t border-slate-200 dark:border-slate-800/50 animate-in fade-in slide-in-from-top-1 rounded-b-lg">
                      
                      <div className="mb-6 px-1">
                          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Description</h4>
@@ -135,42 +135,44 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                              const isLong = descText.split('\n').length > 5 || descText.length > 300;
                              
                              if (!isLong) {
-                                  return <MarkdownDisplay content={description} className="text-sm" />;
+                                  return <MarkdownDisplay content={description} className="text-sm dark:text-slate-300 text-slate-600" />;
                              }
 
                              return (
-                                 <div className="relative inline-block">
-                                     <div 
-                                        onClick={(e) => { e.stopPropagation(); setShowDescModal(true); }}
-                                        className="cursor-pointer flex items-center gap-2 hover:text-blue-400 transition-colors w-fit select-none"
-                                    >
-                                         <div className="line-clamp-2 text-sm text-slate-400 opacity-70">
-                                            <MarkdownDisplay content={description} />
-                                         </div>
-                                         <span className="shrink-0 text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full border border-slate-700/50 flex items-center gap-1 group-hover:border-blue-500/30 transition-colors ml-2"><MessageSquare size={8} /> Read More</span>
+                                 <div className="relative">
+                                     <div className="mask-image-gradient-b">
+                                         <MarkdownDisplay content={description} className="text-sm dark:text-slate-300 text-slate-600 line-clamp-2" />
+                                     </div>
+                                     <div className="mt-2">
+                                         <button 
+                                            onClick={(e) => { e.stopPropagation(); setShowDescModal(true); }}
+                                            className="text-xs font-bold text-blue-500 hover:text-blue-400 flex items-center group cursor-pointer"
+                                         >
+                                          <span className="shrink-0 text-[10px] bg-blue-50 hover:bg-blue-100 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-slate-700/50 flex items-center gap-1 dark:group-hover:border-blue-500/30 transition-colors ml-2"><MessageSquare size={8} /> Read More</span>
+                                         </button>
                                      </div>
                                      
                                      {/* Popup Modal */}
                                      {showDescModal && (
                                          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
                                              <div 
-                                                className="bg-slate-900 border border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
+                                                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
                                                 onClick={e => e.stopPropagation()}
                                             >
-                                                 <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 rounded-t-xl">
-                                                     <h3 className="font-bold text-slate-200 flex items-center gap-2">
-                                                         <MessageSquare size={16} className="text-blue-400"/> 
+                                                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 rounded-t-xl">
+                                                     <h3 className="font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                                                         <MessageSquare size={16} className="text-blue-500 dark:text-blue-400"/> 
                                                          Description
                                                      </h3>
                                                      <button 
                                                         onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}
-                                                        className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors"
+                                                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                                                      >
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                                                      </button>
                                                  </div>
                                                  <div className="p-6 overflow-y-auto custom-scrollbar">
-                                                    <MarkdownDisplay content={description} className="text-sm text-slate-300" />
+                                                    <MarkdownDisplay content={description} className="text-sm text-slate-600 dark:text-slate-300" />
                                                  </div>
                                              </div>
                                          </div>
@@ -182,20 +184,20 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
 
                      {/* --- RESOURCE VIEW --- */}
                      {type === 'RESOURCE' && (
-                         <div className="space-y-4 bg-slate-950 border border-slate-800 rounded-lg p-4">
+                         <div className="space-y-4 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                  <div>
                                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">URI</label>
-                                     <div className="font-mono text-xs text-blue-300 bg-slate-900 p-2 rounded border border-slate-800 mt-1 select-all break-all flex items-center justify-between group/uri">
+                                     <div className="font-mono text-xs text-blue-600 dark:text-blue-300 bg-slate-50 dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800 mt-1 select-all break-all flex items-center justify-between group/uri">
                                          <span>{data.uri}</span>
-                                         <button onClick={() => handleCopy(data.uri)} className="opacity-0 group-hover/uri:opacity-100 transition-opacity text-slate-500 hover:text-white">
+                                         <button onClick={() => handleCopy(data.uri)} className="opacity-0 group-hover/uri:opacity-100 transition-opacity text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white">
                                              {copied ? <Check size={12}/> : <Copy size={12}/>}
                                          </button>
                                      </div>
                                  </div>
                                  <div>
                                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">MIME Type</label>
-                                     <div className="text-sm text-slate-300 mt-1 font-mono bg-slate-900 p-2 rounded border border-slate-800">{data.mimeType || 'N/A'}</div>
+                                     <div className="text-sm text-slate-700 dark:text-slate-300 mt-1 font-mono bg-slate-50 dark:bg-slate-900 p-2 rounded border border-slate-200 dark:border-slate-800">{data.mimeType || 'N/A'}</div>
                                  </div>
                              </div>
                          </div>
@@ -208,17 +210,17 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                              <div className="space-y-0 flex flex-col">
                                  {/* Tab Header */}
                                  <div className="flex items-center justify-between mb-4">
-                                     <h3 className="text-base font-bold text-slate-200">Request</h3>
-                                     <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
-                                         <button 
+                                     <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Request</h3>
+                                     <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+                                            <button 
                                             onClick={() => setActiveTab('params')}
-                                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'params' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'params' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                                          >
                                              Parameters
                                          </button>
                                          <button 
                                             onClick={() => setActiveTab('auth')}
-                                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'auth' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeTab === 'auth' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                                          >
                                              Authorization
                                          </button>
@@ -229,20 +231,20 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                                      {activeTab === 'params' ? (
                                         <div className="space-y-4 flex-1">
                                             {data.inputSchema?.properties && Object.keys(data.inputSchema.properties).length > 0 ? (
-                                                <div className="space-y-3 bg-slate-950 p-4 rounded-lg border border-slate-800 shadow-inner h-full">
+                                                <div className="space-y-3 bg-white dark:bg-slate-950 p-4 rounded-lg border border-slate-200 dark:border-slate-800 shadow-inner h-full">
                                                     {Object.entries(data.inputSchema.properties).map(([key, prop]: [string, any]) => (
                                                         <div key={key}>
                                                             <div className="flex items-baseline justify-between mb-1.5">
-                                                                <label className="block text-xs font-mono font-medium text-slate-300">
+                                                                <label className="block text-xs font-mono font-medium text-slate-700 dark:text-slate-300">
                                                                     {key}
                                                                     {data.inputSchema?.required?.includes(key) && <span className="text-red-500 ml-0.5">*</span>}
                                                                 </label>
-                                                                <span className="text-[10px] text-slate-500 font-mono">{prop.type}</span>
+                                                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">{prop.type}</span>
                                                             </div>
                                                             
                                                             {prop.type === 'boolean' ? (
                                                                 <select
-                                                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors"
+                                                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors"
                                                                     value={String(toolArgs[key])}
                                                                     onChange={(e) => handleInputChange(key, e.target.value === 'true', 'boolean')}
                                                                 >
@@ -252,7 +254,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                                                             ) : (
                                                                 <input 
                                                                     type={prop.type === 'integer' || prop.type === 'number' ? 'number' : 'text'}
-                                                                    className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 placeholder:text-slate-600 transition-colors"
+                                                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-colors"
                                                                     placeholder={prop.description || `Enter ${key}...`}
                                                                     value={toolArgs[key]}
                                                                     onChange={(e) => handleInputChange(key, e.target.value, prop.type)}
@@ -263,13 +265,13 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <div className="text-xs text-slate-500 italic flex items-center justify-center p-12 border border-dashed border-slate-800 rounded-lg bg-slate-950/50 h-full">
+                                                <div className="text-xs text-slate-500 italic flex items-center justify-center p-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/50 h-full">
                                                     No parameters required
                                                 </div>
                                             )}
                                         </div>
                                      ) : (
-                                        <div className="text-xs text-slate-500 italic flex items-center justify-center p-12 border border-dashed border-slate-800 rounded-lg bg-slate-950/50 h-full">
+                                        <div className="text-xs text-slate-500 italic flex items-center justify-center p-12 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-950/50 h-full">
                                             No authorization schemes defined.
                                         </div>
                                      )}
@@ -288,7 +290,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                              {/* Right Column: Response */}
                              <div className="flex flex-col h-full min-h-[400px]">
                                  <div className="flex items-center justify-between mb-4">
-                                     <h3 className="text-base font-bold text-slate-200">Response</h3>
+                                     <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Response</h3>
                                      <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
                                             <Zap size={10} fill="currentColor" /> Live
@@ -306,10 +308,10 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                                      </div>
                                  </div>
 
-                                 <div className="flex-1 bg-slate-950 rounded-lg border border-slate-800 overflow-hidden shadow-inner relative flex flex-col">
+                                 <div className="flex-1 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-inner relative flex flex-col">
                                      <div className="flex-1 p-4 overflow-auto custom-scrollbar">
                                          {!executionResult && !isExecuting && (
-                                             <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 opacity-30 pointer-events-none">
+                                             <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 opacity-30 pointer-events-none">
                                                  <Activity size={48} className="mb-3" />
                                                  <p className="text-sm font-medium uppercase tracking-widest">Ready to execute</p>
                                              </div>
@@ -329,13 +331,13 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                      )}
 
                      {/* --- PROMPT VIEW --- */}
-                     {type === 'PROMPT' && (
-                          <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-8 text-center">
-                              <MessageSquare size={32} className="text-slate-700 mx-auto mb-3" />
-                              <h5 className="text-slate-400 font-medium mb-1">Prompt Execution</h5>
-                              <p className="text-xs text-slate-500">Prompt testing is not yet supported in this interface.</p>
-                          </div>
-                     )}
+                      {type === 'PROMPT' && (
+                           <div className="bg-white dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-lg p-8 text-center">
+                               <MessageSquare size={32} className="text-slate-400 dark:text-slate-700 mx-auto mb-3" />
+                               <h5 className="text-slate-600 dark:text-slate-400 font-medium mb-1">Prompt Execution</h5>
+                               <p className="text-xs text-slate-500">Prompt testing is not yet supported in this interface.</p>
+                           </div>
+                      )}
                 </div>
             )}
         </div>

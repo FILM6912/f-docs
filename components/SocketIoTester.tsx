@@ -163,21 +163,21 @@ export const SocketIoTester: React.FC = () => {
     <div className="p-6 h-full flex flex-col w-full">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
         <div className="shrink-0">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Radio className="text-blue-400" /> Socket.IO Tester
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+            <Radio className="text-blue-600 dark:text-blue-400" /> Socket.IO Tester
           </h2>
-          <p className="text-slate-400 mt-1">Real-time listener dashboard.</p>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">Real-time listener dashboard.</p>
         </div>
 
         {/* Unified Controls Toolbar */}
         <div className="flex-1 flex flex-wrap gap-4 items-center justify-end">
           {/* Connection Group */}
-          <div className="flex-1 max-w-2xl bg-slate-900 border border-slate-800 rounded-lg p-2 flex gap-2 items-center shadow-sm">
+          <div className="flex-1 max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2 flex gap-2 items-center shadow-sm">
             <input
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="flex-1 bg-slate-950 border border-slate-700/50 rounded px-3 py-1.5 text-white focus:outline-none focus:border-blue-500 font-mono text-sm"
+              className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700/50 rounded px-3 py-1.5 text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono text-sm"
               placeholder="http://localhost:3000"
               disabled={isConnected}
             />
@@ -209,8 +209,8 @@ export const SocketIoTester: React.FC = () => {
               onClick={() => setShowEmitPanel(!showEmitPanel)}
               className={`h-[42px] px-4 rounded-lg font-medium flex items-center gap-2 transition-all border ${
                 showEmitPanel
-                  ? "bg-blue-600/10 text-blue-400 border-blue-500/20"
-                  : "bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200 hover:border-slate-700"
+                  ? "bg-blue-600/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                  : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700"
               }`}
             >
               <ArrowUp
@@ -226,7 +226,7 @@ export const SocketIoTester: React.FC = () => {
 
             <form
               onSubmit={addListener}
-              className="bg-slate-900 border border-slate-800 rounded-lg p-1.5 flex gap-2 items-center shadow-sm"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 flex gap-2 items-center shadow-sm"
             >
               <div className="pl-2">
                 <Plus size={16} className="text-slate-500" />
@@ -236,11 +236,11 @@ export const SocketIoTester: React.FC = () => {
                 placeholder="Listener..."
                 value={newListener}
                 onChange={(e) => setNewListener(e.target.value)}
-                className="w-32 xl:w-40 bg-transparent border-none text-white focus:outline-none text-sm placeholder:text-slate-600"
+                className="w-32 xl:w-40 bg-transparent border-none text-slate-800 dark:text-white focus:outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600"
               />
               <button
                 type="submit"
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 text-xs font-bold border border-slate-700 transition-colors"
+                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors"
               >
                 Add
               </button>
@@ -254,8 +254,8 @@ export const SocketIoTester: React.FC = () => {
         {showEmitPanel && (
             <div className="lg:col-span-1 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
             {/* Emitter */}
-            <div className="bg-slate-900 border border-slate-800 rounded-lg p-4">
-                <h3 className="text-xs font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 shadow-sm">
+                <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-3 flex items-center gap-2">
                 <ArrowUp size={14} /> Emit Event
                 </h3>
                 <div className="space-y-3">
@@ -267,7 +267,7 @@ export const SocketIoTester: React.FC = () => {
                     type="text"
                     value={eventName}
                     onChange={(e) => setEventName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-800 dark:text-white focus:border-blue-500 focus:outline-none"
                     />
                 </div>
                 <div>
@@ -277,13 +277,13 @@ export const SocketIoTester: React.FC = () => {
                     <textarea
                     value={messageData}
                     onChange={(e) => setMessageData(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs font-mono text-slate-300 h-24 focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs font-mono text-slate-700 dark:text-slate-300 h-24 focus:outline-none focus:border-blue-500"
                     />
                 </div>
                 <button
                     onClick={emitEvent}
                     disabled={!isConnected}
-                    className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded text-sm font-medium border border-slate-700 transition-colors disabled:opacity-50"
+                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium shadow-md shadow-blue-500/10 transition-colors disabled:opacity-50"
                 >
                     Emit
                 </button>
@@ -295,8 +295,8 @@ export const SocketIoTester: React.FC = () => {
         {/* Listeners Grid */}
         <div className={`${showEmitPanel ? 'lg:col-span-3' : 'lg:col-span-4'} flex flex-col gap-4`}>
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Activity size={20} className="text-green-400" /> Active Listeners
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <Activity size={20} className="text-emerald-500 dark:text-green-400" /> Active Listeners
             </h3>
             <button
               onClick={clearData}
@@ -319,21 +319,21 @@ export const SocketIoTester: React.FC = () => {
               return (
                 <div
                   key={listener}
-                  className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden flex flex-col h-64 shadow-sm hover:border-slate-700 transition-colors"
+                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden flex flex-col h-64 shadow-sm hover:border-blue-200 dark:hover:border-slate-700 transition-colors"
                 >
                   {/* Card Header */}
                   <div
                     className={`px-4 py-3 border-b flex items-center justify-between ${
                       isSystem
-                        ? "bg-slate-800/50 border-slate-800"
-                        : "bg-slate-950 border-slate-800"
+                        ? "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800"
+                        : "bg-slate-50/50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <div
                         className={`w-2 h-2 rounded-full ${data ? "bg-green-500 animate-pulse" : "bg-slate-600"}`}
                       />
-                      <span className="font-mono font-bold text-sm text-slate-200">
+                      <span className="font-mono font-bold text-sm text-slate-700 dark:text-slate-200">
                         {listener}
                       </span>
                     </div>
@@ -354,7 +354,7 @@ export const SocketIoTester: React.FC = () => {
                     {data ? (
                       <textarea
                         readOnly
-                        className="w-full h-full bg-transparent text-xs font-mono text-slate-300 p-4 resize-none focus:outline-none custom-scrollbar"
+                        className="w-full h-full bg-transparent text-xs font-mono text-slate-600 dark:text-slate-300 p-4 resize-none focus:outline-none custom-scrollbar"
                         value={data.lastEvent}
                       />
                     ) : (
@@ -367,7 +367,7 @@ export const SocketIoTester: React.FC = () => {
 
                   {/* Card Footer */}
                   {data && (
-                    <div className="px-3 py-1.5 bg-slate-950 border-t border-slate-800 text-[10px] text-slate-500 flex items-center gap-2 font-mono">
+                    <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 flex items-center gap-2 font-mono">
                       <Clock size={10} /> Last update: {data.timestamp}
                     </div>
                   )}

@@ -18,6 +18,8 @@ import {
   FileCode,
   Download,
   AlertCircle,
+  MoreVertical,
+  MessageSquare,
 } from "lucide-react";
 import { JsonDisplay } from "./JsonDisplay";
 import { MarkdownDisplay } from "./MarkdownDisplay";
@@ -84,33 +86,33 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   // Swagger UI-like Theme based on Method
   const methodTheme = {
     [Method.GET]: {
-      bg: "bg-blue-500/10",
-      border: "border-blue-500/20",
-      text: "text-blue-400",
+      bg: "bg-blue-50 dark:bg-blue-500/10",
+      border: "border-blue-200 dark:border-blue-500/20",
+      text: "text-blue-700 dark:text-blue-400",
       button: "bg-blue-600 hover:bg-blue-500 shadow-blue-900/20",
     },
     [Method.POST]: {
-      bg: "bg-emerald-500/10",
-      border: "border-emerald-500/20",
-      text: "text-emerald-400",
+      bg: "bg-emerald-50 dark:bg-emerald-500/10",
+      border: "border-emerald-200 dark:border-emerald-500/20",
+      text: "text-emerald-700 dark:text-emerald-400",
       button: "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20",
     },
     [Method.PUT]: {
-      bg: "bg-amber-500/10",
-      border: "border-amber-500/20",
-      text: "text-amber-400",
+      bg: "bg-amber-50 dark:bg-amber-500/10",
+      border: "border-amber-200 dark:border-amber-500/20",
+      text: "text-amber-700 dark:text-amber-400",
       button: "bg-amber-600 hover:bg-amber-500 shadow-amber-900/20",
     },
     [Method.DELETE]: {
-      bg: "bg-red-500/10",
-      border: "border-red-500/20",
-      text: "text-red-400",
+      bg: "bg-red-50 dark:bg-red-500/10",
+      border: "border-red-200 dark:border-red-500/20",
+      text: "text-red-700 dark:text-red-400",
       button: "bg-red-600 hover:bg-red-500 shadow-red-900/20",
     },
     [Method.PATCH]: {
-      bg: "bg-purple-500/10",
-      border: "border-purple-500/20",
-      text: "text-purple-400",
+      bg: "bg-purple-50 dark:bg-purple-500/10",
+      border: "border-purple-200 dark:border-purple-500/20",
+      text: "text-purple-700 dark:text-purple-400",
       button: "bg-purple-600 hover:bg-purple-500 shadow-purple-900/20",
     },
   }[endpoint.method];
@@ -297,7 +299,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   return (
     // Added z-10 when menu is open to fix stacking context overlap with next card
     <div
-      className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-slate-950 relative ${showExportMenu ? "z-10" : ""}`}
+      className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""}`}
     >
       {/* Header - Full colored bar like Swagger */}
       <div
@@ -312,7 +314,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
               className="shadow-sm w-full block text-center"
             />
           </div>
-          <span className="font-mono text-slate-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
+          <span className="font-mono text-slate-700 dark:text-slate-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
             <span className="opacity-90">{endpoint.path}</span>
             <span className="text-slate-400 text-sm hidden sm:block truncate shrink-0 font-sans opacity-60">
               - {endpoint.summary}
@@ -323,11 +325,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           {/* Copy URL Button */}
           <button
             onClick={handleCopyUrl}
-            className={`text-slate-500 hover:text-slate-200 transition-all p-1 ${urlCopied ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+            className={`transition-all p-1 ${urlCopied ? "text-emerald-500 dark:text-emerald-400" : "text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"}`}
             title="Copy Endpoint URL"
           >
             {urlCopied ? (
-              <Check size={14} className="text-emerald-400" />
+              <Check size={14} />
             ) : (
               <Link size={14} />
             )}
@@ -340,12 +342,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 e.stopPropagation();
                 setShowExportMenu(!showExportMenu);
               }}
-              className={`text-slate-500 hover:text-slate-200 transition-all p-1 ${showExportMenu ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-              title="Export Definition"
+              className="p-1 text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+              title="Export"
             >
-              <FileJson size={14} />
+              <MoreVertical size={16} />
             </button>
-
             {showExportMenu && (
               <>
                 <div
@@ -355,16 +356,16 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     setShowExportMenu(false);
                   }}
                 />
-                <div className="absolute right-0 top-full mt-1 w-40 bg-slate-900 border border-slate-700 rounded-md shadow-xl z-50 overflow-hidden py-1">
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-xl z-50 overflow-hidden py-1">
                   <button
                     onClick={handleViewRawJson}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white flex items-center gap-2"
                   >
                     <FileCode size={12} /> Raw JSON
                   </button>
                   <button
                     onClick={handleDownloadJson}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white flex items-center gap-2"
                   >
                     <Download size={12} /> Download JSON
                   </button>
@@ -376,14 +377,14 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           {isSecured && (
             <div title={authorized ? "Authorized" : "Authorization required"}>
               {authorized ? (
-                <Unlock size={14} className="text-emerald-400" />
+                <Unlock size={14} className="text-emerald-500 dark:text-emerald-400" />
               ) : (
-                <Lock size={14} className="text-slate-500" />
+                <Lock size={14} className="text-slate-400 dark:text-slate-600" />
               )}
             </div>
           )}
           {!forcedOpen && (
-            <div className="text-slate-400 group-hover:text-slate-200 transition-colors">
+            <div className="text-slate-500 dark:text-slate-400 transition-colors ml-2">
               {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
             </div>
           )}
@@ -393,7 +394,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       {/* Expanded Content */}
       {isOpen && (
         <div
-          className={`bg-slate-900/30 p-4 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg`}
+          className={`bg-slate-50/50 dark:bg-slate-900/30 p-4 border-t border-slate-200 dark:border-slate-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg`}
         >
           <div className="mb-6 px-4">
              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
@@ -405,39 +406,43 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                  const isLong = descText.split('\n').length > 5 || descText.length > 300;
                  
                  if (!isLong) {
-                      return <MarkdownDisplay content={descText} className="text-sm" />;
+                      return <MarkdownDisplay content={descText} className="text-sm text-slate-600 dark:text-slate-300" />;
                  }
 
                  return (
-                     <div className="relative inline-block w-full">
-                         <div 
-                            onClick={(e) => { e.stopPropagation(); setShowDescModal(true); }}
-                            className="cursor-pointer flex items-end gap-2 hover:text-blue-400 transition-colors w-full select-none group/read"
-                        >
-                             <div className="line-clamp-2 text-sm text-slate-400 opacity-70 flex-1">
-                                <MarkdownDisplay content={descText} />
-                             </div>
-                             <span className="shrink-0 text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full border border-slate-700/50 flex items-center gap-1 group-hover/read:border-blue-500/30 transition-colors whitespace-nowrap mb-1">Read More</span>
-                         </div>
-                         
-                         {/* Popup Modal */}
-                         {showDescModal && (
-                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
-                                 <div 
-                                    className="bg-slate-900 border border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
-                                    onClick={e => e.stopPropagation()}
+                     <div className="relative block w-full">
+                         <div className="mask-image-gradient-b">
+                                <MarkdownDisplay content={descText} className="text-sm dark:text-slate-300 text-slate-600 line-clamp-2" />
+                          </div>
+                          
+                           <div className="mt-2 text-right">
+                                <button 
+                                   onClick={(e) => { e.stopPropagation(); setShowDescModal(true); }}
+                                   className="text-xs font-bold text-blue-500 hover:text-blue-400 inline-flex items-center group cursor-pointer"
                                 >
-                                     <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 rounded-t-xl">
-                                         <h3 className="font-bold text-slate-200 flex items-center gap-2">
-                                             Description
-                                         </h3>
-                                         <button 
+                                 <span className="shrink-0 text-[10px] bg-blue-50 hover:bg-blue-100 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-slate-700/50 flex items-center gap-1 dark:group-hover:border-blue-500/30 transition-colors"><MessageSquare size={8} /> Read More</span>
+                                </button>
+                            </div>
+                          
+                          {/* Popup Modal */}
+                          {showDescModal && (
+                              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
+                                  <div 
+                                     className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
+                                     onClick={e => e.stopPropagation()}
+                                 >
+                                      <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 rounded-t-xl">
+                                          <h3 className="font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                                              {/* Icon here if needed */}
+                                              Description
+                                          </h3>
+                                          <button 
                                             onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}
-                                            className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors"
-                                         >
+                                            className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                          >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                                         </button>
-                                     </div>
+                                          </button>
+                                      </div>
                                      <div className="p-6 overflow-y-auto custom-scrollbar">
                                         <MarkdownDisplay content={descText} className="text-sm text-slate-300" />
                                      </div>
@@ -454,8 +459,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             {/* Left Col: Request Parameters & Body */}
             <div className="space-y-4 min-w-0 flex flex-col">
               {/* Tab Navigation for Request */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
-                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   Request
                 </h3>
                 <div className="flex gap-1">
@@ -473,8 +478,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         }}
                         className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                           activeTab === tab
-                            ? "bg-slate-700 text-white shadow-sm ring-1 ring-slate-600"
-                            : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600"
+                            : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                         } ${isDisabled ? "opacity-30 cursor-not-allowed hidden" : ""}`}
                       >
                         {tab === "params"
@@ -488,7 +493,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg border border-slate-800 bg-slate-950 min-h-[250px] flex-1 shadow-inner">
+              <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 min-h-[250px] flex-1 shadow-inner transition-colors">
                 {/* Params Tab */}
                 {activeTab === "params" && (
                   <div className="space-y-4">
@@ -500,17 +505,17 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     ) : (
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-800 text-[10px] uppercase text-slate-500 font-bold tracking-wider">
+                          <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase text-slate-500 font-bold tracking-wider">
                             <th className="pb-2 w-1/3">Name</th>
                             <th className="pb-2">Value</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-800/50">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                           {endpoint.parameters.map((param) => (
                             <tr key={param.name}>
                               <td className="py-3 align-top pr-2">
                                 <div className="flex flex-col">
-                                  <span className="text-xs font-mono font-semibold text-slate-300">
+                                  <span className="text-xs font-mono font-semibold text-slate-700 dark:text-slate-300">
                                     {param.name}
                                     {param.required && (
                                       <span className="text-red-500 ml-0.5">
@@ -521,8 +526,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   <span className="text-[10px] text-slate-500 mt-0.5">
                                     {param.in} • {param.type}
                                   </span>
-                                  {param.description && (
-                                    <p className="text-[10px] text-slate-600 mt-1 leading-tight">
+                                    {param.description && (
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-600 mt-1 leading-tight">
                                       {param.description}
                                     </p>
                                   )}
@@ -531,7 +536,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                               <td className="py-3 align-top">
                                 <input
                                   type="text"
-                                  className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-700"
+                                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-700"
                                   placeholder={`Enter ${param.name}...`}
                                   onChange={(e) =>
                                     setParamValues((prev) => ({
@@ -553,7 +558,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 {activeTab === "body" && (
                   <div className="h-full flex flex-col">
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                      <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                         {endpoint.requestBodyType || "application/json"}
                       </span>
                       {!isMultipart && (
@@ -584,10 +589,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           return (
                             <div
                               key={prop.name}
-                              className="bg-slate-900/50 border border-slate-800 rounded p-3"
+                              className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3"
                             >
                               <div className="mb-2 flex items-center gap-2">
-                                <span className="text-xs font-bold text-slate-300">
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                   {prop.name}
                                 </span>
                                 {prop.required && (
@@ -595,7 +600,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     *
                                   </span>
                                 )}
-                                <span className="text-[10px] text-slate-500 font-mono bg-slate-950 px-1.5 rounded">
+                                <span className="text-[10px] text-slate-500 font-mono bg-white dark:bg-slate-950 px-1.5 rounded border border-slate-200 dark:border-transparent">
                                   {prop.type}
                                   {prop.format ? ` (${prop.format})` : ""}
                                 </span>
@@ -606,16 +611,16 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 <div className="relative">
                                   {formValues[prop.name] &&
                                   formValues[prop.name] instanceof File ? (
-                                    <div className="flex items-center justify-between p-2 bg-slate-950 border border-slate-800 rounded">
+                                                                    <div className="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded">
                                       <div className="flex items-center gap-2 overflow-hidden">
                                         <div className="w-8 h-8 bg-blue-500/10 rounded flex items-center justify-center shrink-0">
                                           <FileIcon
                                             size={14}
-                                            className="text-blue-400"
+                                            className="text-blue-500 dark:text-blue-400"
                                           />
                                         </div>
                                         <div className="min-w-0">
-                                          <p className="text-xs text-slate-300 truncate">
+                                          <p className="text-xs text-slate-700 dark:text-slate-300 truncate">
                                             {
                                               (formValues[prop.name] as File)
                                                 .name
@@ -646,7 +651,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                           handleFormFileChange(prop.name, e)
                                         }
                                       />
-                                      <div className="border border-dashed border-slate-700 bg-slate-950/50 rounded p-4 text-center group-hover:border-blue-500/30 transition-colors">
+                                      <div className="border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 rounded p-4 text-center group-hover:border-blue-500/30 transition-colors">
                                         <Upload
                                           size={16}
                                           className="mx-auto mb-1 text-slate-500 group-hover:text-blue-400"
@@ -662,7 +667,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 // Standard Text Input
                                 <input
                                   type="text"
-                                  className="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500/50"
+                                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50"
                                   placeholder={`Enter ${prop.name}`}
                                   onChange={(e) =>
                                     handleFormTextChange(
@@ -686,7 +691,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                       <textarea
                         value={bodyValue}
                         onChange={(e) => setBodyValue(e.target.value)}
-                        className="w-full flex-1 bg-slate-900/50 border border-slate-800 rounded p-3 font-mono text-xs text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 min-h-[160px] resize-y leading-relaxed"
+                        className="w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3 font-mono text-xs text-slate-800 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 min-h-[160px] resize-y leading-relaxed transition-colors"
                         spellCheck={false}
                         placeholder="{}"
                       />
@@ -698,7 +703,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 {activeTab === "auth" && (
                   <div className="flex flex-col gap-3">
                     {!isSecured ? (
-                      <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm italic opacity-60">
+                      <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 text-sm italic py-12 rounded-lg bg-slate-50 dark:bg-slate-900 transition-colors border border-dashed border-slate-200 dark:border-slate-800">
                         No authorization needed
                       </div>
                     ) : (
@@ -710,7 +715,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             return (
                               <div
                                 key={schemeName}
-                                className="p-3 border border-slate-800 rounded-md bg-slate-900/50"
+                                className="p-3 border border-slate-200 dark:border-slate-800 rounded-md bg-slate-50 dark:bg-slate-900/50"
                               >
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-2">
@@ -725,7 +730,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                         className="text-amber-500"
                                       />
                                     )}
-                                    <span className="text-xs font-bold text-slate-300">
+                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                       {schemeName}
                                     </span>
                                   </div>
@@ -744,7 +749,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     type="password"
                                     value="************************"
                                     disabled
-                                    className="w-full bg-slate-950 border border-slate-800 text-slate-600 text-[10px] px-2 py-1.5 rounded cursor-not-allowed font-mono tracking-widest"
+                                    className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-600 text-[10px] px-2 py-1.5 rounded cursor-not-allowed font-mono tracking-widest"
                                   />
                                 </div>
                                 {!hasCreds && (
@@ -779,8 +784,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
             {/* Right Col: Responses & Preview */}
             <div className="flex flex-col h-full min-w-0">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
-                <h3 className="text-sm font-bold text-slate-200">Response</h3>
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Response</h3>
 
                 {/* Response Tabs */}
                 <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[200px] sm:max-w-none">
@@ -788,8 +793,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     onClick={() => setRightPanelTab("live")}
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all flex items-center gap-1.5 whitespace-nowrap ${
                       rightPanelTab === "live"
-                        ? "bg-slate-700 text-white shadow-sm ring-1 ring-slate-600"
-                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600"
+                        : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
                     }`}
                   >
                     <Zap
@@ -803,15 +808,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     Live
                   </button>
                   {/* Removed cURL Tab */}
-                  <div className="w-px h-4 bg-slate-800 mx-1 self-center"></div>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-800 mx-1 self-center"></div>
                   {responseCodes.map((code) => (
                     <button
                       key={code}
                       onClick={() => setRightPanelTab(code)}
                       className={`px-2.5 py-1 text-xs font-mono font-bold rounded-full transition-all whitespace-nowrap ${
                         rightPanelTab === code
-                          ? `bg-slate-700 text-white shadow-sm ring-1 ring-slate-600`
-                          : `text-slate-500 hover:text-slate-300 hover:bg-slate-800/50`
+                          ? `bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600`
+                          : `text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50`
                       }`}
                     >
                       <span
@@ -823,7 +828,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col rounded-lg border border-slate-800 bg-slate-950 overflow-hidden min-h-[300px] shadow-inner relative">
+              <div className="flex-1 flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden min-h-[300px] shadow-inner relative">
                 {/* 1. Live Response Tab */}
                 {rightPanelTab === "live" && (
                   <div
@@ -831,17 +836,17 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                   >
                     {!response && !isLoading && (
                       <div className="text-center p-6 opacity-60">
-                        <div className="w-12 h-12 rounded-full bg-slate-900 mx-auto mb-3 flex items-center justify-center border border-slate-800">
-                          <Zap size={20} className="text-slate-600" />
+                        <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-900 mx-auto mb-3 flex items-center justify-center border border-slate-200 dark:border-slate-800">
+                          <Zap size={20} className="text-slate-400 dark:text-slate-600" />
                         </div>
-                        <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">
+                        <p className="text-slate-500 font-medium text-xs uppercase tracking-wide">
                           Ready to execute
                         </p>
                       </div>
                     )}
 
                     {isLoading && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm z-20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm z-20">
                         <Loader2
                           size={32}
                           className="text-blue-500 animate-spin mb-3"
@@ -934,7 +939,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         </div>
                       </div>
 
-                      <div className="p-4 overflow-auto custom-scrollbar flex-1 bg-slate-950">
+                      <div className="p-4 overflow-auto custom-scrollbar flex-1 bg-white dark:bg-slate-950 transition-colors">
                         {endpoint.responses[parseInt(rightPanelTab)].schema ? (
                              (() => {
                                  let dataToDisplay = endpoint.responses[parseInt(rightPanelTab)].schema;
@@ -966,22 +971,22 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             {/* Added Modal Portal for this card specifically or just fixed position overlay */}
             {validationErrors && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}>
-                    <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
                         <div className="p-6">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-2 bg-red-500/10 rounded-full shrink-0">
                                     <AlertCircle size={24} className="text-red-500" />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-bold text-slate-200">Missing Required Fields</h3>
-                                    <p className="text-xs text-slate-500">Please complete the following fields:</p>
+                                    <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Missing Required Fields</h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">Please complete the following fields:</p>
                                 </div>
                             </div>
                             
-                            <div className="bg-slate-950/50 rounded-md border border-slate-800/50 p-3 mb-5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-md border border-slate-200 dark:border-slate-800/50 p-3 mb-5 max-h-[200px] overflow-y-auto custom-scrollbar">
                                 <ul className="space-y-2">
                                     {validationErrors.map((err, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 text-xs text-slate-300">
+                                        <li key={idx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
                                             <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1 shrink-0" />
                                             {err}
                                         </li>
@@ -991,7 +996,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             
                             <button
                                 onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}
-                                className="w-full py-2 bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-300 rounded font-bold text-xs transition-colors border border-slate-700 uppercase tracking-wide"
+                                className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white text-slate-600 dark:text-slate-300 rounded font-bold text-xs transition-colors border border-slate-200 dark:border-slate-700 uppercase tracking-wide"
                             >
                                 Dismiss
                             </button>

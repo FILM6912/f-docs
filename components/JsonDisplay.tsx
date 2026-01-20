@@ -62,29 +62,27 @@ export const JsonDisplay: React.FC<JsonDisplayProps> = ({ data, className = '' }
       }
 
       const str = match[0];
-      let styleClass = 'text-slate-300'; // Default
+      let styleClass = 'text-slate-600 dark:text-slate-300'; // Default
       
       if (match[1].startsWith('"')) {
         if (match[1].endsWith(':')) {
            // Key
-           styleClass = 'text-blue-400 font-semibold'; // Light Blue for keys
-           // Remove the colon from styling if desired, but here we include it or separate it
-           // Let's separate the colon for better styling if it's part of the match group
+           styleClass = 'text-blue-600 dark:text-blue-400 font-semibold'; // Blue for keys
            const key = str.slice(0, -1);
            elements.push(<span key={matchIndex} className={styleClass}>{key}</span>);
-           elements.push(<span key={matchIndex + '_colon'} className="text-slate-500">:</span>);
+           elements.push(<span key={matchIndex + '_colon'} className="text-slate-400 dark:text-slate-500">:</span>);
            lastIndex = regex.lastIndex;
            continue; 
         } else {
            // String Value
-           styleClass = 'text-emerald-400'; // Green for strings
+           styleClass = 'text-emerald-600 dark:text-emerald-400'; // Green for strings
         }
       } else if (/true|false/.test(str)) {
-        styleClass = 'text-amber-400 font-bold'; // Amber for booleans
+        styleClass = 'text-amber-600 dark:text-amber-400 font-bold'; // Amber for booleans
       } else if (/null/.test(str)) {
-        styleClass = 'text-red-400 font-bold'; // Red for null
+        styleClass = 'text-red-500 dark:text-red-400 font-bold'; // Red for null
       } else {
-        styleClass = 'text-purple-400'; // Purple for numbers
+        styleClass = 'text-purple-600 dark:text-purple-400'; // Purple for numbers
       }
 
       elements.push(<span key={matchIndex} className={styleClass}>{str}</span>);
@@ -93,7 +91,7 @@ export const JsonDisplay: React.FC<JsonDisplayProps> = ({ data, className = '' }
 
     // Add remaining text
     if (lastIndex < jsonStr.length) {
-      elements.push(jsonStr.substring(lastIndex));
+      elements.push(<span key="remaining" className="text-slate-500 dark:text-slate-400">{jsonStr.substring(lastIndex)}</span>);
     }
 
     return elements;
