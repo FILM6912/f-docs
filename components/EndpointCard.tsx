@@ -805,8 +805,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 className="bg-slate-50 dark:bg-slate-900/50"
                             />
                           ) : (
-                            <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50">
-                                <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
+                            <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50 min-h-0 max-h-[500px]">
+                                <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2 min-h-0">
                                     {bodyBuilderItems.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-full text-slate-400 text-xs italic opacity-60 min-h-[100px]">
                                             <p>No properties added</p>

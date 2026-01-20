@@ -668,7 +668,7 @@ export default function App() {
   const activeEndpoint = activeEndpointId ? endpoints.find(e => e.id === activeEndpointId) : null;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 flex flex-row font-sans overflow-hidden">
+    <div className="h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-200 flex flex-row font-sans overflow-hidden">
       
       {/* 1. Activity Bar (Module Switcher) */}
       <nav className="w-16 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
@@ -771,7 +771,7 @@ export default function App() {
                 </div>
             </div>
 
-            <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0">
             {viewMode === 'list' ? (
                 // List Mode Sidebar
                 <>
@@ -1023,7 +1023,7 @@ export default function App() {
                 </header>
 
                 {/* REST API Content */}
-                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col h-full overflow-hidden">
+                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col">
                     {error ? (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-start gap-4 text-red-400">
                             <AlertCircle size={24} className="shrink-0" />
