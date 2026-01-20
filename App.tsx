@@ -1098,13 +1098,7 @@ export default function App() {
                         )}
                     </button>
                     
-                    <button
-                        onClick={() => setIsEmitModalOpen(true)}
-                        disabled={!socketIo.isConnected}
-                        className="w-full py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 disabled:opacity-50"
-                    >
-                        <Send size={12} /> Emit Event
-                    </button>
+
                 </div>
             </div>
 

@@ -103,12 +103,21 @@ export const useSocketIO = () => {
 
   const emitEvent = useCallback((eventName: string, messageData: string) => {
     if (socketRef.current && isConnected && eventName) {
+      let payload;
       try {
-        const payload = JSON.parse(messageData);
-        socketRef.current.emit(eventName, payload);
+        payload = JSON.parse(messageData);
       } catch (err) {
-        updateListenerData("system", "Invalid JSON payload for emit", "error");
+        // Fallback to plain string if not valid JSON
+        payload = messageData;
       }
+
+      socketRef.current.emit(eventName, payload);
+      
+      // Log locally so user sees feedback immediately
+      updateListenerData(
+          eventName, 
+          `📤 SENT:\n${typeof payload === 'object' ? JSON.stringify(payload, null, 2) : payload}`
+      );
     }
   }, [isConnected, updateListenerData]);
 

@@ -8,6 +8,7 @@ import {
   Activity,
   Clock,
   Eraser,
+  Send,
 } from "lucide-react";
 import { ListenerData, ListenerItem } from "../hooks/useSocketIO";
 
@@ -80,80 +81,16 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 flex-1 overflow-y-auto custom-scrollbar p-1">
-            {enabledListeners.map((listener) => {
-              const data = listenerData[listener.name];
-              const isSystem = [
-                "connect",
-                "disconnect",
-                "error",
-                "system",
-              ].includes(listener.name);
-
-              return (
-                <div
-                  key={listener.id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden flex flex-col h-64 shadow-sm hover:border-blue-200 dark:hover:border-slate-700 transition-colors"
-                >
-                  {/* Card Header */}
-                  <div
-                    className={`px-4 py-3 border-b flex items-center justify-between ${
-                      isSystem
-                        ? "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800"
-                        : "bg-slate-50/50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${data ? "bg-green-500 animate-pulse" : "bg-slate-600"}`}
-                      />
-                      <span className="font-mono font-bold text-sm text-slate-700 dark:text-slate-200">
-                        {listener.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => clearListenerData(listener.name)}
-                          className="text-[10px] text-slate-500 hover:text-blue-500 transition-colors uppercase font-bold tracking-wider px-1"
-                          title="Clear Data"
-                        >
-                          Clear
-                        </button>
-                      {!isSystem && (
-                        <button
-                          onClick={() => removeListener(listener.id)}
-                          className="text-slate-500 hover:text-red-400 transition-colors p-1"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="flex-1 p-0 relative group">
-                    {data ? (
-                      <textarea
-                        readOnly
-                        className="w-full h-full bg-transparent text-xs font-mono text-slate-600 dark:text-slate-300 p-4 resize-none focus:outline-none custom-scrollbar"
-                        value={data.lastEvent}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
-                        <Activity size={32} className="mb-2 opacity-20" />
-                        <p className="text-xs">Waiting for events...</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Card Footer */}
-                  {data && (
-                    <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 flex items-center gap-2 font-mono">
-                      <Clock size={10} /> Last update: {data.timestamp}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {enabledListeners.map((listener) => (
+              <ListenerCard
+                key={listener.id}
+                listener={listener}
+                data={listenerData[listener.name]}
+                removeListener={removeListener}
+                clearListenerData={clearListenerData}
+                emitEvent={emitEvent}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -166,6 +103,105 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
           <button onClick={() => setError(null)} className="text-red-400 hover:text-white transition-colors">
             <X size={16} />
           </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface ListenerCardProps {
+  listener: ListenerItem;
+  data: ListenerData | undefined;
+  removeListener: (id: string) => void;
+  clearListenerData: (name: string) => void;
+  emitEvent: (name: string, data: string) => void;
+}
+
+const ListenerCard: React.FC<ListenerCardProps> = ({
+  listener,
+  data,
+  removeListener,
+  clearListenerData,
+  emitEvent,
+}) => {
+  const [payload, setPayload] = useState("{}");
+  const isSystem = ["connect", "disconnect", "error", "system"].includes(listener.name);
+
+  const handleEmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    emitEvent(listener.name, payload);
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden flex flex-col min-h-[320px] shadow-sm hover:border-blue-200 dark:hover:border-slate-700 transition-colors">
+      {/* Card Header */}
+      <div
+        className={`px-4 py-3 border-b flex items-center justify-between ${
+          isSystem
+            ? "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800"
+            : "bg-slate-50/50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${data ? "bg-green-500 animate-pulse" : "bg-slate-600"}`} />
+          <span className="font-mono font-bold text-sm text-slate-700 dark:text-slate-200">{listener.name}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => clearListenerData(listener.name)}
+            className="text-[10px] text-slate-500 hover:text-blue-500 transition-colors uppercase font-bold tracking-wider px-1"
+          >
+            Clear
+          </button>
+          {!isSystem && (
+            <button
+              onClick={() => removeListener(listener.id)}
+              className="text-slate-500 hover:text-red-400 transition-colors p-1"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Card Body (Messages) */}
+      <div className="flex-1 p-0 relative group min-h-[120px] border-b border-slate-100 dark:border-slate-800">
+        {data ? (
+          <textarea
+            readOnly
+            className="w-full h-full bg-transparent text-xs font-mono text-slate-600 dark:text-slate-300 p-4 resize-none focus:outline-none custom-scrollbar"
+            value={data.lastEvent}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
+            <Activity size={32} className="mb-2 opacity-20" />
+            <p className="text-xs">Waiting for events...</p>
+          </div>
+        )}
+      </div>
+
+      {/* Emit Section */}
+      <div className="p-3 bg-slate-50/50 dark:bg-slate-950/30">
+        <form onSubmit={handleEmit} className="flex flex-col gap-2">
+          <textarea
+            value={payload}
+            onChange={(e) => setPayload(e.target.value)}
+            className="w-full h-16 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded p-2 text-[10px] font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 resize-none"
+            placeholder='{"key": "value"}'
+          />
+          <button
+            type="submit"
+            className="w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-[10px] font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
+          >
+            <Send size={10} /> Send to {listener.name}
+          </button>
+        </form>
+      </div>
+
+      {/* Card Footer */}
+      {data && (
+        <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 flex items-center gap-2 font-mono">
+          <Clock size={10} /> Last update: {data.timestamp}
         </div>
       )}
     </div>
