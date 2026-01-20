@@ -20,6 +20,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { JsonDisplay } from "./JsonDisplay";
+import { MarkdownDisplay } from "./MarkdownDisplay";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
@@ -46,8 +47,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [activeTab, setActiveTab] = useState<"params" | "body" | "auth">(
     "params",
   );
-  const [rightPanelTab, setRightPanelTab] = useState<string>("live"); // 'live' | '{statusCode}'
-
+  const [rightPanelTab, setRightPanelTab] = useState("0");
+  const [showDescModal, setShowDescModal] = useState(false); // New state for modal
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
   const [bodyValue, setBodyValue] = useState(endpoint.requestBodySchema || "");
 
@@ -394,13 +395,58 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         <div
           className={`bg-slate-900/30 p-4 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg`}
         >
-          <div className="mb-6 px-1">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+          <div className="mb-6 px-4">
+             <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
               Description
-            </h4>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              {endpoint.description || "No description available."}
-            </p>
+             </h4>
+             
+             {(() => {
+                 const descText = endpoint.description || "No description available.";
+                 const isLong = descText.split('\n').length > 5 || descText.length > 300;
+                 
+                 if (!isLong) {
+                      return <MarkdownDisplay content={descText} className="text-sm" />;
+                 }
+
+                 return (
+                     <div className="relative inline-block w-full">
+                         <div 
+                            onClick={(e) => { e.stopPropagation(); setShowDescModal(true); }}
+                            className="cursor-pointer flex items-end gap-2 hover:text-blue-400 transition-colors w-full select-none group/read"
+                        >
+                             <div className="line-clamp-2 text-sm text-slate-400 opacity-70 flex-1">
+                                <MarkdownDisplay content={descText} />
+                             </div>
+                             <span className="shrink-0 text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full border border-slate-700/50 flex items-center gap-1 group-hover/read:border-blue-500/30 transition-colors whitespace-nowrap mb-1">Read More</span>
+                         </div>
+                         
+                         {/* Popup Modal */}
+                         {showDescModal && (
+                             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
+                                 <div 
+                                    className="bg-slate-900 border border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
+                                    onClick={e => e.stopPropagation()}
+                                >
+                                     <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 rounded-t-xl">
+                                         <h3 className="font-bold text-slate-200 flex items-center gap-2">
+                                             Description
+                                         </h3>
+                                         <button 
+                                            onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}
+                                            className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors"
+                                         >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                         </button>
+                                     </div>
+                                     <div className="p-6 overflow-y-auto custom-scrollbar">
+                                        <MarkdownDisplay content={descText} className="text-sm text-slate-300" />
+                                     </div>
+                                 </div>
+                             </div>
+                         )}
+                     </div>
+                 );
+             })()}
           </div>
 
           {/* Controls Container */}

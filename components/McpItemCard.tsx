@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Play, Loader2, Code, Activity, Check, Copy, Box, Wrench, MessageSquare, Plus, Zap } from 'lucide-react';
 import { McpResource, McpTool, McpPrompt } from '../hooks/useMcp';
 import { JsonDisplay } from './JsonDisplay';
+import { MarkdownDisplay } from './MarkdownDisplay';
 
 // Badge Component
 export const McpBadge: React.FC<{ type: 'RESOURCE' | 'TOOL' | 'PROMPT'; className?: string }> = ({ type, className = '' }) => {
@@ -28,7 +29,7 @@ export interface McpItemCardProps {
 export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool, defaultOpen = false, forcedOpen = false }) => {
     const [isOpenState, setIsOpenState] = useState(defaultOpen);
     const isOpen = forcedOpen || isOpenState;
-    
+    const [showDescModal, setShowDescModal] = useState(false); // New state for modal
     // Tool Execution State
     const [toolArgs, setToolArgs] = useState<Record<string, any>>({});
     const [isExecuting, setIsExecuting] = useState(false);
@@ -114,7 +115,6 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                     </div>
                     <span className="font-mono text-slate-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
                         <span className="opacity-90">{name}</span>
-                        <span className="text-slate-400 text-sm hidden sm:block truncate shrink-0 font-sans opacity-60">- {description}</span>
                     </span>
                 </div>
                  {!forcedOpen && (
@@ -129,7 +129,55 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                      
                      <div className="mb-6 px-1">
                          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Description</h4>
-                         <p className="text-slate-300 text-sm leading-relaxed">{description}</p>
+                         
+                         {(() => {
+                             const descText = description || '';
+                             const isLong = descText.split('\n').length > 5 || descText.length > 300;
+                             
+                             if (!isLong) {
+                                  return <MarkdownDisplay content={description} className="text-sm" />;
+                             }
+
+                             return (
+                                 <div className="relative inline-block">
+                                     <div 
+                                        onClick={(e) => { e.stopPropagation(); setShowDescModal(true); }}
+                                        className="cursor-pointer flex items-center gap-2 hover:text-blue-400 transition-colors w-fit select-none"
+                                    >
+                                         <div className="line-clamp-2 text-sm text-slate-400 opacity-70">
+                                            <MarkdownDisplay content={description} />
+                                         </div>
+                                         <span className="shrink-0 text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full border border-slate-700/50 flex items-center gap-1 group-hover:border-blue-500/30 transition-colors ml-2"><MessageSquare size={8} /> Read More</span>
+                                     </div>
+                                     
+                                     {/* Popup Modal */}
+                                     {showDescModal && (
+                                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
+                                             <div 
+                                                className="bg-slate-900 border border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
+                                                onClick={e => e.stopPropagation()}
+                                            >
+                                                 <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50 rounded-t-xl">
+                                                     <h3 className="font-bold text-slate-200 flex items-center gap-2">
+                                                         <MessageSquare size={16} className="text-blue-400"/> 
+                                                         Description
+                                                     </h3>
+                                                     <button 
+                                                        onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}
+                                                        className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors"
+                                                     >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                                     </button>
+                                                 </div>
+                                                 <div className="p-6 overflow-y-auto custom-scrollbar">
+                                                    <MarkdownDisplay content={description} className="text-sm text-slate-300" />
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     )}
+                                 </div>
+                             );
+                         })()}
                      </div>
 
                      {/* --- RESOURCE VIEW --- */}
