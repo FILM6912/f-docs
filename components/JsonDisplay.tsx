@@ -59,6 +59,8 @@ export const highlightJson = (code: string) => {
   );
 };
 
+
+
 export const JsonDisplay: React.FC<JsonDisplayProps> = ({ data, className = '' }) => {
   // Helper to assume nested JSON strings should be expanded for readability
   const tryParseJson = (value: any): any => {

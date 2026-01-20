@@ -11,6 +11,7 @@ export interface Parameter {
   in: 'path' | 'query' | 'header';
   required: boolean;
   type: string;
+  enum?: string[];
   description?: string;
 }
 

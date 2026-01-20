@@ -1577,7 +1577,7 @@ export const DEFAULT_SPEC = {
           {"name": "param_06", "in": "query", "schema": {"type": "string"}, "description": "Parameter 06 with a very long description to test wrapping behavior in the UI table."},
           {"name": "param_07", "in": "query", "schema": {"type": "string"}, "description": "Parameter 07 description."},
           {"name": "param_08", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 08 description."},
-          {"name": "param_09", "in": "query", "schema": {"type": "boolean"}, "description": "Parameter 09 description."},
+          {"name": "param_09_enum", "in": "query", "schema": {"type": "string", "enum": ["on", "off"]}, "description": "Parameter 09 (Enum Test) - Should be a dropdown."},
           {"name": "param_10", "in": "query", "schema": {"type": "string"}, "description": "Parameter 10 description."},
           {"name": "param_11", "in": "query", "schema": {"type": "string"}, "description": "Parameter 11 description."},
           {"name": "param_12", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 12 description."},

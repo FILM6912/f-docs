@@ -85,6 +85,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[] | null>(null);
 
+
+
   // Determine security state
   const isSecured = endpoint.security && endpoint.security.length > 0;
   const authorized =
@@ -309,6 +311,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       return next;
     });
   };
+
+
 
   // Get list of status codes for tabs
   const responseCodes = Object.keys(endpoint.responses).sort();
@@ -551,18 +555,41 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 </div>
                               </td>
                               <td className="py-3 align-top">
-                                <input
-                                  type="text"
-                                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-700"
-                                  placeholder={`Enter ${param.name}...`}
-                                  value={paramValues[param.name] || ''}
-                                  onChange={(e) =>
-                                    setParamValues((prev) => ({
-                                      ...prev,
-                                      [param.name]: e.target.value,
-                                    }))
-                                  }
-                                />
+                                {param.enum ? (
+                                  <div className="relative">
+                                    <select
+                                      className="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
+                                      value={paramValues[param.name] || ''}
+                                      onChange={(e) =>
+                                        setParamValues((prev) => ({
+                                          ...prev,
+                                          [param.name]: e.target.value,
+                                        }))
+                                      }
+                                    >
+                                      <option value="">Select...</option>
+                                      {param.enum.map((opt) => (
+                                        <option key={opt} value={opt}>
+                                          {opt}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                  </div>
+                                ) : (
+                                  <input
+                                    type="text"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-700"
+                                    placeholder={`Enter ${param.name}...`}
+                                    value={paramValues[param.name] || ''}
+                                    onChange={(e) =>
+                                      setParamValues((prev) => ({
+                                        ...prev,
+                                        [param.name]: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                )}
                               </td>
                             </tr>
                           ))}

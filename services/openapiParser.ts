@@ -122,6 +122,7 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                      in: paramDef.in,
                      required: paramDef.required || false,
                      type: paramDef.schema?.type || paramDef.type || 'string', // v3 uses schema.type, v2 uses type directly
+                     enum: paramDef.schema?.enum || paramDef.enum,
                      description: paramDef.description
                    };
              });
