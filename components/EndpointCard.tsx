@@ -46,9 +46,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
 
-  const [activeTab, setActiveTab] = useState<"params" | "body" | "auth">(
-    "params",
-  );
+  const [activeTab, setActiveTab] = useState<"params" | "body" | "auth">(() => {
+    const hasParams = endpoint.parameters && endpoint.parameters.length > 0;
+    const supportsBody = ["POST", "PUT", "PATCH"].includes(endpoint.method);
+    return !hasParams && supportsBody ? "body" : "params";
+  });
   const [rightPanelTab, setRightPanelTab] = useState("0");
   const [showDescModal, setShowDescModal] = useState(false); // New state for modal
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
@@ -299,7 +301,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   return (
     // Added z-10 when menu is open to fix stacking context overlap with next card
     <div
-      className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""}`}
+      className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""} ${forcedOpen ? "h-full flex flex-col mb-0 border-0 rounded-none md:rounded-lg md:border" : ""}`}
     >
       {/* Header - Full colored bar like Swagger */}
       <div
@@ -394,7 +396,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       {/* Expanded Content */}
       {isOpen && (
         <div
-          className={`bg-slate-50/50 dark:bg-slate-900/30 p-4 border-t border-slate-200 dark:border-slate-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg`}
+          className={`bg-slate-50/50 dark:bg-slate-900/30 p-4 border-t border-slate-200 dark:border-slate-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg ${forcedOpen ? "flex-1 flex flex-col min-h-0 overflow-hidden" : ""}`}
         >
           <div className="mb-6 px-4">
              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
@@ -455,9 +457,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           </div>
 
           {/* Controls Container */}
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className={`grid lg:grid-cols-2 gap-6 ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
             {/* Left Col: Request Parameters & Body */}
-            <div className="space-y-4 min-w-0 flex flex-col">
+            <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full" : ""}`}>
               {/* Tab Navigation for Request */}
               <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -493,13 +495,13 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 min-h-[250px] flex-1 shadow-inner transition-colors">
+              <div className={`p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 min-h-[250px] flex-1 shadow-inner transition-colors ${forcedOpen ? "flex flex-col overflow-hidden" : ""}`}>
                 {/* Params Tab */}
                 {activeTab === "params" && (
                   <div className="space-y-4">
                     {!endpoint.parameters ||
                     endpoint.parameters.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm italic opacity-60">
+                      <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm italic opacity-60 flex-1">
                         <span>No parameters required</span>
                       </div>
                     ) : (
@@ -556,8 +558,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
                 {/* Body Tab */}
                 {activeTab === "body" && (
-                  <div className="h-full flex flex-col">
-                    <div className="flex justify-between items-center mb-3">
+                  <div className={`h-full flex flex-col ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
+                    <div className="flex justify-between items-center mb-3 shrink-0">
                       <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                         {endpoint.requestBodyType || "application/json"}
                       </span>
@@ -691,7 +693,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                       <textarea
                         value={bodyValue}
                         onChange={(e) => setBodyValue(e.target.value)}
-                        className="w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3 font-mono text-xs text-slate-800 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 min-h-[160px] resize-y leading-relaxed transition-colors"
+                        className={`w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3 font-mono text-xs text-slate-800 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 min-h-[160px] resize-y leading-relaxed transition-colors ${forcedOpen ? "h-full resize-none" : ""}`}
                         spellCheck={false}
                         placeholder="{}"
                       />
@@ -828,7 +830,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden min-h-[300px] shadow-inner relative">
+              <div className={`flex-1 flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden min-h-[300px] shadow-inner relative ${forcedOpen ? "h-full" : ""}`}>
                 {/* 1. Live Response Tab */}
                 {rightPanelTab === "live" && (
                   <div

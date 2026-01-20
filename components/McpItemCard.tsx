@@ -103,7 +103,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
     const description = data.description || (type === 'RESOURCE' ? data.uri : 'No description available.');
 
     return (
-        <div className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? 'ring-1 ring-opacity-50 shadow-lg' : ''} ${theme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none`}>
+        <div className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? 'ring-1 ring-opacity-50 shadow-lg' : ''} ${theme.border} bg-white dark:bg-slate-900 shadow-sm dark:shadow-none`}>
              {/* Header - Full colored bar like Swagger */}
              <div 
                 className={`flex items-center justify-between p-3 px-4 select-none group ${theme.bg} ${!forcedOpen ? 'cursor-pointer hover:brightness-110' : ''} transition-all ${!isOpen ? 'rounded-lg' : 'rounded-t-lg'}`}

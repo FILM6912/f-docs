@@ -709,7 +709,15 @@ export default function App() {
              </button>
           </div>
           
-          <div className="mt-auto px-2">
+          <div className="mt-auto px-2 flex flex-col gap-4">
+              <button 
+                  onClick={toggleTheme}
+                  className="p-3 rounded-xl flex justify-center transition-all text-slate-500 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-900"
+                  title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                  {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
+              </button>
+
               <button 
                   onClick={() => setIsSettingsModalOpen(true)}
                   className="p-3 rounded-xl flex justify-center transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-900"
@@ -989,13 +997,7 @@ export default function App() {
                                             className="w-full h-10 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
                                         />
                                     </div>
-                                    <button 
-                                        onClick={toggleTheme}
-                                        className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 transition-all shadow-sm"
-                                        title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                                    >
-                                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                                    </button>
+
                                     <button 
                                         onClick={() => setIsSettingsModalOpen(true)}
                                         className="h-10 px-4 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
@@ -1010,7 +1012,7 @@ export default function App() {
                 </header>
 
                 {/* REST API Content */}
-                <div className="p-4 md:p-8 w-full mx-auto pb-20 min-w-0 flex-1">
+                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col h-full overflow-hidden">
                     {error ? (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-start gap-4 text-red-400">
                             <AlertCircle size={24} className="shrink-0" />
@@ -1081,7 +1083,7 @@ export default function App() {
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col">
                                             {activeEndpoint ? (
                                                 <EndpointCard 
                                                     key={activeEndpoint.id} 
@@ -1092,7 +1094,7 @@ export default function App() {
                                                     forcedOpen={true}
                                                 />
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-32 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900/20 border-dashed transition-colors">
+                                                <div className="flex flex-col items-center justify-center py-32 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900/20 border-dashed transition-colors h-full">
                                                     <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800 transition-colors">
                                                         <Terminal className="text-slate-400 dark:text-slate-600" size={32} />
                                                     </div>
@@ -1132,13 +1134,7 @@ export default function App() {
                                                 className="w-full h-10 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
                                             />
                                         </div>
-                                        <button 
-                                            onClick={toggleTheme}
-                                            className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 transition-all shadow-sm"
-                                            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                                        >
-                                            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                                        </button>
+
                                         <button 
                                             onClick={() => mcp.disconnect()}
                                             className="h-10 px-4 bg-white hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-950/30 text-slate-700 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400 rounded-md border border-slate-300 hover:border-red-200 dark:border-slate-700 dark:hover:border-red-500/50 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
