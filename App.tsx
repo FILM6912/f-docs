@@ -1002,14 +1002,17 @@ export default function App() {
                                         />
                                     </div>
 
-                                    <button 
-                                        onClick={() => setIsSettingsModalOpen(true)}
-                                        className="h-10 px-4 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
-                                        title="Configure API Specification URL"
-                                    >
-                                        <Settings size={16} />
-                                        <span className="hidden sm:inline">Configure URL</span>
-                                    </button>
+                                    {/* Hide Configure URL in production/injected mode */}
+                                    {(!import.meta.env.PROD && !(window as any).NEXUS_CONFIG) && (
+                                        <button 
+                                            onClick={() => setIsSettingsModalOpen(true)}
+                                            className="h-10 px-4 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
+                                            title="Configure API Specification URL"
+                                        >
+                                            <Settings size={16} />
+                                            <span className="hidden sm:inline">Configure URL</span>
+                                        </button>
+                                    )}
                             </div>
                         </div>
                     </div>
