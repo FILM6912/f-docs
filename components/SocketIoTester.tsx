@@ -1,163 +1,53 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import {
   Zap,
   ZapOff,
   Radio,
   ArrowUp,
-  Plus,
   X,
   Activity,
   Clock,
-  Hash,
 } from "lucide-react";
-import { io, Socket } from "socket.io-client";
+import { ListenerData, ListenerItem } from "../hooks/useSocketIO";
 
-interface ListenerData {
-  lastEvent: string;
-  timestamp: string;
-  count: number;
+interface SocketIoTesterProps {
+  url: string;
+  setUrl: (url: string) => void;
+  isConnected: boolean;
+  connect: () => void;
+  disconnect: () => void;
+  activeListeners: ListenerItem[];
+  addListener: (listener: string) => void;
+  removeListener: (id: string) => void;
+  listenerData: Record<string, ListenerData>;
+  emitEvent: (eventName: string, messageData: string) => void;
+  clearData: () => void;
+  error: string | null;
+  setError: (error: string | null) => void;
 }
 
-export const SocketIoTester: React.FC = () => {
-  const [url, setUrl] = useState("http://localhost:3000");
-  const [isConnected, setIsConnected] = useState(false);
-
-  // Emit state
+export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
+  url,
+  setUrl,
+  isConnected,
+  connect,
+  disconnect,
+  activeListeners,
+  addListener,
+  removeListener,
+  listenerData,
+  emitEvent,
+  clearData,
+  error,
+  setError,
+}) => {
+  // Emit state (Local UI state)
   const [eventName, setEventName] = useState("message");
   const [messageData, setMessageData] = useState("{}");
 
-  // Listener state
-  const [activeListeners, setActiveListeners] = useState<string[]>([]);
-  const [newListener, setNewListener] = useState("");
-  const [showEmitPanel, setShowEmitPanel] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Data state
-  const [listenerData, setListenerData] = useState<
-    Record<string, ListenerData>
-  >({});
-  const socketRef = useRef<Socket | null>(null);
 
-  const connect = () => {
-    if (socketRef.current) return;
-    setError(null);
-
-    try {
-      const socket = io(url, {
-        transports: ["websocket", "polling"],
-        autoConnect: true,
-      });
-
-      socket.on("connect", () => {
-        setIsConnected(true);
-        setError(null);
-        updateListenerData("system", "Connected", "connect");
-      });
-
-      socket.on("disconnect", () => {
-        setIsConnected(false);
-        updateListenerData("system", "Disconnected", "disconnect");
-      });
-
-      socket.on("connect_error", (err) => {
-        setIsConnected(false);
-        setError(`Connection Error: ${err.message}`);
-        updateListenerData("system", `Error: ${err.message}`, "error");
-      });
-
-      // Bind dynamic listeners
-      activeListeners.forEach((event) => {
-        if (!["connect", "disconnect", "error"].includes(event)) {
-          socket.on(event, (data) => {
-            updateListenerData(
-              event,
-              typeof data === "object"
-                ? JSON.stringify(data, null, 2)
-                : String(data),
-            );
-          });
-        }
-      });
-
-      socketRef.current = socket;
-    } catch (err: any) {
-      updateListenerData("system", `Error: ${err.message}`, "error");
-    }
-  };
-
-  const disconnect = () => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-      setIsConnected(false);
-      updateListenerData("system", "Disconnected manually", "disconnect");
-    }
-  };
-
-  const emitEvent = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (socketRef.current && isConnected && eventName) {
-      try {
-        const payload = JSON.parse(messageData);
-        socketRef.current.emit(eventName, payload);
-        // Optional: you might want to track emitted events too, but user asked for listeners
-      } catch (err) {
-        updateListenerData("system", "Invalid JSON payload for emit", "error");
-      }
-    }
-  };
-
-  const addListener = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newListener && !activeListeners.includes(newListener)) {
-      setActiveListeners([...activeListeners, newListener]);
-      // If already connected, bind it immediately
-      if (socketRef.current) {
-        socketRef.current.on(newListener, (data) => {
-          updateListenerData(
-            newListener,
-            typeof data === "object"
-              ? JSON.stringify(data, null, 2)
-              : String(data),
-          );
-        });
-      }
-      setNewListener("");
-    }
-  };
-
-  const removeListener = (eventToRemove: string) => {
-    setActiveListeners(activeListeners.filter((l) => l !== eventToRemove));
-    if (socketRef.current) {
-      socketRef.current.off(eventToRemove);
-    }
-    // Also clear data for this listener
-    setListenerData((prev) => {
-      const next = { ...prev };
-      delete next[eventToRemove];
-      return next;
-    });
-  };
-
-  const updateListenerData = (
-    event: string,
-    data: string,
-    keyOverride?: string,
-  ) => {
-    const key = keyOverride || event;
-    const now = new Date().toLocaleTimeString();
-
-    setListenerData((prev) => ({
-      ...prev,
-      [key]: {
-        lastEvent: data,
-        timestamp: now,
-        count: (prev[key]?.count || 0) + 1,
-      },
-    }));
-  };
-
-  const clearData = () => setListenerData({});
+  const enabledListeners = activeListeners.filter(l => l.isEnabled);
 
   return (
     <div className="p-6 h-full flex flex-col w-full">
@@ -171,154 +61,40 @@ export const SocketIoTester: React.FC = () => {
 
         {/* Unified Controls Toolbar */}
         <div className="flex-1 flex flex-wrap gap-4 items-center justify-end">
-          {/* Connection Group */}
-          <div className="flex-1 max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2 flex gap-2 items-center shadow-sm">
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700/50 rounded px-3 py-1.5 text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono text-sm"
-              placeholder="http://localhost:3000"
-              disabled={isConnected}
-            />
-            <button
-              onClick={isConnected ? disconnect : connect}
-              className={`px-4 py-1.5 rounded text-sm font-bold flex items-center gap-2 transition-all ${
-                isConnected
-                  ? "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
-                  : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-              }`}
-            >
-              {isConnected ? (
-                <>
-                  <ZapOff size={16} /> Disconnect
-                </>
-              ) : (
-                <>
-                  <Zap size={16} /> Connect
-                </>
-              )}
-            </button>
-          </div>
-
-          <div className="h-8 w-px bg-slate-800 hidden xl:block" />
-
-          {/* Action Group */}
-          <div className="flex gap-3 items-center">
-            <button
-              onClick={() => setShowEmitPanel(!showEmitPanel)}
-              className={`h-[42px] px-4 rounded-lg font-medium flex items-center gap-2 transition-all border ${
-                showEmitPanel
-                  ? "bg-blue-600/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
-                  : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700"
-              }`}
-            >
-              <ArrowUp
-                size={16}
-                className={
-                  showEmitPanel
-                    ? "rotate-0 transition-transform"
-                    : "rotate-180 transition-transform"
-                }
-              />
-              <span className="text-sm">Emit</span>
-            </button>
-
-            <form
-              onSubmit={addListener}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1.5 flex gap-2 items-center shadow-sm"
-            >
-              <div className="pl-2">
-                <Plus size={16} className="text-slate-500" />
-              </div>
-              <input
-                type="text"
-                placeholder="Listener..."
-                value={newListener}
-                onChange={(e) => setNewListener(e.target.value)}
-                className="w-32 xl:w-40 bg-transparent border-none text-slate-800 dark:text-white focus:outline-none text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600"
-              />
-              <button
-                type="submit"
-                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors"
-              >
-                Add
-              </button>
-            </form>
-          </div>
+           {/* Action Group */}
+          
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
-        {/* Controls Panel */}
-        {showEmitPanel && (
-            <div className="lg:col-span-1 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
-            {/* Emitter */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 shadow-sm">
-                <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-3 flex items-center gap-2">
-                <ArrowUp size={14} /> Emit Event
-                </h3>
-                <div className="space-y-3">
-                <div>
-                    <label className="text-xs text-slate-400 mb-1 block">
-                    Event Name
-                    </label>
-                    <input
-                    type="text"
-                    value={eventName}
-                    onChange={(e) => setEventName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-800 dark:text-white focus:border-blue-500 focus:outline-none"
-                    />
-                </div>
-                <div>
-                    <label className="text-xs text-slate-400 mb-1 block">
-                    JSON Data
-                    </label>
-                    <textarea
-                    value={messageData}
-                    onChange={(e) => setMessageData(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs font-mono text-slate-700 dark:text-slate-300 h-24 focus:outline-none focus:border-blue-500"
-                    />
-                </div>
-                <button
-                    onClick={emitEvent}
-                    disabled={!isConnected}
-                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium shadow-md shadow-blue-500/10 transition-colors disabled:opacity-50"
-                >
-                    Emit
-                </button>
-                </div>
-            </div>
-            </div>
-        )}
+        
 
         {/* Listeners Grid */}
-        <div className={`${showEmitPanel ? 'lg:col-span-3' : 'lg:col-span-4'} flex flex-col gap-4`}>
+        <div className="lg:col-span-4 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <Activity size={20} className="text-emerald-500 dark:text-green-400" /> Active Listeners
             </h3>
             <button
-              onClick={clearData}
-              className="text-xs text-slate-400 hover:text-white underline"
+               onClick={clearData}
+               className="text-xs text-slate-400 hover:text-white underline"
             >
-              Clear Data
+               Clear Data
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 flex-1 overflow-y-auto custom-scrollbar p-1">
-            {activeListeners.map((listener) => {
-              const data = listenerData[listener];
+            {enabledListeners.map((listener) => {
+              const data = listenerData[listener.name];
               const isSystem = [
                 "connect",
                 "disconnect",
                 "error",
                 "system",
-              ].includes(listener);
+              ].includes(listener.name);
 
               return (
                 <div
-                  key={listener}
+                  key={listener.id}
                   className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden flex flex-col h-64 shadow-sm hover:border-blue-200 dark:hover:border-slate-700 transition-colors"
                 >
                   {/* Card Header */}
@@ -334,13 +110,13 @@ export const SocketIoTester: React.FC = () => {
                         className={`w-2 h-2 rounded-full ${data ? "bg-green-500 animate-pulse" : "bg-slate-600"}`}
                       />
                       <span className="font-mono font-bold text-sm text-slate-700 dark:text-slate-200">
-                        {listener}
+                        {listener.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       {!isSystem && (
                         <button
-                          onClick={() => removeListener(listener)}
+                          onClick={() => removeListener(listener.id)}
                           className="text-slate-500 hover:text-red-400 transition-colors p-1"
                         >
                           <X size={14} />

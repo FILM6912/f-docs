@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon } from 'lucide-react';
+import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send } from 'lucide-react';
 import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
 import { EndpointCard } from './components/EndpointCard';
@@ -10,6 +10,7 @@ import { SocketIoTester } from './components/SocketIoTester';
 import { useMcp, McpResource, McpTool, McpPrompt } from './hooks/useMcp';
 import { McpConnection } from './components/McpConnection';
 import { McpItemCard } from './components/McpItemCard'; // We will use this directly
+import { useSocketIO } from './hooks/useSocketIO';
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -509,7 +510,7 @@ export default function App() {
 
   // App State
   const defaultUrl = '';
-  const [currentSpecUrl, setCurrentSpecUrl] = useState('');
+  const [currentSpecUrl, setCurrentSpecUrl] = useState(import.meta.env.PROD ? '/openapi.json' : defaultUrl);
   
   // Sidebar Resize State
   const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -583,6 +584,71 @@ export default function App() {
   const mcp = useMcp();
   const [activeMcpItem, setActiveMcpItem] = useState<{ type: 'RESOURCE' | 'TOOL' | 'PROMPT', data: any } | null>(null);
   const [isMcpConnectModalOpen, setIsMcpConnectModalOpen] = useState(false);
+
+  // Socket.IO State Integration
+  const socketIo = useSocketIO();
+  const [newIoListener, setNewIoListener] = useState("");
+  const [isIoUrlModalOpen, setIsIoUrlModalOpen] = useState(false);
+  const [tempIoUrl, setTempIoUrl] = useState(socketIo.url);
+  const ioUrlInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddIoListener = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newIoListener.trim()) {
+        socketIo.addListener(newIoListener.trim());
+        setNewIoListener("");
+    }
+  };
+
+  // API URL Modal Shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (activeModule === 'api' && (e.ctrlKey || e.metaKey) && e.key === 'q') {
+            e.preventDefault();
+            setIsSettingsModalOpen(true);
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeModule]);
+
+  // Socket.IO URL Modal Shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (activeModule === 'io' && (e.ctrlKey || e.metaKey) && e.key === 'q') {
+            e.preventDefault();
+            setIsIoUrlModalOpen(true);
+            setTempIoUrl(socketIo.url);
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeModule, socketIo.url]);
+
+  useEffect(() => {
+      if (isIoUrlModalOpen && ioUrlInputRef.current) {
+          setTimeout(() => ioUrlInputRef.current?.focus(), 100);
+      }
+  }, [isIoUrlModalOpen]);
+
+  const handleIoUrlSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      socketIo.setUrl(tempIoUrl);
+      setIsIoUrlModalOpen(false);
+  };
+
+  // Socket.IO Emit Modal State
+  const [isEmitModalOpen, setIsEmitModalOpen] = useState(false);
+  const [emitEventName, setEmitEventName] = useState("message");
+  const [emitMessageData, setEmitMessageData] = useState("{}");
+
+  const handleEmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    socketIo.emitEvent(emitEventName, emitMessageData);
+    setIsEmitModalOpen(false);
+  };
 
   // Auto-select first tool/resource when connected
   useEffect(() => {
@@ -723,12 +789,7 @@ export default function App() {
                   {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
               </button>
 
-              <button 
-                  onClick={() => setIsSettingsModalOpen(true)}
-                  className="p-3 rounded-xl flex justify-center transition-all text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-900"
-              >
-                  <Settings size={22} />
-              </button>
+
           </div>
       </nav>
 
@@ -985,6 +1046,231 @@ export default function App() {
         </aside>
       )}
 
+      {/* 2c. Secondary Sidebar (For Socket.IO) */}
+      {activeModule === 'io' && (
+        <aside 
+            ref={sidebarRef}
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+        >
+            {/* Resize Handle */}
+            <div 
+            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-500/50 transition-colors z-40 active:bg-blue-600 group-hover/sidebar:bg-blue-500/10"
+            onMouseDown={startResizing}
+            />
+
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3 flex items-center gap-2">
+                    <Radio size={18} className="text-blue-500" />
+                    <span>Socket.IO Tester</span>
+                </h1>
+                
+                {/* Socket.IO Sidebar Header */}
+                <div className="flex flex-col gap-2 bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                         <div 
+                            className="flex-1 truncate text-xs font-mono text-slate-500 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                            onClick={() => {
+                                if(!socketIo.isConnected) {
+                                    setIsIoUrlModalOpen(true);
+                                    setTempIoUrl(socketIo.url);
+                                }
+                            }}
+                            title="Click or Ctrl+Q to edit URL"
+                         >
+                            {socketIo.url}
+                         </div>
+                         <div className={`w-2 h-2 rounded-full shrink-0 ml-2 ${socketIo.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                    </div>
+                    
+                    <button
+                        onClick={socketIo.isConnected ? socketIo.disconnect : socketIo.connect}
+                        className={`w-full py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                            socketIo.isConnected 
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
+                            : 'bg-blue-600 text-white hover:bg-blue-500 shadow-sm'
+                        }`}
+                    >
+                        {socketIo.isConnected ? (
+                            <>Disconnect</>
+                        ) : (
+                            <>Connect</>
+                        )}
+                    </button>
+                    
+                    <button
+                        onClick={() => setIsEmitModalOpen(true)}
+                        disabled={!socketIo.isConnected}
+                        className="w-full py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 disabled:opacity-50"
+                    >
+                        <Send size={12} /> Emit Event
+                    </button>
+                </div>
+            </div>
+
+            <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
+               {/* URL Edit Modal */}
+                 {isIoUrlModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Connection URL</h2>
+                                <button onClick={() => setIsIoUrlModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleIoUrlSubmit} className="p-6 space-y-4">
+                                 <div>
+                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Socket.IO Server URL</label>
+                                    <input
+                                        ref={ioUrlInputRef}
+                                        type="text"
+                                        value={tempIoUrl}
+                                        onChange={(e) => setTempIoUrl(e.target.value)}
+                                        className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
+                                        placeholder="http://localhost:3000"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-2">
+                                        Press Enter to save.
+                                    </p>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsIoUrlModalOpen(false)}
+                                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-sm font-bold"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-bold shadow-lg shadow-blue-900/20"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                 )}
+
+               {/* Emit Modal */}
+                 {isEmitModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                                <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"><Send size={18}/> Emit Event</h2>
+                                <button onClick={() => setIsEmitModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleEmit} className="p-6 space-y-4">
+                                 <div>
+                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Event Name</label>
+                                    <input
+                                        type="text"
+                                        value={emitEventName}
+                                        onChange={(e) => setEmitEventName(e.target.value)}
+                                        className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                        placeholder="message"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">JSON Data</label>
+                                    <textarea
+                                        value={emitMessageData}
+                                        onChange={(e) => setEmitMessageData(e.target.value)}
+                                        className="w-full h-32 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md p-3 text-sm font-mono text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
+                                        placeholder="{}"
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEmitModalOpen(false)}
+                                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-sm font-bold"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-bold shadow-lg shadow-blue-900/20"
+                                    >
+                                        Send
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                 )}
+                {/* Add Listener Form */}
+                <form onSubmit={handleAddIoListener} className="mb-4">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={newIoListener}
+                            onChange={(e) => setNewIoListener(e.target.value)}
+                            placeholder="Add listener..."
+                            className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
+                        />
+                        <button 
+                            type="submit"
+                            disabled={!newIoListener.trim()}
+                            className="px-2 py-1.5 bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                        >
+                            <Plus size={14} />
+                        </button>
+                    </div>
+                </form>
+
+                <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                    <span>Active Listeners</span>
+                    <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{socketIo.activeListeners.length}</span>
+                </div>
+
+                {socketIo.activeListeners.length === 0 && (
+                     <div className="text-center py-8 px-4">
+                        <Activity size={24} className="mx-auto mb-2 text-slate-400 opacity-50" />
+                        <p className="text-xs text-slate-500 italic">No active listeners. Add one to start monitoring events.</p>
+                     </div>
+                )}
+                
+                {socketIo.activeListeners.map(listener => {
+                    const data = socketIo.listenerData[listener.name];
+                    return (
+                        <div key={listener.id} className={`bg-white dark:bg-slate-950 border rounded p-2 text-xs relative group mb-2 transition-all ${listener.isEnabled ? 'border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                            <div className="flex justify-between items-start mb-1">
+                                <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                    <span className={`font-bold truncate flex-1 ${listener.isEnabled ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-500 line-through'}`}>{listener.name}</span>
+                                     <button
+                                        onClick={() => socketIo.toggleListener(listener.id)}
+                                        className={`w-8 h-4 rounded-full flex items-center transition-colors shrink-0 ${listener.isEnabled ? 'bg-green-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
+                                        title={listener.isEnabled ? "Disable Listener" : "Enable Listener"}
+                                     >
+                                         <div className="w-3 h-3 bg-white rounded-full shadow-sm mx-0.5" />
+                                     </button>
+                                </div>
+                                <button 
+                                    onClick={() => socketIo.removeListener(listener.id)}
+                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    title="Remove Listener"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                            {data && (
+                                <div className="text-[10px] text-slate-500 font-mono mt-1 flex justify-between pl-1">
+                                    <span>Count: {data.count}</span>
+                                    <span>{data.timestamp}</span>
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+        </aside>
+      )}
+
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto h-screen bg-slate-50 dark:bg-slate-950 relative w-full flex flex-col transition-colors">
         
@@ -1006,17 +1292,7 @@ export default function App() {
                                         />
                                     </div>
 
-                                    {/* Hide Configure URL in production/injected mode */}
-                                    {(!import.meta.env.PROD && !(window as any).NEXUS_CONFIG) && (
-                                        <button 
-                                            onClick={() => setIsSettingsModalOpen(true)}
-                                            className="h-10 px-4 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
-                                            title="Configure API Specification URL"
-                                        >
-                                            <Settings size={16} />
-                                            <span className="hidden sm:inline">Configure URL</span>
-                                        </button>
-                                    )}
+                                    {/* Configure URL button removed - use Ctrl+Q */}
                             </div>
                         </div>
                     </div>
@@ -1126,7 +1402,7 @@ export default function App() {
         ) : activeModule === 'ws' ? (
             <WebSocketTester />
         ) : activeModule === 'io' ? (
-            <SocketIoTester />
+            <SocketIoTester {...socketIo} />
         ) : activeModule === 'mcp' ? (
              mcp.isConnected ? (
                 <>

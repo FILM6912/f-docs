@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { mcpSdkService } from '../services/mcpSdkService';
 
 // --- Types ---
@@ -50,11 +50,11 @@ const getErrorMessage = (error: unknown): string => {
 
 export const useMcp = () => {
   // Connection State
-  const [url, setUrl] = useState('http://localhost:8000/mcp');
+  const [url, setUrl] = useState('/mcp');
   const [includeCredentials, setIncludeCredentials] = useState(false);
   const [customHeaders, setCustomHeaders] = useState<HeaderEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Auth State
   const [authToken, setAuthToken] = useState('');
   const [authUsername, setAuthUsername] = useState('admin');
@@ -64,7 +64,7 @@ export const useMcp = () => {
   // Internal State
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  
+
   // Data State
   const [resources, setResources] = useState<McpResource[]>([]);
   const [tools, setTools] = useState<McpTool[]>([]);
@@ -73,6 +73,17 @@ export const useMcp = () => {
   
   // Filter State (can be managed here or in UI)
   const [filter, setFilter] = useState('');
+
+  // Initial connection
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        // We use a delayed start to avoid blocking the initial render
+        // and because we want the component to be fully mounted.
+        // The normalization and fallback are handled in connect().
+        connect(); 
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const addLog = useCallback((msg: string, type: 'info' | 'error' | 'traffic' = 'info') => {
       const prefix = type === 'traffic' ? '[RPC]' : `[${new Date().toLocaleTimeString()}]`;
@@ -172,7 +183,23 @@ export const useMcp = () => {
       }
   };
 
-  const connect = async (): Promise<boolean> => {
+  const normalizeUrl = (input: string): string => {
+    if (!input) return '';
+    if (input.startsWith('http://') || input.startsWith('https://')) return input;
+    if (input.startsWith('/')) {
+        return window.location.origin + input;
+    }
+    // Default to http:// if no protocol
+    if (input.includes(':') || input.includes('.')) {
+        return `http://${input}`;
+    }
+    return input;
+  };
+
+  const connect = async (manualUrl?: string): Promise<boolean> => {
+      // url to use
+      const targetUrl = normalizeUrl(manualUrl || url);
+      
       if (isConnected || isConnecting) return true;
       
       setIsConnecting(true);
@@ -182,39 +209,62 @@ export const useMcp = () => {
       setPrompts([]);
       setLogs([]);
 
-      addLog(`Connecting to ${url}...`);
+      const trySingleConnect = async (probeUrl: string, silent: boolean = false): Promise<boolean> => {
+          if (!silent) addLog(`Connecting to ${probeUrl}...`);
+          try {
+              const headers: Record<string, string> = {};
+              customHeaders.forEach(h => {
+                  if (h.key.trim()) headers[h.key.trim()] = h.value;
+              });
+
+              await mcpSdkService.connect({
+                  url: probeUrl,
+                  authToken,
+                  customHeaders: headers,
+                  includeCredentials,
+              });
+
+              if (!silent) addLog('✅ Connected successfully!');
+              setIsConnected(true);
+              setIsConnecting(false);
+              await discover();
+              return true;
+          } catch (err: any) {
+              if (!silent) {
+                  const msg = getErrorMessage(err);
+                  addLog(`❌ Connection failed: ${msg}`, 'error');
+              }
+              return false;
+          }
+      };
       
-      try {
-          // Prepare custom headers
-          const headers: Record<string, string> = {};
-          customHeaders.forEach(h => {
-              if (h.key.trim()) headers[h.key.trim()] = h.value;
-          });
+      // 1. Try Target URL
+      const success = await trySingleConnect(targetUrl);
+      if (success) return true;
 
-          // Connect using SDK
-          await mcpSdkService.connect({
-              url,
-              authToken,
-              customHeaders: headers,
-              includeCredentials,
-          });
+      // 2. If initial connection failed and it was a default/relative attempt, try fallbacks
+      const fallbacks = [
+        window.location.origin + '/mcp',
+        window.location.origin + '/sse'
+      ];
 
-          addLog('✅ Connected successfully!');
-          setIsConnected(true);
-          setIsConnecting(false);
-
-          // Discover tools, resources, and prompts
-          await discover();
-          return true;
-
-      } catch (err: any) {
-          const msg = getErrorMessage(err);
-          addLog(`❌ Connection failed: ${msg}`, 'error');
-          setError(msg);
-          setIsConnecting(false);
-          setIsConnected(false);
-          return false;
+      for (const fallback of fallbacks) {
+          if (fallback === targetUrl) continue; // Already tried
+          const fbSuccess = await trySingleConnect(fallback, true);
+          if (fbSuccess) {
+              setUrl(fallback); // Update UI to show what worked
+              return true;
+          }
       }
+
+      // 3. Fallback failed
+      setIsConnecting(false);
+      setIsConnected(false);
+      // Only set error if it was a manual attempt or we want the user to know it failed
+      if (manualUrl) {
+          setError("Failed to connect to MCP server.");
+      }
+      return false;
   };
 
   const disconnect = async () => {
