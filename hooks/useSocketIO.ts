@@ -167,6 +167,13 @@ export const useSocketIO = () => {
   }, [bindListener]);
 
   const clearData = useCallback(() => setListenerData({}), []);
+  const clearListenerData = useCallback((eventName: string) => {
+    setListenerData((prev) => {
+        const next = { ...prev };
+        delete next[eventName];
+        return next;
+    });
+  }, []);
 
   return {
     url,
@@ -181,6 +188,7 @@ export const useSocketIO = () => {
     listenerData,
     emitEvent,
     clearData,
+    clearListenerData,
     error,
     setError
   };
