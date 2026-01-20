@@ -11,6 +11,7 @@ import { useMcp, McpResource, McpTool, McpPrompt } from './hooks/useMcp';
 import { McpConnection } from './components/McpConnection';
 import { McpItemCard } from './components/McpItemCard'; // We will use this directly
 import { useSocketIO } from './hooks/useSocketIO';
+import { useWebSocket } from './hooks/useWebSocket';
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -505,8 +506,32 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
 };
 
 export default function App() {
+  // Module Enable Flags
+  const ENABLE_API = import.meta.env.VITE_ENABLE_API !== 'false';
+  const ENABLE_WS = import.meta.env.VITE_ENABLE_WS !== 'false';
+  const ENABLE_IO = import.meta.env.VITE_ENABLE_IO !== 'false';
+  const ENABLE_MCP = import.meta.env.VITE_ENABLE_MCP !== 'false';
+
+  const availableModules = [
+    { id: 'api', enabled: ENABLE_API },
+    { id: 'ws', enabled: ENABLE_WS },
+    { id: 'io', enabled: ENABLE_IO },
+    { id: 'mcp', enabled: ENABLE_MCP },
+  ].filter(m => m.enabled).map(m => m.id as 'api' | 'ws' | 'io' | 'mcp');
+
   // Navigation State
-  const [activeModule, setActiveModule] = useState<'api' | 'ws' | 'io' | 'mcp'>('api');
+  const [activeModule, setActiveModule] = useState<'api' | 'ws' | 'io' | 'mcp'>(() => {
+    const saved = localStorage.getItem('activeModule');
+    if (saved && availableModules.includes(saved as any)) {
+      return saved as any;
+    }
+    return availableModules[0] || 'api';
+  });
+
+  // Persist Active Module
+  useEffect(() => {
+    localStorage.setItem('activeModule', activeModule);
+  }, [activeModule]);
 
   // App State
   const defaultUrl = '';
@@ -592,6 +617,21 @@ export default function App() {
   const [tempIoUrl, setTempIoUrl] = useState(socketIo.url);
   const ioUrlInputRef = useRef<HTMLInputElement>(null);
 
+  // WebSocket State Integration
+  const ws = useWebSocket();
+  const [newWsPath, setNewWsPath] = useState("");
+  const [isWsUrlModalOpen, setIsWsUrlModalOpen] = useState(false);
+  const [tempWsUrl, setTempWsUrl] = useState(ws.url);
+  const wsUrlInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddWsPath = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newWsPath.trim()) {
+        ws.addPath(newWsPath.trim());
+        setNewWsPath("");
+    }
+  };
+
   const handleAddIoListener = (e: React.FormEvent) => {
     e.preventDefault();
     if (newIoListener.trim()) {
@@ -627,16 +667,42 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModule, socketIo.url]);
 
+  // WebSocket URL Modal Shortcut
   useEffect(() => {
-      if (isIoUrlModalOpen && ioUrlInputRef.current) {
-          setTimeout(() => ioUrlInputRef.current?.focus(), 100);
-      }
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (activeModule === 'ws' && (e.ctrlKey || e.metaKey) && e.key === 'q') {
+            e.preventDefault();
+            setIsWsUrlModalOpen(true);
+            setTempWsUrl(ws.url);
+        }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeModule, ws.url]);
+
+  useEffect(() => {
+    if (isIoUrlModalOpen && ioUrlInputRef.current) {
+        setTimeout(() => ioUrlInputRef.current?.focus(), 100);
+    }
   }, [isIoUrlModalOpen]);
+
+  useEffect(() => {
+    if (isWsUrlModalOpen && wsUrlInputRef.current) {
+        setTimeout(() => wsUrlInputRef.current?.focus(), 100);
+    }
+  }, [isWsUrlModalOpen]);
 
   const handleIoUrlSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       socketIo.setUrl(tempIoUrl);
       setIsIoUrlModalOpen(false);
+  };
+
+  const handleWsUrlSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    ws.setUrl(tempWsUrl);
+    setIsWsUrlModalOpen(false);
   };
 
   // Socket.IO Emit Modal State
@@ -743,41 +809,49 @@ export default function App() {
           </div>
           
           <div className="flex flex-col gap-4 w-full px-2">
-             <button 
-                onClick={() => setActiveModule('api')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'api' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
-                title="REST API Documentation"
-             >
-                <Layers size={22} />
-                {activeModule === 'api' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
-             </button>
+             {ENABLE_API && (
+                <button 
+                   onClick={() => setActiveModule('api')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'api' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   title="REST API Documentation"
+                >
+                   <Layers size={22} />
+                   {activeModule === 'api' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
+                </button>
+             )}
              
-             <button 
-                onClick={() => setActiveModule('ws')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'ws' ? 'bg-purple-100 text-purple-600 dark:bg-slate-800 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
-                title="WebSocket Tester"
-             >
-                <Activity size={22} />
-                {activeModule === 'ws' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-500 rounded-r-full" />}
-             </button>
+             {ENABLE_WS && (
+                <button 
+                   onClick={() => setActiveModule('ws')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'ws' ? 'bg-purple-100 text-purple-600 dark:bg-slate-800 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   title="WebSocket Tester"
+                >
+                   <Activity size={22} />
+                   {activeModule === 'ws' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-500 rounded-r-full" />}
+                </button>
+             )}
 
-             <button 
-                onClick={() => setActiveModule('io')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'io' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
-                title="Socket.IO Tester"
-             >
-                <Radio size={22} />
-                {activeModule === 'io' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
-             </button>
+             {ENABLE_IO && (
+                <button 
+                   onClick={() => setActiveModule('io')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'io' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   title="Socket.IO Tester"
+                >
+                   <Radio size={22} />
+                   {activeModule === 'io' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
+                </button>
+             )}
 
-             <button 
-                onClick={() => setActiveModule('mcp')}
-                className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'mcp' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
-                title="MCP Inspector"
-             >
-                <Database size={22} />
-                {activeModule === 'mcp' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-orange-500 rounded-r-full" />}
-             </button>
+             {ENABLE_MCP && (
+                <button 
+                   onClick={() => setActiveModule('mcp')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'mcp' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   title="MCP Inspector"
+                >
+                   <Database size={22} />
+                   {activeModule === 'mcp' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-orange-500 rounded-r-full" />}
+                </button>
+             )}
           </div>
           
           <div className="mt-auto px-2 flex flex-col gap-4">
@@ -852,7 +926,7 @@ export default function App() {
                             <button
                                 key={tag.name}
                                 onClick={() => setSelectedTag(tag.name)}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${selectedTag === tag.name ? 'bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${selectedTag === tag.name ? 'bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-white' : 'text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
                             >
                                 <Terminal size={12} className="opacity-70 shrink-0" />
                                 <span className="truncate">{tag.name}</span>
@@ -873,24 +947,24 @@ export default function App() {
                             <div key={tag.name} className="space-y-1">
                                 <button 
                                     onClick={() => toggleSidebarTag(tag.name)}
-                                    className="w-full flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group uppercase tracking-wide"
+                                    className="w-full flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group uppercase tracking-wide"
                                 >
                                     <span>{tag.name}</span>
                                     {isExpanded ? <ChevronDown size={12} className="opacity-50 group-hover:opacity-100"/> : <ChevronRight size={12} className="opacity-50 group-hover:opacity-100"/>}
                                 </button>
                                 
                                 {isExpanded && (
-                                    <div className="pl-2 space-y-0.5 border-l border-slate-200 dark:border-slate-800 ml-3">
+                                    <div className="pl-2 space-y-0.5 border-l-2 border-slate-300 dark:border-slate-700 ml-3">
                                         {tagEndpoints.map(ep => (
                                             <button
                                                 key={ep.id}
                                                 onClick={() => setActiveEndpointId(ep.id)}
-                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] ${activeEndpointId === ep.id ? 'bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-white border-blue-500' : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/30'}`}
+                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] ${activeEndpointId === ep.id ? 'bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-white border-blue-500 font-semibold' : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/30'}`}
                                             >
                                                 <div className="w-14 shrink-0">
                                                     <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
                                                 </div>
-                                                <span className="truncate font-mono opacity-80">{ep.path}</span>
+                                                <span className="truncate font-mono">{ep.path}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -1046,7 +1120,194 @@ export default function App() {
         </aside>
       )}
 
-      {/* 2c. Secondary Sidebar (For Socket.IO) */}
+      {/* 2c. Secondary Sidebar (For WebSocket) */}
+      {activeModule === 'ws' && (
+        <aside 
+            ref={sidebarRef}
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+        >
+            {/* Resize Handle */}
+            <div 
+            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-500/50 transition-colors z-40 active:bg-blue-600 group-hover/sidebar:bg-blue-500/10"
+            onMouseDown={startResizing}
+            />
+
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3 flex items-center gap-2">
+                    <Activity size={18} className="text-purple-500" />
+                    <span>WebSocket Tester</span>
+                </h1>
+                
+                {/* WebSocket Sidebar Header */}
+                <div className="flex flex-col gap-2 bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                         <div 
+                            className="flex-1 truncate text-xs font-mono text-slate-500 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                            onClick={() => {
+                                if(!ws.isConnected) {
+                                    setIsWsUrlModalOpen(true);
+                                    setTempWsUrl(ws.url);
+                                }
+                            }}
+                            title="Click or Ctrl+Q to edit URL"
+                         >
+                            {ws.url}
+                         </div>
+                         <div className={`w-2 h-2 rounded-full shrink-0 ml-2 ${ws.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                    </div>
+                    
+                    <button
+                        onClick={ws.isConnected ? ws.disconnect : ws.connect}
+                        className={`w-full py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                            ws.isConnected 
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
+                            : 'bg-purple-600 text-white hover:bg-purple-500 shadow-sm'
+                        }`}
+                    >
+                        {ws.isConnected ? (
+                            <>Disconnect</>
+                        ) : (
+                            <>Connect</>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+            <div className="p-3 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+               {/* URL Edit Modal */}
+                 {isWsUrlModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Connection URL</h2>
+                                <button onClick={() => setIsWsUrlModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleWsUrlSubmit} className="p-6 space-y-4">
+                                 <div>
+                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">WebSocket Server URL</label>
+                                    <input
+                                        ref={wsUrlInputRef}
+                                        type="text"
+                                        value={tempWsUrl}
+                                        onChange={(e) => setTempWsUrl(e.target.value)}
+                                        className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 font-mono"
+                                        placeholder="wss://echo.websocket.org"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-2">
+                                        Press Enter to save.
+                                    </p>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsWsUrlModalOpen(false)}
+                                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-sm font-bold"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded text-sm font-bold shadow-lg shadow-purple-900/20"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                 )}
+
+                {/* Add Path Form */}
+                <form onSubmit={handleAddWsPath} className="mb-4">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={newWsPath}
+                            onChange={(e) => setNewWsPath(e.target.value)}
+                            placeholder="Add path/label..."
+                            className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-purple-500 text-slate-800 dark:text-white"
+                        />
+                        <button 
+                            type="submit"
+                            disabled={!newWsPath.trim()}
+                            className="px-2 py-1.5 bg-purple-100 text-purple-600 dark:bg-slate-800 dark:text-purple-400 rounded hover:bg-purple-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                        >
+                            <Plus size={14} />
+                        </button>
+                    </div>
+                </form>
+
+                <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                    <span>Active Paths</span>
+                    <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{ws.activePaths.length}</span>
+                </div>
+
+                {ws.activePaths.length === 0 && (
+                     <div className="text-center py-8 px-4">
+                        <Activity size={24} className="mx-auto mb-2 text-slate-400 opacity-50" />
+                        <p className="text-xs text-slate-500 italic">No active paths. Add one to start monitoring.</p>
+                     </div>
+                )}
+                
+                {ws.activePaths.map(path => {
+                    const data = ws.pathData[path.name];
+                    return (
+                        <div key={path.id} className={`bg-white dark:bg-slate-950 border rounded p-2 text-xs relative group mb-2 transition-all ${path.isEnabled ? 'border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                            <div className="flex justify-between items-start mb-1">
+                                <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                    <span className={`font-bold truncate flex-1 ${path.isEnabled ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-500 line-through'}`}>{path.name}</span>
+                                     <button
+                                        onClick={() => ws.togglePath(path.id)}
+                                        className={`w-8 h-4 rounded-full flex items-center transition-colors shrink-0 ${path.isEnabled ? 'bg-purple-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
+                                        title={path.isEnabled ? "Disable Path" : "Enable Path"}
+                                     >
+                                         <div className="w-3 h-3 bg-white rounded-full shadow-sm mx-0.5" />
+                                     </button>
+                                </div>
+                                <button 
+                                    onClick={() => ws.removePath(path.id)}
+                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    title="Remove Path"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                            {data && (
+                                <div className="text-[10px] text-slate-500 font-mono mt-1 flex justify-between pl-1">
+                                    <span>Count: {data.count}</span>
+                                    <span>{data.timestamp}</span>
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
+
+                <div>
+                    <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                        <span>Global Actions</span>
+                    </div>
+                    <button
+                        onClick={ws.clearData}
+                        className="w-full text-left px-3 py-2 rounded-md text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 transition-colors flex items-center gap-2"
+                    >
+                        <Trash2 size={12} />
+                        <span>Clear All Data</span>
+                    </button>
+                </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+                <p className="text-[10px] text-slate-500 text-center italic">
+                    Use Ctrl+Q to quickly edit the WebSocket URL.
+                </p>
+            </div>
+        </aside>
+      )}
+
+      {/* 2d. Secondary Sidebar (For Socket.IO) */}
       {activeModule === 'io' && (
         <aside 
             ref={sidebarRef}
@@ -1394,7 +1655,7 @@ export default function App() {
                 </div>
             </>
         ) : activeModule === 'ws' ? (
-            <WebSocketTester />
+            <WebSocketTester {...ws} />
         ) : activeModule === 'io' ? (
             <SocketIoTester {...socketIo} />
         ) : activeModule === 'mcp' ? (
@@ -1455,14 +1716,47 @@ export default function App() {
                     </div>
                 </>
              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-500">
-                    <Database size={48} className="mb-4 opacity-20" />
-                    <h3 className="text-lg font-bold text-slate-400 mb-2">Not Connected</h3>
-                    <p className="text-sm max-w-xs text-center opacity-70">
-                        Enter your MCP Server URL in the sidebar using SSE (Server-Sent Events) to inspect tools and resources.
-                    </p>
+                <div className="flex flex-col items-center justify-center h-full text-slate-600 dark:text-slate-500 p-8">
+                    <div className="bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 p-8 rounded-2xl flex flex-col items-center shadow-xl max-w-md w-full animate-in fade-in zoom-in-95 duration-500">
+                        <Database size={64} className="mb-6 text-orange-500" />
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">MCP Not Connected</h3>
+                        
+                        {mcp.error ? (
+                            <div className="mb-6 p-4 bg-red-100 dark:bg-red-500/10 border-2 border-red-300 dark:border-red-500/30 rounded-lg text-red-700 dark:text-red-400 text-sm text-center space-y-2 w-full">
+                                <p className="font-bold text-red-800 dark:text-red-300">⚠️ Connection Failed</p>
+                                <p className="leading-relaxed text-red-600 dark:text-red-400">{mcp.error}</p>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-center text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+                                Please connect to an MCP server (SSE mode) to inspect available tools, resources, and prompts.
+                            </p>
+                        )}
+                        
+                        <div className="flex flex-col w-full gap-3">
+                            <button 
+                                onClick={() => setIsMcpConnectModalOpen(true)}
+                                className="w-full h-12 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-bold text-base flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-600/30"
+                            >
+                                <Zap size={18} fill="currentColor" />
+                                {mcp.error ? 'Try Different URL' : 'Connect Now'}
+                            </button>
+                            
+                            {mcp.error && (
+                                <button 
+                                    onClick={() => mcp.connect()}
+                                    disabled={mcp.isConnecting}
+                                    className="w-full h-12 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg font-bold text-base flex items-center justify-center gap-2 border-2 border-slate-300 dark:border-slate-600 transition-all"
+                                >
+                                    {mcp.isConnecting ? <Loader2 size={18} className="animate-spin" /> : <Activity size={18} />}
+                                    Retry Connection
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
              )
+
+
         ) : (
             null 
         )}
@@ -1551,7 +1845,11 @@ export default function App() {
             </div>
         )}
 
+
       </main>
+
+
+
     </div>
   );
 }

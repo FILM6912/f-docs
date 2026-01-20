@@ -74,16 +74,8 @@ export const useMcp = () => {
   // Filter State (can be managed here or in UI)
   const [filter, setFilter] = useState('');
 
-  // Initial connection
-  useEffect(() => {
-    const timer = setTimeout(() => {
-        // We use a delayed start to avoid blocking the initial render
-        // and because we want the component to be fully mounted.
-        // The normalization and fallback are handled in connect().
-        connect(); 
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  // NOTE: Removed auto-connect. The user must explicitly click "Connect" first.
+
 
   const addLog = useCallback((msg: string, type: 'info' | 'error' | 'traffic' = 'info') => {
       const prefix = type === 'traffic' ? '[RPC]' : `[${new Date().toLocaleTimeString()}]`;
@@ -260,10 +252,7 @@ export const useMcp = () => {
       // 3. Fallback failed
       setIsConnecting(false);
       setIsConnected(false);
-      // Only set error if it was a manual attempt or we want the user to know it failed
-      if (manualUrl) {
-          setError("Failed to connect to MCP server.");
-      }
+      setError(`Failed to connect to MCP server at ${targetUrl}. Please check the URL and ensure the server is running and supports SSE.`);
       return false;
   };
 

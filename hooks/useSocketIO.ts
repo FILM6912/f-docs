@@ -14,11 +14,26 @@ export interface ListenerItem {
 }
 
 export const useSocketIO = () => {
-  const [url, setUrl] = useState(typeof window !== 'undefined' ? window.location.origin : "http://localhost:3000");
+  const [url, setUrl] = useState(() => {
+    const saved = localStorage.getItem('io_url');
+    return saved || (typeof window !== 'undefined' ? window.location.origin : "http://localhost:3000");
+  });
   const [isConnected, setIsConnected] = useState(false);
-  const [activeListeners, setActiveListeners] = useState<ListenerItem[]>([]);
+  const [activeListeners, setActiveListeners] = useState<ListenerItem[]>(() => {
+    const saved = localStorage.getItem('io_listeners');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [listenerData, setListenerData] = useState<Record<string, ListenerData>>({});
   const [error, setError] = useState<string | null>(null);
+
+  // Persistence Effects
+  useEffect(() => {
+    localStorage.setItem('io_url', url);
+  }, [url]);
+
+  useEffect(() => {
+    localStorage.setItem('io_listeners', JSON.stringify(activeListeners));
+  }, [activeListeners]);
   
   const socketRef = useRef<Socket | null>(null);
 

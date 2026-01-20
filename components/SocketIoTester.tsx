@@ -11,6 +11,7 @@ import {
   Send,
 } from "lucide-react";
 import { ListenerData, ListenerItem } from "../hooks/useSocketIO";
+import { JsonDisplay } from "./JsonDisplay";
 
 interface SocketIoTesterProps {
   url: string;
@@ -165,13 +166,11 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
       </div>
 
       {/* Card Body (Messages) */}
-      <div className="flex-1 p-0 relative group min-h-[120px] border-b border-slate-100 dark:border-slate-800">
+      <div className="flex-1 p-0 relative group min-h-[120px] border-b border-slate-100 dark:border-slate-800 overflow-hidden">
         {data ? (
-          <textarea
-            readOnly
-            className="w-full h-full bg-transparent text-xs font-mono text-slate-600 dark:text-slate-300 p-4 resize-none focus:outline-none custom-scrollbar"
-            value={data.lastEvent}
-          />
+          <div className="w-full h-full p-4 overflow-y-auto custom-scrollbar">
+            <JsonDisplay data={data.lastEvent} />
+          </div>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
             <Activity size={32} className="mb-2 opacity-20" />

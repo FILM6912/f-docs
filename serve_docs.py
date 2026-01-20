@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_mcp import FastApiMCP
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any,Literal
 from pydantic import BaseModel, Field
 from datetime import datetime, timedelta
 import os
@@ -115,7 +115,7 @@ class UserUpdate(BaseModel):
 
 class Product(BaseModel):
     id: Optional[int] = None
-    name: str
+    name: Literal["Laptop", "Mouse", "Keyboard"]
     description: Optional[str] = None
     price: float
     stock: int = 0
@@ -269,7 +269,7 @@ def read_root():
 # ===== USERS API =====
 @app.get("/users", tags=["Users"])
 async def get_users(
-    skip: int = Query(0, ge=0),
+    skip: Literal[1,2,3]  = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
     current_user: dict = Depends(get_current_active_user)
 ):

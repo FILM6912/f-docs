@@ -1,178 +1,161 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, Trash2, Wifi, WifiOff, Activity, ArrowDown, ArrowUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, Radio, X, Clock, Send } from 'lucide-react';
+import { PathData, PathItem } from '../hooks/useWebSocket';
+import { JsonDisplay } from "./JsonDisplay";
 
-interface LogMessage {
-  id: string;
-  type: 'sent' | 'received' | 'system';
-  data: string;
-  timestamp: string;
+interface WebSocketTesterProps {
+  url: string;
+  setUrl: (url: string) => void;
+  isConnected: boolean;
+  activePaths: PathItem[];
+  pathData: Record<string, PathData>;
+  connect: () => void;
+  disconnect: () => void;
+  sendMessage: (path: string, message: string) => boolean;
+  clearData: () => void;
+  clearPathData: (name: string) => void;
+  removePath: (id: string) => void;
 }
 
-export const WebSocketTester: React.FC = () => {
-  const [url, setUrl] = useState('wss://echo.websocket.org');
-  const [isConnected, setIsConnected] = useState(false);
-  const [message, setMessage] = useState('');
-  const [logs, setLogs] = useState<LogMessage[]>([]);
-  const socketRef = useRef<WebSocket | null>(null);
-  const logsEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [logs]);
-
-  const scrollToBottom = () => {
-    logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const connect = () => {
-    if (socketRef.current) return;
-
-    try {
-      addLog('system', `Connecting to ${url}...`);
-      const ws = new WebSocket(url);
-
-      ws.onopen = () => {
-        setIsConnected(true);
-        addLog('system', 'Connected');
-      };
-
-      ws.onmessage = (event) => {
-        addLog('received', event.data);
-      };
-
-      ws.onclose = () => {
-        setIsConnected(false);
-        socketRef.current = null;
-        addLog('system', 'Disconnected');
-      };
-
-      ws.onerror = (error) => {
-        addLog('system', 'Connection Error');
-        console.error('WebSocket error:', error);
-      };
-
-      socketRef.current = ws;
-    } catch (err: any) {
-      addLog('system', `Error: ${err.message}`);
-    }
-  };
-
-  const disconnect = () => {
-    if (socketRef.current) {
-      socketRef.current.close();
-      socketRef.current = null;
-      setIsConnected(false);
-    }
-  };
-
-  const sendMessage = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (socketRef.current && isConnected && message) {
-      socketRef.current.send(message);
-      addLog('sent', message);
-      setMessage('');
-    }
-  };
-
-  const addLog = (type: 'sent' | 'received' | 'system', data: string) => {
-    setLogs(prev => [...prev, {
-      id: Math.random().toString(36).substring(7),
-      type,
-      data,
-      timestamp: new Date().toLocaleTimeString()
-    }]);
-  };
-
-  const clearLogs = () => setLogs([]);
+export const WebSocketTester: React.FC<WebSocketTesterProps> = ({
+  isConnected,
+  activePaths,
+  pathData,
+  sendMessage,
+  clearPathData,
+  removePath
+}) => {
+  const enabledPaths = activePaths.filter(p => p.isEnabled);
 
   return (
-    <div className="p-6 h-full flex flex-col max-w-5xl mx-auto w-full">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-          <Activity className="text-purple-600 dark:text-purple-400" /> WebSocket Tester
-        </h2>
-        <p className="text-slate-600 dark:text-slate-400 mt-1">Test real-time WebSocket connections and messages.</p>
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 mb-4 flex gap-3 flex-wrap sm:flex-nowrap shadow-sm">
-        <div className="flex-1 relative">
-           <input 
-             type="text" 
-             value={url}
-             onChange={(e) => setUrl(e.target.value)}
-             className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-purple-500"
-             placeholder="wss://example.com/socket"
-             disabled={isConnected}
-           />
+    <div className="p-6 h-full flex flex-col w-full">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
+        <div className="shrink-0">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+            <Activity className="text-purple-600 dark:text-purple-400" /> WebSocket Tester
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">Real-time path-based monitor.</p>
         </div>
-        <button 
-          onClick={isConnected ? disconnect : connect}
-          className={`px-6 py-2 rounded-md font-bold flex items-center gap-2 transition-colors ${
-            isConnected 
-            ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' 
-            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20'
-          }`}
-        >
-          {isConnected ? <><WifiOff size={18}/> Disconnect</> : <><Wifi size={18}/> Connect</>}
-        </button>
       </div>
 
-      <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden relative shadow-sm">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-          <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">Message Log</div>
-          <button onClick={clearLogs} className="text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-white transition-colors" title="Clear Logs">
-            <Trash2 size={16} />
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
+        {enabledPaths.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
+            <Radio size={48} className="mb-4" />
+            <p className="text-sm italic">No active paths enabled. Add or enable paths from the sidebar.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 pb-6">
+            {enabledPaths.map((path) => (
+              <PathCard
+                key={path.id}
+                path={path}
+                data={pathData[path.name]}
+                removePath={removePath}
+                clearPathData={clearPathData}
+                sendMessage={sendMessage}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+interface PathCardProps {
+  path: PathItem;
+  data: PathData | undefined;
+  removePath: (id: string) => void;
+  clearPathData: (name: string) => void;
+  sendMessage: (path: string, message: string) => void;
+}
+
+const PathCard: React.FC<PathCardProps> = ({
+  path,
+  data,
+  removePath,
+  clearPathData,
+  sendMessage,
+}) => {
+  const [payload, setPayload] = useState("{}");
+  const isSystem = ["connect", "disconnect", "error", "system"].includes(path.name);
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(path.name, payload);
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden flex flex-col min-h-[350px] shadow-sm hover:border-purple-200 dark:hover:border-slate-700 transition-colors">
+      {/* Card Header */}
+      <div
+        className={`px-4 py-3 border-b flex items-center justify-between ${
+          isSystem
+            ? "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800"
+            : "bg-slate-50/50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${data ? "bg-purple-500 animate-pulse" : "bg-slate-600"}`} />
+          <span className="font-mono font-bold text-sm text-slate-700 dark:text-slate-200">{path.name}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => clearPathData(path.name)}
+            className="text-[10px] text-slate-500 hover:text-purple-500 transition-colors uppercase font-bold tracking-wider px-1"
+          >
+            Clear
           </button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-          {logs.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-600">
-               <Activity size={48} className="mb-4 opacity-20" />
-               <p>No messages yet</p>
-            </div>
-          ) : (
-            logs.map(log => (
-              <div key={log.id} className={`flex ${log.type === 'sent' ? 'justify-end' : 'justify-start'}`}>
-                 <div className={`max-w-[80%] rounded-lg p-3 text-sm ${
-                   log.type === 'system' ? 'w-full bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-center font-mono text-xs border border-dashed border-slate-200 dark:border-slate-700' :
-                   log.type === 'sent' ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-purple-500/20 shadow-sm' :
-                   'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm'
-                 }`}>
-                   {log.type !== 'system' && (
-                     <div className="flex items-center gap-2 mb-1 text-[10px] opacity-60 font-mono">
-                       {log.type === 'sent' ? <ArrowUp size={12}/> : <ArrowDown size={12}/>}
-                       {log.timestamp}
-                     </div>
-                   )}
-                   <pre className="whitespace-pre-wrap break-all font-mono">{log.data}</pre>
-                 </div>
-              </div>
-            ))
-          )}
-          <div ref={logsEndRef} />
-        </div>
-
-        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
-          <form onSubmit={sendMessage} className="flex gap-2">
-            <input 
-              type="text" 
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={isConnected ? "Type a message..." : "Connect to send messages"}
-              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md px-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 disabled:bg-slate-100 dark:disabled:bg-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isConnected}
-            />
-            <button 
-              type="submit" 
-              disabled={!isConnected || !message}
-              className="bg-purple-600 hover:bg-purple-500 text-white p-2.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-purple-900/10"
+          {!isSystem && (
+            <button
+              onClick={() => removePath(path.id)}
+              className="text-slate-500 hover:text-red-400 transition-colors p-1"
             >
-              <Send size={20} />
+              <X size={14} />
             </button>
-          </form>
+          )}
         </div>
       </div>
+
+      {/* Card Body (Messages) */}
+      <div className="flex-1 p-0 relative group min-h-[150px] border-b border-slate-100 dark:border-slate-800 overflow-hidden">
+        {data ? (
+          <div className="w-full h-full p-4 overflow-y-auto custom-scrollbar">
+            <JsonDisplay data={data.lastEvent} />
+          </div>
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
+            <Activity size={32} className="mb-2 opacity-20" />
+            <p className="text-xs">Waiting for stream...</p>
+          </div>
+        )}
+      </div>
+
+      {/* Send Section */}
+      <div className="p-3 bg-slate-50/50 dark:bg-slate-950/30">
+        <form onSubmit={handleSend} className="flex flex-col gap-2">
+          <textarea
+            value={payload}
+            onChange={(e) => setPayload(e.target.value)}
+            className="w-full h-16 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded p-2 text-[10px] font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:border-purple-500 resize-none shadow-inner"
+            placeholder='Message or JSON...'
+          />
+          <button
+            type="submit"
+            className="w-full py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded text-[10px] font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
+          >
+            <Send size={10} /> Send via {path.name}
+          </button>
+        </form>
+      </div>
+
+      {/* Card Footer */}
+      {data && (
+        <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 flex items-center gap-2 font-mono">
+          <Clock size={10} /> Last update: {data.timestamp} | Count: {data.count}
+        </div>
+      )}
     </div>
   );
 };
