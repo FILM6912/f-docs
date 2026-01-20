@@ -600,7 +600,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
                     {isMultipart && endpoint.requestBodyProperties ? (
                       // Multipart / Form Data Builder
-                      <div className={`space-y-3 overflow-y-auto custom-scrollbar p-1 pb-4 ${forcedOpen ? "flex-1 min-h-0" : "max-h-[300px]"}`}>
+                      <div className={`space-y-3 overflow-y-auto custom-scrollbar p-1 pb-4 max-h-[500px] ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
                         {Object.entries(endpoint.requestBodyProperties).map(
                           ([name, prop]: [string, any]) => {
                             const isFile =
@@ -722,7 +722,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
                 {/* Auth Tab */}
                 {activeTab === "auth" && (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar max-h-[500px] pr-2">
                     {!isSecured ? (
                       <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 text-sm italic py-12 rounded-lg bg-slate-50 dark:bg-slate-900 transition-colors border border-dashed border-slate-200 dark:border-slate-800">
                         No authorization needed
@@ -960,7 +960,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         </div>
                       </div>
 
-                      <div className="p-4 overflow-auto custom-scrollbar flex-1 bg-white dark:bg-slate-950 transition-colors">
+                      <div className="p-4 overflow-auto custom-scrollbar flex-1 bg-white dark:bg-slate-950 transition-colors max-h-[500px]">
                         {endpoint.responses[parseInt(rightPanelTab)].schema ? (
                              (() => {
                                  let dataToDisplay = endpoint.responses[parseInt(rightPanelTab)].schema;
