@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -20,6 +20,7 @@ import {
   AlertCircle,
   MoreVertical,
   MessageSquare,
+  Plus
 } from "lucide-react";
 import { useEndpointPersistence } from '../hooks/useEndpointPersistence';
 import { JsonDisplay } from "./JsonDisplay";
@@ -81,6 +82,50 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [response, setResponse] = useState<SimulationResponse | null>(null);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
+
+  // Body Builder State
+  const [bodyMode, setBodyMode] = useState<'json' | 'ui'>('json');
+  const [bodyBuilderItems, setBodyBuilderItems] = useState<Array<{ id: string; key: string; value: string; type: 'string' | 'number' | 'boolean' }>>([]);
+
+  // Sync JSON -> Builder when switching modes
+  useEffect(() => {
+    if (bodyMode === 'ui') {
+      try {
+        const parsed = JSON.parse(bodyValue || '{}');
+        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+          const items = Object.entries(parsed).map(([k, v]) => ({
+            id: Math.random().toString(36).substring(7),
+            key: k,
+            value: String(v),
+            type: typeof v === 'number' ? 'number' : typeof v === 'boolean' ? 'boolean' : 'string'
+          })) as any;
+           setBodyBuilderItems(items);
+        } else {
+             // If array or primitive, maybe default to empty or flat items?
+             setBodyBuilderItems([]);
+        }
+      } catch (e) {
+        setBodyBuilderItems([]);
+      }
+    }
+  }, [bodyMode]); // Only run on mode switch, don't want circular loop with bodyValue
+
+  // Sync Builder -> JSON
+  const updateBodyFromBuilder = (items: typeof bodyBuilderItems) => {
+      const obj: Record<string, any> = {};
+      items.forEach(item => {
+          if (!item.key) return; // Skip empty keys
+          if (item.type === 'number') {
+              obj[item.key] = Number(item.value);
+          } else if (item.type === 'boolean') {
+              obj[item.key] = item.value === 'true';
+          } else {
+              obj[item.key] = item.value;
+          }
+      });
+      setBodyValue(JSON.stringify(obj, null, 2));
+  };
+
 
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[] | null>(null);
@@ -607,21 +652,37 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         {endpoint.requestBodyType || "application/json"}
                       </span>
                       {!isMultipart && (
-                        <button
-                          onClick={handleAiGenerate}
-                          disabled={isGenerating}
-                          className="group flex items-center gap-1.5 text-[10px] font-medium bg-purple-500/5 text-purple-400 px-2.5 py-1 rounded-full border border-purple-500/20 hover:bg-purple-500/20 transition-all disabled:opacity-50"
-                        >
-                          {isGenerating ? (
-                            <Loader2 size={10} className="animate-spin" />
-                          ) : (
-                            <Sparkles
-                              size={10}
-                              className="group-hover:text-purple-300"
-                            />
-                          )}
-                          Generate Example
-                        </button>
+                        <div className="flex items-center gap-2">
+                             <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200 dark:border-slate-800">
+                                <button
+                                    onClick={() => setBodyMode('json')}
+                                    className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-all ${bodyMode === 'json' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                >
+                                    JSON
+                                </button>
+                                <button
+                                    onClick={() => setBodyMode('ui')}
+                                    className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-all ${bodyMode === 'ui' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                >
+                                    UI Builder
+                                </button>
+                             </div>
+                             <button
+                              onClick={handleAiGenerate}
+                              disabled={isGenerating}
+                              className="group flex items-center gap-1.5 text-[10px] font-medium bg-purple-500/5 text-purple-400 px-2.5 py-1 rounded-full border border-purple-500/20 hover:bg-purple-500/20 transition-all disabled:opacity-50"
+                            >
+                              {isGenerating ? (
+                                <Loader2 size={10} className="animate-spin" />
+                              ) : (
+                                <Sparkles
+                                  size={10}
+                                  className="group-hover:text-purple-300"
+                                />
+                              )}
+                              Generate Example
+                            </button>
+                        </div>
                       )}
                     </div>
 
@@ -736,12 +797,89 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                       // JSON Editor UI
                       // JSON Editor UI
                       <div className={`w-full flex-1 border border-slate-200 dark:border-slate-800 rounded overflow-hidden min-h-[160px] transition-colors ${forcedOpen ? "h-full" : ""}`}>
-                        <JsonEditor
-                            value={bodyValue}
-                            onChange={(val) => setBodyValue(val)}
-                            placeholder="{}"
-                            className="bg-slate-50 dark:bg-slate-900/50"
-                        />
+                          {bodyMode === 'json' ? (
+                            <JsonEditor
+                                value={bodyValue}
+                                onChange={(val) => setBodyValue(val)}
+                                placeholder="{}"
+                                className="bg-slate-50 dark:bg-slate-900/50"
+                            />
+                          ) : (
+                            <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50">
+                                <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
+                                    {bodyBuilderItems.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center h-full text-slate-400 text-xs italic opacity-60 min-h-[100px]">
+                                            <p>No properties added</p>
+                                        </div>
+                                    ) : (
+                                        bodyBuilderItems.map((item, idx) => (
+                                            <div key={item.id} className="flex gap-2 items-center group">
+                                                 <input 
+                                                    type="text" 
+                                                    placeholder="Key"
+                                                    value={item.key}
+                                                    onChange={(e) => {
+                                                        const newItems = [...bodyBuilderItems];
+                                                        newItems[idx].key = e.target.value;
+                                                        setBodyBuilderItems(newItems);
+                                                        updateBodyFromBuilder(newItems);
+                                                    }}
+                                                    className="flex-1 min-w-0 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500/50"
+                                                 />
+                                                 <select
+                                                    value={item.type}
+                                                     onChange={(e) => {
+                                                        const newItems = [...bodyBuilderItems];
+                                                        newItems[idx].type = e.target.value as any;
+                                                        setBodyBuilderItems(newItems);
+                                                        updateBodyFromBuilder(newItems);
+                                                    }}
+                                                    className="w-20 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-[10px] text-slate-500 outline-none cursor-pointer"
+                                                 >
+                                                     <option value="string">String</option>
+                                                     <option value="number">Number</option>
+                                                     <option value="boolean">Boolean</option>
+                                                 </select>
+                                                  <input 
+                                                    type="text" 
+                                                    placeholder="Value"
+                                                    value={item.value}
+                                                    onChange={(e) => {
+                                                        const newItems = [...bodyBuilderItems];
+                                                        newItems[idx].value = e.target.value;
+                                                        setBodyBuilderItems(newItems);
+                                                        updateBodyFromBuilder(newItems);
+                                                    }}
+                                                    className="flex-1 min-w-0 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500/50"
+                                                 />
+                                                 <button
+                                                    onClick={() => {
+                                                        const newItems = bodyBuilderItems.filter((_, i) => i !== idx);
+                                                        setBodyBuilderItems(newItems);
+                                                        updateBodyFromBuilder(newItems);
+                                                    }}
+                                                    className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                                                 >
+                                                     <X size={12} />
+                                                 </button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                                <div className="p-2 border-t border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/30">
+                                    <button
+                                        onClick={() => {
+                                            const newItems = [...bodyBuilderItems, { id: Math.random().toString(36).substring(7), key: "", value: "", type: "string" as const }];
+                                            setBodyBuilderItems(newItems);
+                                            updateBodyFromBuilder(newItems);
+                                        }}
+                                        className="w-full py-1.5 rounded border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 text-xs hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 hover:border-blue-300 transition-all flex items-center justify-center gap-1.5"
+                                    >
+                                        <Plus size={12} /> Add Property
+                                    </button>
+                                </div>
+                            </div>
+                          )}
                       </div>
                     )}
                   </div>
