@@ -1690,8 +1690,9 @@ export default function App() {
                         </div>
                     </header>
 
-                    <div className="p-4 md:p-8 w-full mx-auto pb-20 min-w-0 flex-1">
-                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="p-4 md:p-6 w-full pb-20 min-w-0 flex-1 max-w-none">
+                         <div className="animate-in fade-in slide-in-from-right-4 duration-300 w-full">
+
                             {activeMcpItem ? (
                                 <McpItemCard 
                                     type={activeMcpItem.type} 
