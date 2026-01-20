@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useEndpointPersistence } from '../hooks/useEndpointPersistence';
 import { JsonDisplay } from "./JsonDisplay";
+import { JsonEditor } from "./JsonEditor";
 import { MarkdownDisplay } from "./MarkdownDisplay";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
@@ -705,13 +706,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                       </div>
                     ) : (
                       // JSON Editor UI
-                      <textarea
-                        className={`w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3 font-mono text-xs text-slate-800 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 min-h-[160px] resize-y leading-relaxed transition-colors ${forcedOpen ? "h-full resize-none" : ""}`}
-                        spellCheck={false}
-                        placeholder="{}"
-                        value={bodyValue}
-                        onChange={(e) => setBodyValue(e.target.value)}
-                      />
+                      // JSON Editor UI
+                      <div className={`w-full flex-1 border border-slate-200 dark:border-slate-800 rounded overflow-hidden min-h-[160px] transition-colors ${forcedOpen ? "h-full" : ""}`}>
+                        <JsonEditor
+                            value={bodyValue}
+                            onChange={(val) => setBodyValue(val)}
+                            placeholder="{}"
+                            className="bg-slate-50 dark:bg-slate-900/50"
+                        />
+                      </div>
                     )}
                   </div>
                 )}
