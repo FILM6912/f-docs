@@ -7,6 +7,7 @@ import {
   X,
   Activity,
   Clock,
+  Eraser,
 } from "lucide-react";
 import { ListenerData, ListenerItem } from "../hooks/useSocketIO";
 
@@ -22,6 +23,7 @@ interface SocketIoTesterProps {
   listenerData: Record<string, ListenerData>;
   emitEvent: (eventName: string, messageData: string) => void;
   clearData: () => void;
+  clearListenerData: (eventName: string) => void;
   error: string | null;
   setError: (error: string | null) => void;
 }
@@ -38,6 +40,7 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
   listenerData,
   emitEvent,
   clearData,
+  clearListenerData,
   error,
   setError,
 }) => {
@@ -74,12 +77,6 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
             </h3>
-            <button
-               onClick={clearData}
-               className="text-xs text-slate-400 hover:text-white underline"
-            >
-               Clear Data
-            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 flex-1 overflow-y-auto custom-scrollbar p-1">
@@ -114,6 +111,13 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => clearListenerData(listener.name)}
+                          className="text-[10px] text-slate-500 hover:text-blue-500 transition-colors uppercase font-bold tracking-wider px-1"
+                          title="Clear Data"
+                        >
+                          Clear
+                        </button>
                       {!isSystem && (
                         <button
                           onClick={() => removeListener(listener.id)}
