@@ -513,7 +513,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
               <div className={`p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 min-h-[250px] flex-1 shadow-inner transition-colors ${forcedOpen ? "flex flex-col overflow-hidden" : ""}`}>
                 {/* Params Tab */}
                 {activeTab === "params" && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 overflow-y-auto custom-scrollbar max-h-[500px] pr-2">
                     {!endpoint.parameters ||
                     endpoint.parameters.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm italic opacity-60 flex-1">
@@ -574,8 +574,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
                 {/* Body Tab */}
                 {activeTab === "body" && (
-                  <div className={`h-full flex flex-col ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
-                    <div className="flex justify-between items-center mb-3 shrink-0">
+                  <div className={`h-full flex flex-col overflow-hidden ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
+                    <div className="flex justify-between items-center mb-3 shrink-0 px-1">
                       <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                         {endpoint.requestBodyType || "application/json"}
                       </span>
@@ -600,11 +600,12 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
                     {isMultipart && endpoint.requestBodyProperties ? (
                       // Multipart / Form Data Builder
-                      <div className="space-y-4">
-                        {endpoint.requestBodyProperties.map((prop) => {
-                          const isFile =
-                            prop.format === "binary" || prop.type === "file";
-                          return (
+                      <div className={`space-y-3 overflow-y-auto custom-scrollbar p-1 pb-4 ${forcedOpen ? "flex-1 min-h-0" : "max-h-[300px]"}`}>
+                        {Object.entries(endpoint.requestBodyProperties).map(
+                          ([name, prop]: [string, any]) => {
+                            const isFile =
+                              prop.format === "binary" || prop.type === "file";
+                            return (
                             <div
                               key={prop.name}
                               className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3"

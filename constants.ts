@@ -1558,6 +1558,59 @@ export const DEFAULT_SPEC = {
           }
         }
       }
+
+    },
+    "/stress-test/30-parameters": {
+      "get": {
+        "tags": [
+          "Stress Test"
+        ],
+        "summary": "UI Stress Test (30 Params)",
+        "description": "Endpoint with 30 parameters to test UI layout capabilities.",
+        "operationId": "stress_test_30_params",
+        "parameters": [
+          {"name": "param_01", "in": "query", "schema": {"type": "string"}, "description": "Parameter 01 description."},
+          {"name": "param_02", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 02 description."},
+          {"name": "param_03", "in": "query", "schema": {"type": "boolean"}, "description": "Parameter 03 description.", "required": true},
+          {"name": "param_04", "in": "query", "schema": {"type": "string"}, "description": "Parameter 04 description."},
+          {"name": "param_05", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 05 description."},
+          {"name": "param_06", "in": "query", "schema": {"type": "string"}, "description": "Parameter 06 with a very long description to test wrapping behavior in the UI table."},
+          {"name": "param_07", "in": "query", "schema": {"type": "string"}, "description": "Parameter 07 description."},
+          {"name": "param_08", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 08 description."},
+          {"name": "param_09", "in": "query", "schema": {"type": "boolean"}, "description": "Parameter 09 description."},
+          {"name": "param_10", "in": "query", "schema": {"type": "string"}, "description": "Parameter 10 description."},
+          {"name": "param_11", "in": "query", "schema": {"type": "string"}, "description": "Parameter 11 description."},
+          {"name": "param_12", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 12 description."},
+          {"name": "param_13", "in": "query", "schema": {"type": "string"}, "description": "Parameter 13 description."},
+          {"name": "param_14", "in": "query", "schema": {"type": "boolean"}, "description": "Parameter 14 description."},
+          {"name": "param_15", "in": "query", "schema": {"type": "string"}, "description": "Parameter 15 description."},
+          {"name": "param_16", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 16 description."},
+          {"name": "param_17", "in": "query", "schema": {"type": "string"}, "description": "Parameter 17 description."},
+          {"name": "param_18", "in": "query", "schema": {"type": "boolean"}, "description": "Parameter 18 description."},
+          {"name": "param_19", "in": "query", "schema": {"type": "string"}, "description": "Parameter 19 description."},
+          {"name": "param_20", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 20 description."},
+          {"name": "param_21", "in": "query", "schema": {"type": "string"}, "description": "Parameter 21 description."},
+          {"name": "param_22", "in": "query", "schema": {"type": "boolean"}, "description": "Parameter 22 description."},
+          {"name": "param_23", "in": "query", "schema": {"type": "string"}, "description": "Parameter 23 description."},
+          {"name": "param_24", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 24 description."},
+          {"name": "param_25", "in": "query", "schema": {"type": "string"}, "description": "Parameter 25 description."},
+          {"name": "param_26", "in": "query", "schema": {"type": "boolean"}, "description": "Parameter 26 description."},
+          {"name": "param_27", "in": "query", "schema": {"type": "string"}, "description": "Parameter 27 description."},
+          {"name": "param_28", "in": "query", "schema": {"type": "integer"}, "description": "Parameter 28 description."},
+          {"name": "param_29", "in": "query", "schema": {"type": "string"}, "description": "Parameter 29 description."},
+          {"name": "param_30", "in": "query", "schema": {"type": "string"}, "description": "Parameter 30 description."}
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

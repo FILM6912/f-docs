@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon } from 'lucide-react';
 import { useTheme } from './components/ThemeContext';
-import { Endpoint, ApiTag, SecurityScheme } from './types';
+import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
 import { EndpointCard } from './components/EndpointCard';
 import { parseOpenApi } from './services/openapiParser';
 import { MethodBadge } from './components/MethodBadge';
@@ -609,6 +609,7 @@ export default function App() {
       setApiTitle(spec.title);
       setApiVersion(spec.version);
       setBaseUrl(spec.baseUrl);
+
       setEndpoints(spec.endpoints);
       setTags(spec.tags);
       setSecuritySchemes(spec.securitySchemes || {});
@@ -840,19 +841,22 @@ export default function App() {
             )}
             </div>
             
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
-                <button 
-                    onClick={() => setIsAuthModalOpen(true)}
-                    className={`w-full py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
-                        isAuthorized 
-                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20' 
-                        : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
-                    }`}
-                >
-                    {isAuthorized ? <Unlock size={14} /> : <Lock size={14} />}
-                    <span>{isAuthorized ? 'Authorized' : 'Authorize'}</span>
-                </button>
-            </div>
+            {/* Only show Authorize button if security schemes exist */}
+            {securitySchemes && Object.keys(securitySchemes).length > 0 && (
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+                    <button 
+                        onClick={() => setIsAuthModalOpen(true)}
+                        className={`w-full py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
+                            isAuthorized 
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20' 
+                            : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
+                        }`}
+                    >
+                        {isAuthorized ? <Unlock size={14} /> : <Lock size={14} />}
+                        <span>{isAuthorized ? 'Authorized' : 'Authorize'}</span>
+                    </button>
+                </div>
+            )}
         </aside>
       )}
 
