@@ -16,6 +16,7 @@ import socketio
 import asyncio
 import random
 import json
+from fastapi_mcp import FastApiMCP
 
 # Import custom F-Docs helper
 from nexus_ui import get_nexus_ui_html
@@ -798,6 +799,11 @@ async def websocket_chat(websocket: WebSocket):
             "message": "A user has left the chat",
             "timestamp": datetime.now().isoformat()
         }))
+
+
+
+mcp = FastApiMCP(app)
+mcp.mount_http(mount_path="/mcp")
 
 # ===== SOCKET.IO EVENTS =====
 @sio.event
