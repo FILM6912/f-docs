@@ -556,7 +556,7 @@ export default function App() {
   }, [isResizing, resize, stopResizing]);
   
   // Loaded Data
-  const [apiTitle, setApiTitle] = useState("Nexus API Docs");
+  const [apiTitle, setApiTitle] = useState("F-Docs");
   const [apiVersion, setApiVersion] = useState("1.0.0");
   const [baseUrl, setBaseUrl] = useState("");
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
@@ -594,7 +594,11 @@ export default function App() {
 
   // Load default on mount
   useEffect(() => {
-    loadSpec(defaultUrl); 
+    // Check for global config injected by Python backend (behaves like get_swagger_ui_html)
+    const globalConfig = (window as any).NEXUS_CONFIG || {};
+    // Priority: Injected Config -> Production Default -> Dev Default
+    const urlToLoad = globalConfig.openApiUrl || (import.meta.env.PROD ? '/openapi.json' : defaultUrl);
+    loadSpec(urlToLoad); 
   }, []);
 
   const loadSpec = async (url: string) => {
@@ -741,7 +745,7 @@ export default function App() {
             />
 
             <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3">Nexus<span className="text-blue-500">Docs</span></h1>
+                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3">F-<span className="text-blue-500">Docs</span></h1>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
                         <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-slate-600 dark:text-slate-400">v{apiVersion}</span>

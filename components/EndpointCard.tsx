@@ -21,6 +21,7 @@ import {
   MoreVertical,
   MessageSquare,
 } from "lucide-react";
+import { useEndpointPersistence } from '../hooks/useEndpointPersistence';
 import { JsonDisplay } from "./JsonDisplay";
 import { MarkdownDisplay } from "./MarkdownDisplay";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
@@ -46,15 +47,28 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
 
-  const [activeTab, setActiveTab] = useState<"params" | "body" | "auth">(() => {
-    const hasParams = endpoint.parameters && endpoint.parameters.length > 0;
-    const supportsBody = ["POST", "PUT", "PATCH"].includes(endpoint.method);
-    return !hasParams && supportsBody ? "body" : "params";
+  // Persistence Hook
+  const { 
+      activeTab, 
+      setActiveTab, 
+      paramValues, 
+      setParamValues, 
+      bodyValue, 
+      setBodyValue 
+  } = useEndpointPersistence(endpoint.id, {
+      activeTab: (() => {
+        const hasParams = endpoint.parameters && endpoint.parameters.length > 0;
+        const supportsBody = ["POST", "PUT", "PATCH"].includes(endpoint.method);
+        return !hasParams && supportsBody ? "body" : "params";
+      })(),
+      paramValues: {},
+      bodyValue: endpoint.requestBodySchema || ""
   });
+
   const [rightPanelTab, setRightPanelTab] = useState("0");
   const [showDescModal, setShowDescModal] = useState(false); // New state for modal
-  const [paramValues, setParamValues] = useState<Record<string, string>>({});
-  const [bodyValue, setBodyValue] = useState(endpoint.requestBodySchema || "");
+  // const [paramValues, setParamValues] = useState<Record<string, string>>({});  <-- Replaced
+  // const [bodyValue, setBodyValue] = useState(endpoint.requestBodySchema || ""); <-- Replaced
 
   // State for multipart/form-data: supports files and text fields
   const [formValues, setFormValues] = useState<Record<string, string | File>>(
@@ -540,6 +554,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   type="text"
                                   className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-700"
                                   placeholder={`Enter ${param.name}...`}
+                                  value={paramValues[param.name] || ''}
                                   onChange={(e) =>
                                     setParamValues((prev) => ({
                                       ...prev,
@@ -691,11 +706,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     ) : (
                       // JSON Editor UI
                       <textarea
-                        value={bodyValue}
-                        onChange={(e) => setBodyValue(e.target.value)}
                         className={`w-full flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3 font-mono text-xs text-slate-800 dark:text-slate-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 min-h-[160px] resize-y leading-relaxed transition-colors ${forcedOpen ? "h-full resize-none" : ""}`}
                         spellCheck={false}
                         placeholder="{}"
+                        value={bodyValue}
+                        onChange={(e) => setBodyValue(e.target.value)}
                       />
                     )}
                   </div>
