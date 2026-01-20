@@ -1,49 +1,42 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface EndpointState {
   paramValues: Record<string, string>;
   bodyValue: string;
   activeTab: "params" | "body" | "auth";
-  formValues?: Record<string, string>; // We can't easily persist File objects in localStorage, so we might skip or just store text fields
+  formValues?: Record<string, string>;
 }
 
+// In-memory store: persists as long as the page is not refreshed
+const memoryStore: Record<string, EndpointState> = {};
+
 export function useEndpointPersistence(endpointId: string, initialDefaults: EndpointState) {
-  const storageKey = `f-docs-ep-${endpointId}`;
   
-  // Initialize state from localStorage or defaults
+  // Initialize state from memoryStore or defaults
   const [state, setState] = useState<EndpointState>(() => {
     try {
-      const saved = localStorage.getItem(storageKey);
+      const saved = memoryStore[endpointId];
       if (saved) {
-        const parsed = JSON.parse(saved);
-        // Merge with defaults to ensure all fields exist (in case schema changes)
+        // Merge with defaults to ensure all fields exist
         return { 
             ...initialDefaults, 
-            ...parsed,
-            // If the default activeTab logic from the component (passed in initialDefaults) 
-            // determined "body" should be active (e.g. no params), but saved state says "params",
-            // we should probably respect the saved state IF it was explicitly set.
-            // However, a simple merge usually respects the saved value (parsed.activeTab).
+            ...saved,
         };
       }
     } catch (e) {
-      console.warn("Failed to load endpoint state", e);
+      console.warn("Failed to load endpoint state from memory", e);
     }
     return initialDefaults;
   });
 
-  // Save to localStorage whenever state changes
-  // We use a ref to debounce saves slightly if needed, but for simple text inputs, direct effect is usually fine.
+  // Save to memoryStore whenever state changes
   useEffect(() => {
     try {
-        // Exclude formValues (files) from persistence for now to avoid issues, 
-        // or filter them to only text. For simplicity, let's persist what we can safely.
-        const { formValues, ...persistableState } = state as any;
-        localStorage.setItem(storageKey, JSON.stringify(persistableState));
+        memoryStore[endpointId] = state;
     } catch (e) {
-      console.warn("Failed to save endpoint state", e);
+      console.warn("Failed to save endpoint state to memory", e);
     }
-  }, [state, storageKey]);
+  }, [state, endpointId]);
 
   // Setters
   const setParamValues = useCallback((newValues: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => {
