@@ -19,6 +19,7 @@ import {
   Download,
   AlertCircle,
 } from "lucide-react";
+import { JsonDisplay } from "./JsonDisplay";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
@@ -837,9 +838,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           </button>
                         </div>
                         <div className="p-4">
-                          <pre className="text-xs font-mono text-slate-300 whitespace-pre-wrap break-all leading-relaxed">
-                            {JSON.stringify(response.data, null, 2)}
-                          </pre>
+                            <JsonDisplay data={response.data} />
                         </div>
                       </>
                     )}
@@ -891,9 +890,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
                       <div className="p-4 overflow-auto custom-scrollbar flex-1 bg-slate-950">
                         {endpoint.responses[parseInt(rightPanelTab)].schema ? (
-                          <pre className="text-xs font-mono text-purple-300 whitespace-pre-wrap break-all leading-relaxed">
-                            {endpoint.responses[parseInt(rightPanelTab)].schema}
-                          </pre>
+                             (() => {
+                                 let dataToDisplay = endpoint.responses[parseInt(rightPanelTab)].schema;
+                                 try {
+                                     // Try to parse if it's a string, so JsonDisplay can prettify it
+                                     if(typeof dataToDisplay === 'string') {
+                                         dataToDisplay = JSON.parse(dataToDisplay);
+                                     }
+                                 } catch(e) {
+                                     // If parse fails, display as string (JsonDisplay will stringify the string, so it might be double quoted, let's just pass it or maybe JsonDisplay needs update? 
+                                     // Actually JsonDisplay stringifies whatever is passed. If we pass a string, it becomes a JSON string. 
+                                     // If we want to highlight a raw string that IS json, we should parse it. 
+                                     // If it's not valid JSON, we might want to just show text. 
+                                 }
+                                 return <JsonDisplay data={dataToDisplay} />;
+                             })()
                         ) : (
                           <div className="flex flex-col items-center justify-center h-full text-slate-600 italic text-sm">
                             <FileJson size={24} className="mb-2 opacity-30" />

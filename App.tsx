@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database } from 'lucide-react';
+import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare } from 'lucide-react';
 import { Endpoint, ApiTag, SecurityScheme } from './types';
 import { EndpointCard } from './components/EndpointCard';
 import { parseOpenApi } from './services/openapiParser';
 import { MethodBadge } from './components/MethodBadge';
 import { WebSocketTester } from './components/WebSocketTester';
 import { SocketIoTester } from './components/SocketIoTester';
-import { McpTester } from './components/McpTester';
+import { useMcp, McpResource, McpTool, McpPrompt } from './hooks/useMcp';
+import { McpConnection } from './components/McpConnection';
+import { McpItemCard } from './components/McpItemCard'; // We will use this directly
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -575,6 +577,19 @@ export default function App() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [authCredentials, setAuthCredentials] = useState<Record<string, string>>({});
 
+  // MCP State Integration
+  const mcp = useMcp();
+  const [activeMcpItem, setActiveMcpItem] = useState<{ type: 'RESOURCE' | 'TOOL' | 'PROMPT', data: any } | null>(null);
+  const [isMcpConnectModalOpen, setIsMcpConnectModalOpen] = useState(false);
+
+  // Auto-select first tool/resource when connected
+  useEffect(() => {
+      if (mcp.isConnected && !activeMcpItem) {
+          if (mcp.tools.length > 0) setActiveMcpItem({ type: 'TOOL', data: mcp.tools[0] });
+          else if (mcp.resources.length > 0) setActiveMcpItem({ type: 'RESOURCE', data: mcp.resources[0] });
+      }
+  }, [mcp.isConnected, mcp.tools, mcp.resources]);
+
   // Load default on mount
   useEffect(() => {
     loadSpec(defaultUrl); 
@@ -827,6 +842,131 @@ export default function App() {
         </aside>
       )}
 
+      {/* 2b. Secondary Sidebar (For MCP) */}
+      {activeModule === 'mcp' && (
+        <aside 
+            ref={sidebarRef}
+            className="w-[var(--sidebar-width)] bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
+        >
+            {/* Resize Handle */}
+            <div 
+            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize hover:bg-blue-500/50 transition-colors z-40 active:bg-blue-600 group-hover/sidebar:bg-blue-500/10"
+            onMouseDown={startResizing}
+            />
+
+            <div className="p-4 border-b border-slate-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-white truncate mb-3 flex items-center gap-2">
+                    <Database size={18} className="text-orange-500" />
+                    <span>MCP Inspector</span>
+                </h1>
+                
+                {/* Search Bar */}
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                    <input 
+                        type="text" 
+                        placeholder="Filter items..." 
+                        value={mcp.filter}
+                        onChange={(e) => mcp.setFilter(e.target.value)}
+                        className="w-full h-8 bg-slate-950 border border-slate-700 rounded pl-8 pr-2 text-xs text-slate-200 focus:outline-none focus:border-orange-500"
+                    />
+                </div>
+            </div>
+
+            <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
+                {mcp.isConnected ? (
+                    <div className="space-y-6">
+                        {/* Tools Group */}
+                        <div>
+                            <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                                <span>Tools</span>
+                                <span className="bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">{mcp.tools.length}</span>
+                            </div>
+                            {mcp.filteredTools.length === 0 && <p className="px-2 text-xs text-slate-600 italic">No tools found</p>}
+                            {mcp.filteredTools.map(t => (
+                                <button
+                                    key={t.name}
+                                    onClick={() => setActiveMcpItem({ type: 'TOOL', data: t })}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === t.name ? 'bg-slate-800 text-emerald-400 border-l-2 border-emerald-500' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'}`}
+                                >
+                                    <Wrench size={12} className="shrink-0 opacity-70" />
+                                    <span className="truncate">{t.name}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Resources Group */}
+                        <div>
+                            <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                                <span>Resources</span>
+                                <span className="bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">{mcp.resources.length}</span>
+                            </div>
+                             {mcp.filteredResources.length === 0 && <p className="px-2 text-xs text-slate-600 italic">No resources found</p>}
+                            {mcp.filteredResources.map(r => (
+                                <button
+                                    key={r.uri}
+                                    onClick={() => setActiveMcpItem({ type: 'RESOURCE', data: r })}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.uri === r.uri ? 'bg-slate-800 text-blue-400 border-l-2 border-blue-500' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'}`}
+                                >
+                                    <Box size={12} className="shrink-0 opacity-70" />
+                                    <span className="truncate">{r.name}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                         {/* Prompts Group */}
+                         {mcp.prompts.length > 0 && (
+                            <div>
+                                <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                                    <span>Prompts</span>
+                                    <span className="bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">{mcp.prompts.length}</span>
+                                </div>
+                                {mcp.filteredPrompts.map(p => (
+                                    <button
+                                        key={p.name}
+                                        onClick={() => setActiveMcpItem({ type: 'PROMPT', data: p })}
+                                        className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === p.name ? 'bg-slate-800 text-purple-400 border-l-2 border-purple-500' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'}`}
+                                    >
+                                        <MessageSquare size={12} className="shrink-0 opacity-70" />
+                                        <span className="truncate">{p.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                         )}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-64 text-slate-500 text-center px-4">
+                        <Database size={32} className="mb-4 opacity-50" />
+                        <p className="text-xs">Connect to an MCP server to view available tools and resources.</p>
+                    </div>
+                )}
+            </div>
+            
+            {/* Footer Connection Status */}
+             <div className="p-4 border-t border-slate-800 bg-slate-900 shrink-0">
+                 {mcp.isConnected ? (
+                     <button 
+                        onClick={() => mcp.disconnect()}
+                        className="w-full py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
+                    >
+                        <span>Disconnect</span>
+                    </button>
+                 ) : (
+                    <div className="space-y-2">
+                        <button 
+                            onClick={() => setIsMcpConnectModalOpen(true)}
+                            className="w-full py-2 px-3 rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-900/20"
+                        >
+                            <Database size={14} />
+                            <span>Connect</span>
+                        </button>
+                    </div>
+                 )}
+            </div>
+        </aside>
+      )}
+
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto h-screen bg-slate-950 relative w-full flex flex-col">
         
@@ -965,8 +1105,73 @@ export default function App() {
             <WebSocketTester />
         ) : activeModule === 'io' ? (
             <SocketIoTester />
+        ) : activeModule === 'mcp' ? (
+             mcp.isConnected ? (
+                <>
+                    {/* MCP Header */}
+                    <header className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+                        <div className="px-6 py-4 border-b border-slate-800/50 bg-slate-900/30">
+                            <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
+                                <div className="flex flex-1 w-full gap-3 items-center min-w-0">
+                                        <div className="relative flex-1">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                                            <input 
+                                                type="text"
+                                                placeholder="Filter tools, resources, and prompts..."
+                                                value={mcp.filter}
+                                                onChange={(e) => mcp.setFilter(e.target.value)}
+                                                className="w-full h-10 bg-slate-950 border border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-slate-600"
+                                            />
+                                        </div>
+                                        <button 
+                                            onClick={() => mcp.disconnect()}
+                                            className="h-10 px-4 bg-slate-800 hover:bg-red-950/30 text-slate-300 hover:text-red-400 rounded-md border border-slate-700 hover:border-red-500/50 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
+                                            title="Disconnect from MCP Server"
+                                        >
+                                            <Database size={16} />
+                                            <span className="hidden sm:inline">Disconnect</span>
+                                        </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div className="p-4 md:p-8 w-full mx-auto pb-20 min-w-0 flex-1">
+                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                            {activeMcpItem ? (
+                                <McpItemCard 
+                                    type={activeMcpItem.type} 
+                                    data={activeMcpItem.data}
+                                    onRunTool={mcp.runTool}
+                                    forcedOpen={true}
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-32 border border-slate-800 rounded-lg bg-slate-900/20 border-dashed">
+                                    <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
+                                        <Wrench className="text-slate-600" size={32} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-300">Select an Item</h3>
+                                    <p className="text-slate-500 mt-2 max-w-sm text-center">
+                                        Choose a tool or resource from the sidebar to view details and execute.
+                                    </p>
+                                </div>
+                            )}
+                            
+
+                         </div>
+                    </div>
+                </>
+             ) : (
+                <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                    <Database size={48} className="mb-4 opacity-20" />
+                    <h3 className="text-lg font-bold text-slate-400 mb-2">Not Connected</h3>
+                    <p className="text-sm max-w-xs text-center opacity-70">
+                        Enter your MCP Server URL in the sidebar using SSE (Server-Sent Events) to inspect tools and resources.
+                    </p>
+                </div>
+             )
         ) : (
-            <McpTester />
+            null 
         )}
 
         {/* Auth Modal Overlay */}
@@ -983,9 +1188,74 @@ export default function App() {
         <SettingsModal
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
-            currentUrl={currentSpecUrl}
             onLoad={loadSpec}
         />
+
+        {/* MCP Connect Modal */}
+        {isMcpConnectModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                <div className="bg-slate-900 border border-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="p-6 border-b border-slate-800 bg-slate-900/50">
+                        <div className="flex items-center justify-between mb-2">
+                             <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <Database className="text-orange-500" size={24} />
+                                Connect to MCP Server
+                             </h2>
+                             <button onClick={() => setIsMcpConnectModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                                <X size={20} />
+                             </button>
+                        </div>
+                        <p className="text-slate-400 text-sm">Enter the URL of your Model Context Protocol server.</p>
+                    </div>
+                    
+                    <div className="p-6 space-y-4">
+                        {mcp.error && (
+                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md flex items-center gap-3 text-red-400 text-xs shadow-sm animate-in fade-in slide-in-from-top-1">
+                                <AlertCircle size={16} className="shrink-0" />
+                                <div className="flex-1 min-w-0 font-medium break-words leading-relaxed">
+                                    {mcp.error}
+                                </div>
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Server URL</label>
+                            <input 
+                                type="text" 
+                                value={mcp.url}
+                                onChange={(e) => mcp.setUrl(e.target.value)}
+                                placeholder="http://localhost:8000/mcp"
+                                className={`w-full h-10 bg-slate-950 border rounded-md px-3 text-sm text-slate-200 focus:outline-none transition-colors placeholder:text-slate-600 ${mcp.error ? 'border-red-500/50 focus:border-red-500' : 'border-slate-700 focus:border-orange-500'}`}
+                                onKeyDown={async (e) => {
+                                    if(e.key === 'Enter') {
+                                        const success = await mcp.connect();
+                                        if (success) setIsMcpConnectModalOpen(false);
+                                    }
+                                }}
+                            />
+                        </div>
+                        
+                        <div className="pt-2">
+                             <button 
+                                onClick={async () => {
+                                    const success = await mcp.connect();
+                                    if (success) setIsMcpConnectModalOpen(false);
+                                }}
+                                disabled={mcp.isConnecting}
+                                className="w-full py-2.5 rounded-md text-sm font-bold text-white bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait"
+                            >
+                                {mcp.isConnecting ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} fill="currentColor" />}
+                                Connect
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div className="p-4 bg-slate-950/50 border-t border-slate-800 text-xs text-slate-500 text-center">
+                        Make sure your server supports SSE (Server-Sent Events).
+                    </div>
+                </div>
+            </div>
+        )}
 
       </main>
     </div>
