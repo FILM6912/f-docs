@@ -1,5 +1,6 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 export interface MCPTool {
   name: string;
@@ -29,7 +30,8 @@ export interface MCPConnectionConfig {
 
 class MCPSDKService {
   private client: Client | null = null;
-  private transport: SSEClientTransport | null = null;
+  private transport: SSEClientTransport | StreamableHTTPClientTransport | null = null;
+  private connectionMode: 'http' | 'sse' | null = null;
 
   async connect(config: MCPConnectionConfig): Promise<void> {
     // Close existing connection if any
@@ -63,19 +65,55 @@ class MCPSDKService {
       Object.assign(headers, config.customHeaders);
     }
 
-    // Create transport with headers
+    // Try HTTP (Streamable) transport first, then fall back to SSE
+    try {
+      console.log('[MCP] Trying HTTP (Streamable) transport...');
+      this.transport = new StreamableHTTPClientTransport(url, {
+        requestInit: {
+          headers,
+        },
+      });
+      
+      const connectPromise = this.client.connect(this.transport);
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('HTTP connection timeout')), 5000);
+      });
+
+      await Promise.race([connectPromise, timeoutPromise]);
+      this.connectionMode = 'http';
+      console.log('[MCP] Connected via HTTP (Streamable) transport');
+      return;
+    } catch (httpError: any) {
+      console.log('[MCP] HTTP transport failed:', httpError.message);
+      // Clean up failed client
+      try { await this.client.close(); } catch {}
+      
+      // Recreate client for SSE attempt
+      this.client = new Client(
+        { name: "MCP-Inspector", version: "1.0.0" },
+        { capabilities: { roots: { listChanged: true }, sampling: {} } }
+      );
+    }
+
+    // Fall back to SSE transport
+    console.log('[MCP] Falling back to SSE transport...');
     this.transport = new SSEClientTransport(url, {
-      headers,
+      requestInit: {
+        headers,
+      },
     });
 
-    // Connect with timeout
+
     const connectPromise = this.client.connect(this.transport);
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000);
     });
 
     await Promise.race([connectPromise, timeoutPromise]);
+    this.connectionMode = 'sse';
+    console.log('[MCP] Connected via SSE transport');
   }
+
 
   async listTools(): Promise<MCPTool[]> {
     if (!this.client) {
