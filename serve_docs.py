@@ -19,14 +19,17 @@ import json
 from fastapi_mcp import FastApiMCP
 
 # Import custom F-Docs helper
-from nexus_ui import get_nexus_ui_html
+from f_docs import f_docs
 
-# Initialize FastAPI with docs disabled (we will serve our own)
+# Initialize FastAPI
 app = FastAPI(
     title="Test API - Full CRUD Operations with OAuth2",
     docs_url=None,
     redoc_url=None
 )
+
+# Apply F-Docs
+app = f_docs(app, title="F-Docs - Test API")
 
 # Socket.IO setup
 sio = socketio.AsyncServer(
@@ -45,19 +48,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Mount F-Docs Static Assets
-# Ensure dist/assets exists before mounting to avoid errors
-if os.path.exists("dist/assets"):
-    app.mount("/assets", StaticFiles(directory="dist/assets"), name="assets")
-
-# Serve F-Docs at /docs
-@app.get("/docs", include_in_schema=False, response_class=HTMLResponse)
-async def custom_swagger_ui_html():
-    return get_nexus_ui_html(
-        openapi_url="/openapi.json",
-        title="F-Docs - Test API"
-    )
 
 # OAuth2 Configuration
 SECRET_KEY = "your-secret-key-keep-it-secret-in-production"
