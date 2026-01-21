@@ -541,10 +541,9 @@ export default function App() {
   const navRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [indicatorStyle, setIndicatorStyle] = useState<React.CSSProperties>({ opacity: 0 });
 
-  useLayoutEffect(() => {
-    const updatePosition = () => {
+  const updatePosition = useCallback((module: string = activeModule) => {
         const container = navContainerRef.current;
-        const el = navRefs.current[activeModule];
+        const el = navRefs.current[module];
         
         if (el && container) {
             const containerRect = container.getBoundingClientRect();
@@ -558,24 +557,47 @@ export default function App() {
                 opacity: 1,
             });
         }
-    };
+  }, [activeModule]);
 
+  useLayoutEffect(() => {
     // Immediate
     updatePosition();
     
-    // Delayed fallbacks for initial checks/font loading
-    const t1 = setTimeout(updatePosition, 100);
-    const t2 = setTimeout(updatePosition, 300);
+    // Delayed fallbacks
+    const t1 = setTimeout(() => updatePosition(), 100);
+    const t2 = setTimeout(() => updatePosition(), 300);
 
     // Resize listener
-    window.addEventListener('resize', updatePosition);
+    const handleResize = () => updatePosition();
+    window.addEventListener('resize', handleResize);
 
     return () => {
         clearTimeout(t1);
         clearTimeout(t2);
-        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('resize', handleResize);
     };
-  }, [activeModule]);
+  }, [activeModule, updatePosition]);
+
+  // Stable Ref Callbacks
+  const setApiRef = useCallback((el: HTMLButtonElement | null) => {
+      navRefs.current['api'] = el;
+      if (el && activeModule === 'api') updatePosition('api');
+  }, [activeModule, updatePosition]);
+
+  const setWsRef = useCallback((el: HTMLButtonElement | null) => {
+      navRefs.current['ws'] = el;
+      if (el && activeModule === 'ws') updatePosition('ws');
+  }, [activeModule, updatePosition]);
+
+  const setIoRef = useCallback((el: HTMLButtonElement | null) => {
+      navRefs.current['io'] = el;
+      if (el && activeModule === 'io') updatePosition('io');
+  }, [activeModule, updatePosition]);
+
+  const setMcpRef = useCallback((el: HTMLButtonElement | null) => {
+      navRefs.current['mcp'] = el;
+      if (el && activeModule === 'mcp') updatePosition('mcp');
+  }, [activeModule, updatePosition]);
 
   const getIndicatorColor = () => {
       switch(activeModule) {
@@ -596,6 +618,10 @@ export default function App() {
   const defaultUrl = '';
   const [currentSpecUrl, setCurrentSpecUrl] = useState(import.meta.env.PROD ? '/openapi.json' : defaultUrl);
   
+
+
+
+
   // Sidebar Resize State
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
@@ -655,6 +681,84 @@ export default function App() {
   const { theme, toggleTheme } = useTheme();
   const [activeEndpointId, setActiveEndpointId] = useState<string | null>(null);
   const [expandedSidebarTags, setExpandedSidebarTags] = useState<Record<string, boolean>>({});
+
+  // API List Animation State (Must be after activeEndpointId)
+  const apiListContainerRef = useRef<HTMLDivElement>(null);
+  const apiEndpointRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [apiIndicatorStyle, setApiIndicatorStyle] = useState<React.CSSProperties>({ opacity: 0 });
+
+  const updateApiIndicator = useCallback((id: string | null = activeEndpointId) => {
+    const container = apiListContainerRef.current;
+    
+    if (!id) {
+        setApiIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+        return;
+    }
+
+    const el = apiEndpointRefs.current[id];
+    
+    if (container && el) {
+        if (el.offsetParent === null) {
+             setApiIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+             return;
+        }
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        
+        let targetLeft = elRect.left;
+        let targetWidth = elRect.width;
+        
+        // Search for the nearest ancestor with a visible left border (The Tree Line)
+        let current = el.parentElement;
+        while (current && current !== container) {
+             const style = window.getComputedStyle(current);
+             if (style.borderLeftWidth && style.borderLeftWidth !== '0px' && style.borderLeftStyle !== 'none') {
+                  const parentRect = current.getBoundingClientRect();
+                  // Found the tree line! Align exactly with it.
+                  targetLeft = parentRect.left;
+                  targetWidth = elRect.right - targetLeft;
+                  break;
+             }
+             current = current.parentElement;
+        }
+
+        setApiIndicatorStyle({
+            top: elRect.top - containerRect.top + container.scrollTop,
+            left: targetLeft - containerRect.left,
+            width: targetWidth,
+            height: elRect.height,
+            opacity: 1,
+        });
+    } else {
+        setApiIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+    }
+  }, [activeEndpointId]);
+
+  useLayoutEffect(() => {
+     updateApiIndicator();
+     const t1 = setTimeout(() => updateApiIndicator(), 150);
+     const t2 = setTimeout(() => updateApiIndicator(), 300);
+     return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [activeEndpointId, expandedSidebarTags, viewMode, updateApiIndicator]);
+
+  // Track active ID in ref for stable callbacks
+  const activeEndpointIdRef = useRef(activeEndpointId);
+  useLayoutEffect(() => {
+      activeEndpointIdRef.current = activeEndpointId;
+  }, [activeEndpointId]);
+
+  const setEndpointRef = useCallback((el: HTMLButtonElement | null) => {
+      if (el) {
+          const id = el.dataset.id;
+          if (id) {
+              apiEndpointRefs.current[id] = el;
+              // Realtime jump if this is the active element
+              if (id === activeEndpointIdRef.current) {
+                   updateApiIndicator(id);
+              }
+          }
+      }
+  }, [updateApiIndicator]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -894,7 +998,7 @@ export default function App() {
 
              {ENABLE_API && (
                 <button 
-                   ref={el => { navRefs.current['api'] = el }}
+                   ref={setApiRef}
                    onClick={() => setActiveModule('api')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'api' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="REST API Documentation"
@@ -905,7 +1009,7 @@ export default function App() {
              
              {ENABLE_WS && (
                 <button 
-                   ref={el => { navRefs.current['ws'] = el }}
+                   ref={setWsRef}
                    onClick={() => setActiveModule('ws')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'ws' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="WebSocket Tester"
@@ -916,7 +1020,7 @@ export default function App() {
 
              {ENABLE_IO && (
                 <button 
-                   ref={el => { navRefs.current['io'] = el }}
+                   ref={setIoRef}
                    onClick={() => setActiveModule('io')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'io' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="Socket.IO Tester"
@@ -927,7 +1031,7 @@ export default function App() {
 
              {ENABLE_MCP && (
                 <button 
-                   ref={el => { navRefs.current['mcp'] = el }}
+                   ref={setMcpRef}
                    onClick={() => setActiveModule('mcp')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'mcp' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="MCP Inspector"
@@ -989,7 +1093,18 @@ export default function App() {
                 </div>
             </div>
 
-            <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0">
+            <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0 relative" ref={apiListContainerRef}>
+              {/* Sliding Active Indicator for API List */}
+              <div 
+                  className="absolute bg-blue-50 dark:bg-slate-800 border-l-2 border-blue-500 transition-all duration-300 ease-out pointer-events-none z-0"
+                  style={{
+                      top: apiIndicatorStyle.top,
+                      height: apiIndicatorStyle.height,
+                      left: apiIndicatorStyle.left,
+                      width: apiIndicatorStyle.width,
+                      opacity: apiIndicatorStyle.opacity
+                  }}
+              />
             {viewMode === 'list' ? (
                 // List Mode Sidebar
                 <>
@@ -1041,8 +1156,10 @@ export default function App() {
                                         {tagEndpoints.map(ep => (
                                             <button
                                                 key={ep.id}
+                                                data-id={ep.id}
+                                                ref={setEndpointRef}
                                                 onClick={() => setActiveEndpointId(ep.id)}
-                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] ${activeEndpointId === ep.id ? 'bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-white border-blue-500 font-semibold' : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/30'}`}
+                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] relative z-10 ${activeEndpointId === ep.id ? 'text-blue-700 dark:text-white border-transparent font-semibold' : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/30'}`}
                                             >
                                                 <div className="w-14 shrink-0">
                                                     <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
