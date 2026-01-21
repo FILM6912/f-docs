@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 dist-ssr
+!FDocs/dist/
 *.local
 
 # Editor directories and files
