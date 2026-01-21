@@ -12,6 +12,7 @@ authors = [
 description = "FastAPI documentation generator with a premium React UI"
 readme = "README.md"
 requires-python = ">=3.8"
+license = {text = "MIT"}
 dependencies = [
     "fastapi",
     "uvicorn",
@@ -19,12 +20,14 @@ dependencies = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 
+[tool.setuptools.packages.find]
+include = ["FDocs*"]
+
 [tool.setuptools.package-data]
-"f_docs" = ["dist/**"]
+"FDocs" = ["dist/**"]
 
 [project.urls]
 "Homepage" = "https://github.com/FILM6912/f-docs"
