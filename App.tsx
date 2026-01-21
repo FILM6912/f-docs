@@ -534,39 +534,48 @@ export default function App() {
     localStorage.setItem('activeModule', activeModule);
   }, [activeModule]);
 
-  // Animation Direction State
-  const [animClass, setAnimClass] = useState('animate-fadeInUp');
-
-  const switchModule = (newModule: 'api' | 'ws' | 'io' | 'mcp') => {
-      const order = ['api', 'ws', 'io', 'mcp'];
-      const currentIndex = order.indexOf(activeModule);
-      const newIndex = order.indexOf(newModule);
-      
-      if (newIndex > currentIndex) {
-           setAnimClass('animate-fadeInUp');
-      } else if (newIndex < currentIndex) {
-           setAnimClass('animate-fadeInDown');
-      }
-      setActiveModule(newModule);
-  };
+  // App State
 
   // Sidebar Nav Refs and Indicator
-  const navRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const navRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [indicatorStyle, setIndicatorStyle] = useState<React.CSSProperties>({ opacity: 0 });
 
   useLayoutEffect(() => {
-    const activeIndex = availableModules.indexOf(activeModule);
-    const el = navRefs.current[activeIndex];
-    if (el) {
-        setIndicatorStyle({
-            top: el.offsetTop,
-            left: el.offsetLeft,
-            width: el.offsetWidth,
-            height: el.offsetHeight,
-            opacity: 1,
-        });
-    }
-  }, [activeModule, availableModules]);
+    const updatePosition = () => {
+        const container = navContainerRef.current;
+        const el = navRefs.current[activeModule];
+        
+        if (el && container) {
+            const containerRect = container.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            
+            setIndicatorStyle({
+                top: elRect.top - containerRect.top,
+                left: elRect.left - containerRect.left,
+                width: elRect.width,
+                height: elRect.height,
+                opacity: 1,
+            });
+        }
+    };
+
+    // Immediate
+    updatePosition();
+    
+    // Delayed fallbacks for initial checks/font loading
+    const t1 = setTimeout(updatePosition, 100);
+    const t2 = setTimeout(updatePosition, 300);
+
+    // Resize listener
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+        window.removeEventListener('resize', updatePosition);
+    };
+  }, [activeModule]);
 
   const getIndicatorColor = () => {
       switch(activeModule) {
@@ -858,7 +867,7 @@ export default function App() {
              <Box size={20} className="text-white" />
           </div>
           
-          <div className="flex flex-col gap-4 w-full px-2 relative">
+          <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>
              {/* Shared Active Background */}
              <div 
                 className={`absolute rounded-xl transition-all duration-300 ease-out ${getIndicatorColor()}`}
@@ -885,8 +894,8 @@ export default function App() {
 
              {ENABLE_API && (
                 <button 
-                   ref={el => { navRefs.current[availableModules.indexOf('api')] = el }}
-                   onClick={() => switchModule('api')}
+                   ref={el => { navRefs.current['api'] = el }}
+                   onClick={() => setActiveModule('api')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'api' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="REST API Documentation"
                 >
@@ -896,8 +905,8 @@ export default function App() {
              
              {ENABLE_WS && (
                 <button 
-                   ref={el => { navRefs.current[availableModules.indexOf('ws')] = el }}
-                   onClick={() => switchModule('ws')}
+                   ref={el => { navRefs.current['ws'] = el }}
+                   onClick={() => setActiveModule('ws')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'ws' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="WebSocket Tester"
                 >
@@ -907,8 +916,8 @@ export default function App() {
 
              {ENABLE_IO && (
                 <button 
-                   ref={el => { navRefs.current[availableModules.indexOf('io')] = el }}
-                   onClick={() => switchModule('io')}
+                   ref={el => { navRefs.current['io'] = el }}
+                   onClick={() => setActiveModule('io')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'io' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="Socket.IO Tester"
                 >
@@ -918,8 +927,8 @@ export default function App() {
 
              {ENABLE_MCP && (
                 <button 
-                   ref={el => { navRefs.current[availableModules.indexOf('mcp')] = el }}
-                   onClick={() => switchModule('mcp')}
+                   ref={el => { navRefs.current['mcp'] = el }}
+                   onClick={() => setActiveModule('mcp')}
                    className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'mcp' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="MCP Inspector"
                 >
@@ -945,7 +954,7 @@ export default function App() {
       {activeModule === 'api' && (
         <aside 
             ref={sidebarRef}
-            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1073,7 +1082,7 @@ export default function App() {
       {activeModule === 'mcp' && (
         <aside 
             ref={sidebarRef}
-            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1198,7 +1207,7 @@ export default function App() {
       {activeModule === 'ws' && (
         <aside 
             ref={sidebarRef}
-            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1399,7 +1408,7 @@ export default function App() {
       {activeModule === 'io' && (
         <aside 
             ref={sidebarRef}
-            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1618,7 +1627,7 @@ export default function App() {
       <main className="flex-1 overflow-y-auto h-screen bg-slate-50 dark:bg-slate-950 relative w-full flex flex-col transition-colors">
         
         {activeModule === 'api' ? (
-            <div key="api" className={`${animClass} w-full h-full flex flex-col`}>
+            <div key="api" className="w-full h-full flex flex-col">
                 {/* REST API Header */}
                 <header className="sticky top-0 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg transition-colors">
                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 transition-colors">
@@ -1743,15 +1752,15 @@ export default function App() {
                 </div>
             </div>
         ) : activeModule === 'ws' ? (
-            <div key="ws" className={`${animClass} w-full h-full`}>
+            <div key="ws" className="w-full h-full">
                 <WebSocketTester {...ws} />
             </div>
         ) : activeModule === 'io' ? (
-            <div key="io" className={`${animClass} w-full h-full`}>
+            <div key="io" className="w-full h-full">
                 <SocketIoTester {...socketIo} />
             </div>
         ) : activeModule === 'mcp' ? (
-            <div key="mcp" className={`${animClass} w-full h-full flex flex-col`}>
+            <div key="mcp" className="w-full h-full flex flex-col">
              {mcp.isConnected ? (
                 <>
                     {/* MCP Header */}
