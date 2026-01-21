@@ -78,17 +78,32 @@
         overflow: hidden; /* Prevent body scrolling */
       }
       /* Dark mode base - applied immediately by inline script */
-      html.dark {
-        background-color: #09090b; /* slate-950 */
-      }
+      html.dark,
+      html.dark body,
       html.dark #root {
-        background-color: #09090b; /* slate-950 */
+        background-color: #09090b !important; /* slate-950 */
       }
+      /* Force all direct children to inherit dark background initially */
+      html.dark #root > * {
+        background-color: inherit;
+      }
+      
+      /* PRE-LOAD CRITICAL DARK STYLES TO PREVENT FOUC */
+      html.dark .dark\:bg-slate-950 { background-color: #09090b !important; }
+      html.dark .dark\:bg-slate-900 { background-color: #0f172a !important; }
+      html.dark .dark\:bg-blue-500\/10 { background-color: rgb(59 130 246 / 0.1) !important; }
+      html.dark .dark\:bg-emerald-500\/10 { background-color: rgb(16 185 129 / 0.1) !important; }
+      html.dark .dark\:bg-amber-500\/10 { background-color: rgb(245 158 11 / 0.1) !important; }
+      html.dark .dark\:bg-red-500\/10 { background-color: rgb(239 68 68 / 0.1) !important; }
+      html.dark .dark\:bg-purple-500\/10 { background-color: rgb(168 85 247 / 0.1) !important; }
+      
+      html.dark .dark\:text-slate-200 { color: #e2e8f0 !important; }
+      html.dark .dark\:text-white { color: #ffffff !important; }
+      
       body {
         /* Default to Light */
         background-color: #ffffff;
         color: #0f172a;
-        transition: background-color 0.2s, color 0.2s;
       }
       html.dark body {
         background-color: #09090b; /* slate-950 (zinc-950) */
