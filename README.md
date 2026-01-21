@@ -23,6 +23,12 @@ F-Docs is a modern, sleek, and highly functional documentation wrapper for FastA
 ## 🛠️ Installation
 
 ```bash
+pip install git+https://github.com/FILM6912/f-docs.git
+```
+
+Or install from local:
+
+```bash
 pip install .
 ```
 
@@ -83,4 +89,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-<p align="center">Made with ❤️ by F-Docs Contributors</p>
+<p align="center">Made with ❤️ by FILM6912</p>
