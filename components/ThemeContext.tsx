@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useLayoutEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -17,13 +17,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement;
+    // We don't strictly need to update body class anymore since CSS targets html.dark body
+    // but keeping it for compatibility with any existing CSS targeting body.dark doesn't hurt.
     const body = document.body;
     
     if (theme === 'dark') {
       root.classList.add('dark');
-      body.classList.add('dark'); // For my custom css in index.html that targeted body.dark
+      body.classList.add('dark'); 
     } else {
       root.classList.remove('dark');
       body.classList.remove('dark');
