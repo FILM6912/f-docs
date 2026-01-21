@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send } from 'lucide-react';
 import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
@@ -505,19 +505,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
     );
 };
 
-export default function App() {
-  // Module Enable Flags
-  const ENABLE_API = import.meta.env.VITE_ENABLE_API !== 'false';
-  const ENABLE_WS = import.meta.env.VITE_ENABLE_WS !== 'false';
-  const ENABLE_IO = import.meta.env.VITE_ENABLE_IO !== 'false';
-  const ENABLE_MCP = import.meta.env.VITE_ENABLE_MCP !== 'false';
+// Module Enable Flags
+const ENABLE_API = import.meta.env.VITE_ENABLE_API !== 'false';
+const ENABLE_WS = import.meta.env.VITE_ENABLE_WS !== 'false';
+const ENABLE_IO = import.meta.env.VITE_ENABLE_IO !== 'false';
+const ENABLE_MCP = import.meta.env.VITE_ENABLE_MCP !== 'false';
 
-  const availableModules = [
-    { id: 'api', enabled: ENABLE_API },
-    { id: 'ws', enabled: ENABLE_WS },
-    { id: 'io', enabled: ENABLE_IO },
-    { id: 'mcp', enabled: ENABLE_MCP },
-  ].filter(m => m.enabled).map(m => m.id as 'api' | 'ws' | 'io' | 'mcp');
+const availableModules = [
+  { id: 'api', enabled: ENABLE_API },
+  { id: 'ws', enabled: ENABLE_WS },
+  { id: 'io', enabled: ENABLE_IO },
+  { id: 'mcp', enabled: ENABLE_MCP },
+].filter(m => m.enabled).map(m => m.id as 'api' | 'ws' | 'io' | 'mcp');
+
+export default function App() {
 
   // Navigation State
   const [activeModule, setActiveModule] = useState<'api' | 'ws' | 'io' | 'mcp'>(() => {
@@ -532,6 +533,55 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('activeModule', activeModule);
   }, [activeModule]);
+
+  // Animation Direction State
+  const [animClass, setAnimClass] = useState('animate-fadeInUp');
+
+  const switchModule = (newModule: 'api' | 'ws' | 'io' | 'mcp') => {
+      const order = ['api', 'ws', 'io', 'mcp'];
+      const currentIndex = order.indexOf(activeModule);
+      const newIndex = order.indexOf(newModule);
+      
+      if (newIndex > currentIndex) {
+           setAnimClass('animate-fadeInUp');
+      } else if (newIndex < currentIndex) {
+           setAnimClass('animate-fadeInDown');
+      }
+      setActiveModule(newModule);
+  };
+
+  // Sidebar Nav Refs and Indicator
+  const navRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [indicatorStyle, setIndicatorStyle] = useState<React.CSSProperties>({ opacity: 0 });
+
+  useLayoutEffect(() => {
+    const activeIndex = availableModules.indexOf(activeModule);
+    const el = navRefs.current[activeIndex];
+    if (el) {
+        setIndicatorStyle({
+            top: el.offsetTop,
+            left: el.offsetLeft,
+            width: el.offsetWidth,
+            height: el.offsetHeight,
+            opacity: 1,
+        });
+    }
+  }, [activeModule, availableModules]);
+
+  const getIndicatorColor = () => {
+      switch(activeModule) {
+          case 'ws': return 'bg-purple-100 dark:bg-slate-800';
+          default: return 'bg-blue-100 dark:bg-slate-800';
+      }
+  };
+
+  const getIndicatorBarColor = () => {
+      switch(activeModule) {
+          case 'ws': return 'bg-purple-500';
+          case 'mcp': return 'bg-orange-500';
+          default: return 'bg-blue-500';
+      }
+  };
 
   // App State
   const defaultUrl = '';
@@ -808,48 +858,72 @@ export default function App() {
              <Box size={20} className="text-white" />
           </div>
           
-          <div className="flex flex-col gap-4 w-full px-2">
+          <div className="flex flex-col gap-4 w-full px-2 relative">
+             {/* Shared Active Background */}
+             <div 
+                className={`absolute rounded-xl transition-all duration-300 ease-out ${getIndicatorColor()}`}
+                style={{
+                    top: indicatorStyle.top,
+                    left: indicatorStyle.left,
+                    width: indicatorStyle.width,
+                    height: indicatorStyle.height,
+                    opacity: indicatorStyle.opacity,
+                    zIndex: 0
+                }}
+             />
+             
+             {/* Shared Active Bar (Left Indicator) */}
+             <div 
+                className={`absolute w-1 h-8 rounded-r-full transition-all duration-300 ease-out ${getIndicatorBarColor()}`}
+                style={{
+                    top: (indicatorStyle.top as number || 0) + ((indicatorStyle.height as number || 0) - 32) / 2,
+                    left: 0, 
+                    opacity: indicatorStyle.opacity,
+                    zIndex: 20
+                }}
+             />
+
              {ENABLE_API && (
                 <button 
-                   onClick={() => setActiveModule('api')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'api' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   ref={el => { navRefs.current[availableModules.indexOf('api')] = el }}
+                   onClick={() => switchModule('api')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'api' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="REST API Documentation"
                 >
                    <Layers size={22} />
-                   {activeModule === 'api' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
                 </button>
              )}
              
              {ENABLE_WS && (
                 <button 
-                   onClick={() => setActiveModule('ws')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'ws' ? 'bg-purple-100 text-purple-600 dark:bg-slate-800 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   ref={el => { navRefs.current[availableModules.indexOf('ws')] = el }}
+                   onClick={() => switchModule('ws')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'ws' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="WebSocket Tester"
                 >
                    <Activity size={22} />
-                   {activeModule === 'ws' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-purple-500 rounded-r-full" />}
                 </button>
              )}
 
              {ENABLE_IO && (
                 <button 
-                   onClick={() => setActiveModule('io')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'io' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   ref={el => { navRefs.current[availableModules.indexOf('io')] = el }}
+                   onClick={() => switchModule('io')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'io' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="Socket.IO Tester"
                 >
                    <Radio size={22} />
-                   {activeModule === 'io' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />}
                 </button>
              )}
 
              {ENABLE_MCP && (
                 <button 
-                   onClick={() => setActiveModule('mcp')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative ${activeModule === 'mcp' ? 'bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   ref={el => { navRefs.current[availableModules.indexOf('mcp')] = el }}
+                   onClick={() => switchModule('mcp')}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'mcp' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
                    title="MCP Inspector"
                 >
                    <Database size={22} />
-                   {activeModule === 'mcp' && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-orange-500 rounded-r-full" />}
                 </button>
              )}
           </div>
@@ -871,7 +945,7 @@ export default function App() {
       {activeModule === 'api' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -999,7 +1073,7 @@ export default function App() {
       {activeModule === 'mcp' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1124,7 +1198,7 @@ export default function App() {
       {activeModule === 'ws' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1292,7 +1366,7 @@ export default function App() {
                             {data && !path.error && (
                                 <div className="text-[10px] text-slate-500 font-mono mt-1 flex justify-between pl-1">
                                     <span>Count: {data.count}</span>
-                                    <span>{data.timestamp}</span>
+                                    <span>{data.lastActivity}</span>
                                 </div>
                             )}
                         </div>
@@ -1325,7 +1399,7 @@ export default function App() {
       {activeModule === 'io' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className={`${animClass} w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex`}
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1544,7 +1618,7 @@ export default function App() {
       <main className="flex-1 overflow-y-auto h-screen bg-slate-50 dark:bg-slate-950 relative w-full flex flex-col transition-colors">
         
         {activeModule === 'api' ? (
-            <>
+            <div key="api" className={`${animClass} w-full h-full flex flex-col`}>
                 {/* REST API Header */}
                 <header className="sticky top-0 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg transition-colors">
                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 transition-colors">
@@ -1667,13 +1741,18 @@ export default function App() {
                         </>
                     )}
                 </div>
-            </>
+            </div>
         ) : activeModule === 'ws' ? (
-            <WebSocketTester {...ws} />
+            <div key="ws" className={`${animClass} w-full h-full`}>
+                <WebSocketTester {...ws} />
+            </div>
         ) : activeModule === 'io' ? (
-            <SocketIoTester {...socketIo} />
+            <div key="io" className={`${animClass} w-full h-full`}>
+                <SocketIoTester {...socketIo} />
+            </div>
         ) : activeModule === 'mcp' ? (
-             mcp.isConnected ? (
+            <div key="mcp" className={`${animClass} w-full h-full flex flex-col`}>
+             {mcp.isConnected ? (
                 <>
                     {/* MCP Header */}
                     <header className="sticky top-0 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg transition-colors">
@@ -1769,9 +1848,8 @@ export default function App() {
                         </div>
                     </div>
                 </div>
-             )
-
-
+             )}
+            </div>
         ) : (
             null 
         )}
