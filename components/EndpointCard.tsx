@@ -365,11 +365,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   return (
     // Added z-10 when menu is open to fix stacking context overlap with next card
     <div
-      className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""} ${forcedOpen ? "h-full flex flex-col mb-0 border-0 rounded-none md:rounded-lg md:border" : ""}`}
+      className={`mb-4 rounded-lg border ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""} ${forcedOpen ? "h-full flex flex-col mb-0 border-0 rounded-none md:rounded-lg md:border" : ""}`}
     >
       {/* Header - Full colored bar like Swagger */}
       <div
-        className={`flex items-center justify-between p-3 px-4 select-none group ${methodTheme.bg} ${!forcedOpen && "hover:brightness-110 cursor-pointer"} transition-all rounded-t-lg ${!isOpen ? "rounded-b-lg" : ""}`}
+        className={`flex items-center justify-between p-3 px-4 select-none group ${methodTheme.bg} ${!forcedOpen && "hover:brightness-110 cursor-pointer"} rounded-t-lg ${!isOpen ? "rounded-b-lg" : ""}`}
         onClick={!forcedOpen ? () => setIsOpenState(!isOpenState) : undefined}
       >
         <div className="flex items-center gap-4 overflow-hidden min-w-0 flex-1">
