@@ -967,9 +967,7 @@ export default function App() {
       
       {/* 1. Activity Bar (Module Switcher) */}
       <nav className="w-16 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
-          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-900/50 shrink-0 mb-6">
-             <Box size={20} className="text-white" />
-          </div>
+
           
           <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>
              {/* Shared Active Background */}
