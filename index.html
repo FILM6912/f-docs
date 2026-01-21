@@ -6,6 +6,19 @@
     <title>F-Docs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Immediate Theme Application to prevent FOUC (Flash of Unstyled Content)
+      (function() {
+        try {
+          const saved = localStorage.getItem('theme');
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          
+          if (saved === 'dark' || (!saved && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <script>
       tailwind.config = {
         darkMode: "class",
         theme: {
@@ -53,7 +66,7 @@
         color: #0f172a;
         transition: background-color 0.2s, color 0.2s;
       }
-      body.dark {
+      html.dark body {
         background-color: #09090b; /* slate-950 (zinc-950) */
         color: #f4f4f5; /* slate-100 (zinc-100) */
       }
