@@ -621,7 +621,7 @@ export default function App() {
   const ws = useWebSocket();
   const [newWsPath, setNewWsPath] = useState("");
   const [isWsUrlModalOpen, setIsWsUrlModalOpen] = useState(false);
-  const [tempWsUrl, setTempWsUrl] = useState(ws.url);
+  const [tempWsUrl, setTempWsUrl] = useState(ws.baseUrl);
   const wsUrlInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddWsPath = (e: React.FormEvent) => {
@@ -673,13 +673,13 @@ export default function App() {
         if (activeModule === 'ws' && (e.ctrlKey || e.metaKey) && e.key === 'q') {
             e.preventDefault();
             setIsWsUrlModalOpen(true);
-            setTempWsUrl(ws.url);
+            setTempWsUrl(ws.baseUrl);
         }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeModule, ws.url]);
+  }, [activeModule, ws.baseUrl]);
 
   useEffect(() => {
     if (isIoUrlModalOpen && ioUrlInputRef.current) {
@@ -701,7 +701,7 @@ export default function App() {
 
   const handleWsUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    ws.setUrl(tempWsUrl);
+    ws.setBaseUrl(tempWsUrl);
     setIsWsUrlModalOpen(false);
   };
 
@@ -1139,38 +1139,21 @@ export default function App() {
                     <span>WebSocket Tester</span>
                 </h1>
                 
-                {/* WebSocket Sidebar Header */}
-                <div className="flex flex-col gap-2 bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center justify-between">
-                         <div 
-                            className="flex-1 truncate text-xs font-mono text-slate-500 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
-                            onClick={() => {
-                                if(!ws.isConnected) {
-                                    setIsWsUrlModalOpen(true);
-                                    setTempWsUrl(ws.url);
-                                }
-                            }}
-                            title="Click or Ctrl+Q to edit URL"
-                         >
-                            {ws.url}
-                         </div>
-                         <div className={`w-2 h-2 rounded-full shrink-0 ml-2 ${ws.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                    </div>
-                    
-                    <button
-                        onClick={ws.isConnected ? ws.disconnect : ws.connect}
-                        className={`w-full py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                            ws.isConnected 
-                            ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
-                            : 'bg-purple-600 text-white hover:bg-purple-500 shadow-sm'
-                        }`}
+                {/* WebSocket Base URL */}
+                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div 
+                        className="flex-1 truncate text-xs font-mono text-slate-500 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                        onClick={() => {
+                            if(!ws.isAnyConnected) {
+                                setIsWsUrlModalOpen(true);
+                                setTempWsUrl(ws.baseUrl);
+                            }
+                        }}
+                        title="Click to edit base URL"
                     >
-                        {ws.isConnected ? (
-                            <>Disconnect</>
-                        ) : (
-                            <>Connect</>
-                        )}
-                    </button>
+                        {ws.baseUrl}
+                    </div>
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${ws.isAnyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                 </div>
             </div>
 
@@ -1255,27 +1238,58 @@ export default function App() {
                 {ws.activePaths.map(path => {
                     const data = ws.pathData[path.name];
                     return (
-                        <div key={path.id} className={`bg-white dark:bg-slate-950 border rounded p-2 text-xs relative group mb-2 transition-all ${path.isEnabled ? 'border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                        <div key={path.id} className={`bg-white dark:bg-slate-950 border rounded p-2 text-xs relative group mb-2 transition-all ${path.isConnected ? 'border-emerald-500/50 dark:border-emerald-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
                             <div className="flex justify-between items-start mb-1">
                                 <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                    <span className={`font-bold truncate flex-1 ${path.isEnabled ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-500 line-through'}`}>{path.name}</span>
+                                    {/* Connection Status Indicator */}
+                                    <div className={`w-2 h-2 rounded-full shrink-0 ${
+                                        path.isConnecting ? 'bg-yellow-500 animate-pulse' :
+                                        path.isConnected ? 'bg-emerald-500 animate-pulse' : 
+                                        path.error ? 'bg-red-500' : 'bg-slate-400'
+                                    }`} />
+                                    <span className={`font-bold truncate flex-1 font-mono ${path.isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-200'}`}>{path.name}</span>
                                      <button
                                         onClick={() => ws.togglePath(path.id)}
-                                        className={`w-8 h-4 rounded-full flex items-center transition-colors shrink-0 ${path.isEnabled ? 'bg-purple-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
-                                        title={path.isEnabled ? "Disable Path" : "Enable Path"}
+                                        disabled={path.isConnecting}
+                                        className={`w-8 h-4 rounded-full flex items-center transition-colors shrink-0 ${
+                                            path.isConnecting ? 'bg-yellow-500 cursor-wait' :
+                                            path.isConnected ? 'bg-emerald-500 justify-end' : 
+                                            'bg-slate-300 dark:bg-slate-700 justify-start'
+                                        }`}
+                                        title={path.isConnecting ? "Connecting..." : path.isConnected ? "Disconnect" : "Connect"}
                                      >
-                                         <div className="w-3 h-3 bg-white rounded-full shadow-sm mx-0.5" />
+                                         {path.isConnecting ? (
+                                            <span className="text-[8px] text-white mx-auto">...</span>
+                                         ) : (
+                                            <div className="w-3 h-3 bg-white rounded-full shadow-sm mx-0.5" />
+                                         )}
                                      </button>
                                 </div>
                                 <button 
                                     onClick={() => ws.removePath(path.id)}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    disabled={path.isConnected || path.isConnecting}
+                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-30 disabled:cursor-not-allowed"
                                     title="Remove Path"
                                 >
                                     <Trash2 size={14} />
                                 </button>
                             </div>
-                            {data && (
+                            
+                            {/* Error Message */}
+                            {path.error && (
+                                <div className="mt-1 p-1.5 bg-red-500/10 border border-red-500/30 rounded text-[10px] text-red-400 flex items-start gap-1">
+                                    <span className="shrink-0">⚠️</span>
+                                    <span className="flex-1 break-all">{path.error}</span>
+                                    <button 
+                                        onClick={() => ws.clearPathError(path.id)}
+                                        className="text-red-300 hover:text-red-200 shrink-0"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {data && !path.error && (
                                 <div className="text-[10px] text-slate-500 font-mono mt-1 flex justify-between pl-1">
                                     <span>Count: {data.count}</span>
                                     <span>{data.timestamp}</span>
