@@ -4,7 +4,7 @@
 
 F-Docs is a modern, sleek, and highly functional documentation wrapper for FastAPI applications. It replaces the default Swagger/Redoc UI with a high-performance, custom-built React frontend that offers a superior developer experience.
 
-![Preview](https://raw.githubusercontent.com/FILM6912/f-docs/main/assets/preview.png) _(Placeholder: Replace with your actual screenshot)_
+![Preview](images/image.png)
 
 ---
 
@@ -55,7 +55,7 @@ def read_root():
 Run your application:
 
 ```bash
-python serve_docs.py
+python example/serve_docs.py
 ```
 
 Visit your docs at `http://localhost:8000/docs` (or your configured path).
@@ -66,7 +66,7 @@ Visit your docs at `http://localhost:8000/docs` (or your configured path).
 
 - `FDocs/`: Core Python package implementation.
 - `frontend/`: React source code for the documentation UI.
-- `serve_docs.py`: Example server implementation with full feature demonstration.
+- `example/serve_docs.py`: Example server implementation with full feature demonstration.
 - `pyproject.toml`: Project configuration and dependencies.
 
 ---
