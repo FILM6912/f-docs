@@ -11,9 +11,12 @@
         try {
           const saved = localStorage.getItem('theme');
           const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const isDark = saved === 'dark' || (!saved && prefersDark);
           
-          if (saved === 'dark' || (!saved && prefersDark)) {
+          if (isDark) {
             document.documentElement.classList.add('dark');
+            // Apply background immediately before CSS loads
+            document.documentElement.style.backgroundColor = '#09090b';
           }
         } catch (e) {}
       })();
@@ -74,6 +77,13 @@
         margin: 0;
         overflow: hidden; /* Prevent body scrolling */
       }
+      /* Dark mode base - applied immediately by inline script */
+      html.dark {
+        background-color: #09090b; /* slate-950 */
+      }
+      html.dark #root {
+        background-color: #09090b; /* slate-950 */
+      }
       body {
         /* Default to Light */
         background-color: #ffffff;
@@ -129,6 +139,16 @@
     <link rel="stylesheet" href="/index.css" />
   </head>
   <body>
+    <script>
+      // Apply dark background to body immediately
+      (function() {
+        try {
+          if (document.documentElement.classList.contains('dark')) {
+            document.body.style.backgroundColor = '#09090b';
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
