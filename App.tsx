@@ -1058,7 +1058,7 @@ export default function App() {
       {activeModule === 'api' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1178,7 +1178,7 @@ export default function App() {
             
             {/* Only show Authorize button if security schemes exist */}
             {securitySchemes && Object.keys(securitySchemes).length > 0 && (
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#18181b] shrink-0">
                     <button 
                         onClick={() => setIsAuthModalOpen(true)}
                         className={`w-full py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
@@ -1199,7 +1199,7 @@ export default function App() {
       {activeModule === 'mcp' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1297,7 +1297,7 @@ export default function App() {
             </div>
             
             {/* Footer Connection Status */}
-             <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+             <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#18181b] shrink-0">
                  {mcp.isConnected ? (
                      <button 
                         onClick={() => mcp.disconnect()}
@@ -1324,7 +1324,7 @@ export default function App() {
       {activeModule === 'ws' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1513,7 +1513,7 @@ export default function App() {
                 </div>
             </div>
 
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#18181b] shrink-0">
                 <p className="text-[10px] text-slate-500 text-center italic">
                     Use Ctrl+Q to quickly edit the WebSocket URL.
                 </p>
@@ -1525,7 +1525,7 @@ export default function App() {
       {activeModule === 'io' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
