@@ -29,6 +29,7 @@ def f_docs(
     """
     
     # Use defaults if not provided
+    app.docs_url = None
     actual_html_path = Path(html_path) if html_path else DEFAULT_HTML_PATH
     actual_assets_path = Path(assets_path) if assets_path else DEFAULT_ASSETS_PATH
 
