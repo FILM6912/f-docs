@@ -1,20 +1,86 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🚀 F-Docs
 
-# Run and deploy your AI Studio app
+> **FastAPI documentation generator with a premium React UI.**
 
-This contains everything you need to run your app locally.
+F-Docs is a modern, sleek, and highly functional documentation wrapper for FastAPI applications. It replaces the default Swagger/Redoc UI with a high-performance, custom-built React frontend that offers a superior developer experience.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1TRxnsyXwxD3qOTEvOMgwJJKPuECWz1WV
+![Preview](https://raw.githubusercontent.com/FILM6912/f-docs/main/assets/preview.png) _(Placeholder: Replace with your actual screenshot)_
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## ✨ Features
 
+- **💎 Premium React UI**: A beautiful, modern interface built with React and Vanilla CSS.
+- **🏗️ Full CRUD Support**: Seamlessly handle GET, POST, PUT, PATCH, and DELETE operations.
+- **🔐 OAuth2 Integrated**: Built-in support for FastAPI's OAuth2PasswordBearer flow.
+- **📁 File Management**: Robust endpoints for image uploads and file retrieval.
+- **🔌 Real-time Capabilities**: Support for both standard WebSockets and Socket.IO.
+- **🤖 MCP Support**: Integrated Model Context Protocol (MCP) server support.
+- **⚡ Fast and Lightweight**: Optimized for performance and developer productivity.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 🛠️ Installation
+
+```bash
+pip install .
+```
+
+Or install dependencies manually:
+
+```bash
+pip install fastapi uvicorn python-multipart python-jose[cryptography] passlib[bcrypt] python-socketio
+```
+
+---
+
+## 🚀 Quick Start
+
+Using F-Docs is as simple as wrapping your FastAPI app:
+
+```python
+from fastapi import FastAPI
+from FDocs import f_docs
+
+app = FastAPI()
+
+# Wrap your app with F-Docs
+app = f_docs(app, title="My Awesome API")
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+```
+
+Run your application:
+
+```bash
+python serve_docs.py
+```
+
+Visit your docs at `http://localhost:8000/docs` (or your configured path).
+
+---
+
+## 📁 Project Structure
+
+- `FDocs/`: Core Python package implementation.
+- `frontend/`: React source code for the documentation UI.
+- `serve_docs.py`: Example server implementation with full feature demonstration.
+- `pyproject.toml`: Project configuration and dependencies.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+<p align="center">Made with ❤️ by F-Docs Contributors</p>
