@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
         }
       },
       build: {
-        outDir: '../f_docs/dist',
+        outDir: '../FDocs/dist',
         emptyOutDir: true,
       },
       plugins: [react()],
