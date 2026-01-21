@@ -1,0 +1,3 @@
+recursive-include f_docs/dist *
+include README.md
+include LICENSE

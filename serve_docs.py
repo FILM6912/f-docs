@@ -19,7 +19,7 @@ import json
 from fastapi_mcp import FastApiMCP
 
 # Import custom F-Docs helper
-from f_docs import f_docs
+from FDocs import f_docs
 
 # Initialize FastAPI
 app = FastAPI(

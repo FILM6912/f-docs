@@ -5,14 +5,19 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+# Get the path to the current file (package root)
+PACKAGE_ROOT = Path(__file__).parent
+DEFAULT_HTML_PATH = PACKAGE_ROOT / "dist" / "index.html"
+DEFAULT_ASSETS_PATH = PACKAGE_ROOT / "dist" / "assets"
+
 def f_docs(
     app: FastAPI,
     *,
     docs_url: str = "/docs",
     openapi_url: str = "/openapi.json",
     title: str = "F-Docs",
-    html_path: str = "dist/index.html",
-    assets_path: str = "dist/assets",
+    html_path: str = None,
+    assets_path: str = None,
     assets_url: str = "/assets"
 ) -> FastAPI:
     """
@@ -22,20 +27,24 @@ def f_docs(
         app = FastAPI()
         app = f_docs(app)
     """
+    
+    # Use defaults if not provided
+    actual_html_path = Path(html_path) if html_path else DEFAULT_HTML_PATH
+    actual_assets_path = Path(assets_path) if assets_path else DEFAULT_ASSETS_PATH
 
     # 1. Mount Static Assets if they exist
-    if os.path.exists(assets_path):
-        app.mount(assets_url, StaticFiles(directory=assets_path), name="f_docs_assets")
+    if actual_assets_path.exists():
+        app.mount(assets_url, StaticFiles(directory=str(actual_assets_path)), name="f_docs_assets")
 
     # 2. Define the Documentation Route
     @app.get(docs_url, include_in_schema=False, response_class=HTMLResponse)
     async def f_docs_ui():
         try:
-            with open(html_path, "r", encoding="utf-8") as f:
+            with open(actual_html_path, "r", encoding="utf-8") as f:
                 html_content = f.read()
         except FileNotFoundError:
             return HTMLResponse(
-                content=f"<h1>Error</h1><p>Could not find {html_path}. Did you run 'npm run build'?</p>",
+                content=f"<h1>Error</h1><p>Could not find {actual_html_path}. Did you run 'npm run build'?</p>",
                 status_code=500,
             )
 

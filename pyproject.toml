@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "f-docs"
+version = "0.1.0"
+authors = [
+  { name="F-Docs Contributors" },
+]
+description = "FastAPI documentation generator with a premium React UI"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "python-multipart"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.package-data]
+"f_docs" = ["dist/**"]
+
+[project.urls]
+"Homepage" = "https://github.com/FILM6912/f-docs"
