@@ -16,7 +16,10 @@ license = {text = "MIT"}
 dependencies = [
     "fastapi",
     "uvicorn",
-    "python-multipart"
+    "python-multipart",
+    "fastapi-mcp>=0.4.0",
+    "websockets",
+    "python-socketio"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
