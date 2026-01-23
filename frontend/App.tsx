@@ -1041,7 +1041,12 @@ export default function App() {
           
           <div className="mt-auto px-2 flex flex-col gap-4">
               <button 
-                  onClick={toggleTheme}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Theme button clicked');
+                    toggleTheme();
+                  }}
                   className="p-3 rounded-xl flex justify-center transition-all text-zinc-500 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-zinc-200 dark:hover:bg-zinc-900"
                   title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
@@ -1766,7 +1771,7 @@ export default function App() {
                 </header>
 
                 {/* REST API Content */}
-                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col">
+                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col overflow-hidden">
                     {error ? (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-start gap-4 text-red-400">
                             <AlertCircle size={24} className="shrink-0" />
@@ -1837,7 +1842,7 @@ export default function App() {
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col">
+                                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col overflow-hidden min-h-0">
                                             {activeEndpoint ? (
                                                 <EndpointCard 
                                                     key={activeEndpoint.id} 

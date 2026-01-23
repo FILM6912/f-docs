@@ -477,7 +477,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       {/* Expanded Content */}
       {isOpen && (
         <div
-          className={`bg-zinc-50/50 dark:bg-zinc-900/30 p-4 border-t border-zinc-200 dark:border-zinc-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg ${forcedOpen ? "flex-1 flex flex-col min-h-0 overflow-hidden max-h-[calc(100vh-200px)]" : ""}`}
+          className={`bg-zinc-50/50 dark:bg-zinc-900/30 p-4 border-t border-zinc-200 dark:border-zinc-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg ${forcedOpen ? "flex-1 flex flex-col min-h-0 overflow-hidden max-h-[calc(100vh-200px)]" : "max-h-[calc(100vh-200px)] overflow-hidden"}`}
         >
           <div className="mb-6 px-4">
              <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">
@@ -538,9 +538,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           </div>
 
           {/* Controls Container */}
-          <div className={`grid lg:grid-cols-2 gap-6 ${forcedOpen ? "flex-1 min-h-0 overflow-hidden" : ""}`}>
+          <div className={`grid lg:grid-cols-2 gap-6 ${forcedOpen ? "flex-1 min-h-0 overflow-hidden" : "overflow-hidden"}`}>
             {/* Left Col: Request Parameters & Body */}
-            <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : ""}`}>
+            <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : "max-h-[calc(100vh-400px)]"}`}>
               {/* Tab Navigation for Request */}
               <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
                 <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
