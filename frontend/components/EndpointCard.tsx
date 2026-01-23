@@ -817,8 +817,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                       </div>
                     ) : (
                       // JSON Editor UI
-                      // JSON Editor UI
-                      <div className={`w-full flex-1 border border-zinc-200 dark:border-zinc-800 rounded overflow-hidden min-h-[160px] transition-colors ${forcedOpen ? "h-full" : ""}`}>
+                      <div className={`w-full flex-1 border border-zinc-200 dark:border-zinc-800 rounded overflow-hidden min-h-[160px] max-h-[500px] transition-colors ${forcedOpen ? "h-full" : ""}`}>
                           {bodyMode === 'json' ? (
                             <JsonEditor
                                 value={bodyValue}
@@ -1096,7 +1095,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             )}
                           </button>
                         </div>
-                        <div className="p-4">
+                        <div className="p-4 overflow-y-auto max-h-[500px] custom-scrollbar">
                             <JsonDisplay data={response.data} />
                         </div>
                       </>
