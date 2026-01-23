@@ -184,6 +184,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   // Helper: Prepare Request Data (Path & Headers)
   const { finalPath, headers } = useMemo(() => {
     let path = endpoint.path;
+    
+    // Handle path parameters
     endpoint.parameters?.forEach((p) => {
       if (p.in === "path") {
         path = path.replace(
@@ -192,6 +194,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         );
       }
     });
+
+    // Handle query parameters
+    const queryParams: string[] = [];
+    endpoint.parameters?.forEach((p) => {
+      if (p.in === "query") {
+        const value = paramValues[p.name] !== undefined ? paramValues[p.name] : (p.default !== undefined ? String(p.default) : '');
+        if (value) {
+          queryParams.push(`${encodeURIComponent(p.name)}=${encodeURIComponent(value)}`);
+        }
+      }
+    });
+    
+    if (queryParams.length > 0) {
+      path += (path.includes("?") ? "&" : "?") + queryParams.join("&");
+    }
 
     // Construct Auth Headers
     const h: Record<string, string> = {};
@@ -591,6 +608,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   </span>
                                   <span className="text-[10px] text-slate-500 mt-0.5">
                                     {param.in} • {param.type}
+                                    {param.default !== undefined && (
+                                      <span className="ml-1 text-blue-500 dark:text-blue-400">
+                                        • default: {String(param.default)}
+                                      </span>
+                                    )}
                                   </span>
                                     {param.description && (
                                     <p className="text-[10px] text-slate-500 dark:text-slate-600 mt-1 leading-tight">
@@ -604,7 +626,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   <div className="relative">
                                     <select
                                       className="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
-                                      value={paramValues[param.name] || ''}
+                                      value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
                                       onChange={(e) =>
                                         setParamValues((prev) => ({
                                           ...prev,
@@ -625,8 +647,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   <input
                                     type="text"
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-700"
-                                    placeholder={`Enter ${param.name}...`}
-                                    value={paramValues[param.name] || ''}
+                                    placeholder={param.default !== undefined ? String(param.default) : `Enter ${param.name}...`}
+                                    value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
                                     onChange={(e) =>
                                       setParamValues((prev) => ({
                                         ...prev,

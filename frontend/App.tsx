@@ -806,7 +806,7 @@ export default function App() {
   // API URL Modal Shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (activeModule === 'api' && (e.ctrlKey || e.metaKey) && e.key === 'q') {
+        if (activeModule === 'api' && (e.ctrlKey || e.metaKey) && e.code === 'KeyQ') {
             e.preventDefault();
             setIsSettingsModalOpen(true);
         }
@@ -819,7 +819,7 @@ export default function App() {
   // Socket.IO URL Modal Shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (activeModule === 'io' && (e.ctrlKey || e.metaKey) && e.key === 'q') {
+        if (activeModule === 'io' && (e.ctrlKey || e.metaKey) && e.code === 'KeyQ') {
             e.preventDefault();
             setIsIoUrlModalOpen(true);
             setTempIoUrl(socketIo.url);
@@ -833,7 +833,7 @@ export default function App() {
   // WebSocket URL Modal Shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (activeModule === 'ws' && (e.ctrlKey || e.metaKey) && e.key === 'q') {
+        if (activeModule === 'ws' && (e.ctrlKey || e.metaKey) && e.code === 'KeyQ') {
             e.preventDefault();
             setIsWsUrlModalOpen(true);
             setTempWsUrl(ws.baseUrl);

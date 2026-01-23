@@ -51,8 +51,14 @@ class MCPSDKService {
       }
     );
 
-    // Create SSE transport
+    // Parse and normalize URL
     const url = new URL(config.url);
+    
+    // Determine SSE URL - if ends with /mcp, try /sse as well
+    let sseUrl = new URL(config.url);
+    if (url.pathname.endsWith('/mcp')) {
+      sseUrl = new URL(config.url.replace(/\/mcp$/, '/sse'));
+    }
     
     // Add custom headers if provided
     const headers: Record<string, string> = {};
@@ -65,10 +71,10 @@ class MCPSDKService {
       Object.assign(headers, config.customHeaders);
     }
 
-    // Try HTTP (Streamable) transport first, then fall back to SSE
+    // Try SSE transport first (more compatible with most MCP servers)
     try {
-      console.log('[MCP] Trying HTTP (Streamable) transport...');
-      this.transport = new StreamableHTTPClientTransport(url, {
+      console.log('[MCP] Trying SSE transport first...', sseUrl.toString());
+      this.transport = new SSEClientTransport(sseUrl, {
         requestInit: {
           headers,
         },
@@ -76,28 +82,28 @@ class MCPSDKService {
       
       const connectPromise = this.client.connect(this.transport);
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('HTTP connection timeout')), 5000);
+        setTimeout(() => reject(new Error('SSE connection timeout')), 10000);
       });
 
       await Promise.race([connectPromise, timeoutPromise]);
-      this.connectionMode = 'http';
-      console.log('[MCP] Connected via HTTP (Streamable) transport');
+      this.connectionMode = 'sse';
+      console.log('[MCP] Connected via SSE transport');
       return;
-    } catch (httpError: any) {
-      console.log('[MCP] HTTP transport failed:', httpError.message);
+    } catch (sseError: any) {
+      console.log('[MCP] SSE transport failed:', sseError.message);
       // Clean up failed client
       try { await this.client.close(); } catch {}
       
-      // Recreate client for SSE attempt
+      // Recreate client for HTTP attempt
       this.client = new Client(
         { name: "MCP-Inspector", version: "1.0.0" },
         { capabilities: { roots: { listChanged: true }, sampling: {} } }
       );
     }
 
-    // Fall back to SSE transport
-    console.log('[MCP] Falling back to SSE transport...');
-    this.transport = new SSEClientTransport(url, {
+    // Fall back to HTTP (Streamable) transport
+    console.log('[MCP] Falling back to HTTP (Streamable) transport...', url.toString());
+    this.transport = new StreamableHTTPClientTransport(url, {
       requestInit: {
         headers,
       },
@@ -110,8 +116,8 @@ class MCPSDKService {
     });
 
     await Promise.race([connectPromise, timeoutPromise]);
-    this.connectionMode = 'sse';
-    console.log('[MCP] Connected via SSE transport');
+    this.connectionMode = 'http';
+    console.log('[MCP] Connected via HTTP (Streamable) transport');
   }
 
 
