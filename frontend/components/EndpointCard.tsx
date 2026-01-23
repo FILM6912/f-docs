@@ -382,7 +382,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   return (
     // Added z-10 when menu is open to fix stacking context overlap with next card
     <div
-      className={`mb-4 rounded-lg border ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-slate-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""} ${forcedOpen ? "h-full flex flex-col mb-0 border-0 rounded-none md:rounded-lg md:border" : ""}`}
+      className={`mb-4 rounded-lg border ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-zinc-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""} ${forcedOpen ? "h-full flex flex-col mb-0 border-0 rounded-none md:rounded-lg md:border" : ""}`}
     >
       {/* Header - Full colored bar like Swagger */}
       <div
@@ -397,9 +397,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
               className="shadow-sm w-full block text-center"
             />
           </div>
-          <span className="font-mono text-slate-700 dark:text-slate-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
+          <span className="font-mono text-zinc-700 dark:text-zinc-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
             <span className="opacity-90">{endpoint.path}</span>
-            <span className="text-slate-400 text-sm hidden sm:block truncate shrink-0 font-sans opacity-60">
+            <span className="text-zinc-400 text-sm hidden sm:block truncate shrink-0 font-sans opacity-60">
               - {endpoint.summary}
             </span>
           </span>
@@ -408,7 +408,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           {/* Copy URL Button */}
           <button
             onClick={handleCopyUrl}
-            className={`transition-all p-1 ${urlCopied ? "text-emerald-500 dark:text-emerald-400" : "text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"}`}
+            className={`transition-all p-1 ${urlCopied ? "text-emerald-500 dark:text-emerald-400" : "text-zinc-500 dark:text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"}`}
             title="Copy Endpoint URL"
           >
             {urlCopied ? (
@@ -425,7 +425,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 e.stopPropagation();
                 setShowExportMenu(!showExportMenu);
               }}
-              className="p-1 text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+              className="p-1 text-zinc-500 dark:text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
               title="Export"
             >
               <MoreVertical size={16} />
@@ -439,16 +439,16 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     setShowExportMenu(false);
                   }}
                 />
-                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-xl z-50 overflow-hidden py-1">
+                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-xl z-50 overflow-hidden py-1">
                   <button
                     onClick={handleViewRawJson}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white flex items-center gap-2"
                   >
                     <FileCode size={12} /> Raw JSON
                   </button>
                   <button
                     onClick={handleDownloadJson}
-                    className="w-full text-left px-3 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white flex items-center gap-2"
                   >
                     <Download size={12} /> Download JSON
                   </button>
@@ -462,12 +462,12 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
               {authorized ? (
                 <Unlock size={14} className="text-emerald-500 dark:text-emerald-400" />
               ) : (
-                <Lock size={14} className="text-slate-400 dark:text-slate-600" />
+                <Lock size={14} className="text-zinc-400 dark:text-zinc-600" />
               )}
             </div>
           )}
           {!forcedOpen && (
-            <div className="text-slate-500 dark:text-slate-400 transition-colors ml-2">
+            <div className="text-zinc-500 dark:text-zinc-400 transition-colors ml-2">
               {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
             </div>
           )}
@@ -477,10 +477,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       {/* Expanded Content */}
       {isOpen && (
         <div
-          className={`bg-slate-50/50 dark:bg-slate-900/30 p-4 border-t border-slate-200 dark:border-slate-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg ${forcedOpen ? "flex-1 flex flex-col min-h-0 overflow-hidden" : ""}`}
+          className={`bg-zinc-50/50 dark:bg-zinc-900/30 p-4 border-t border-zinc-200 dark:border-zinc-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg ${forcedOpen ? "flex-1 flex flex-col min-h-0 overflow-hidden" : ""}`}
         >
           <div className="mb-6 px-4">
-             <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+             <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">
               Description
              </h4>
              
@@ -489,13 +489,13 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                  const isLong = descText.split('\n').length > 5 || descText.length > 300;
                  
                  if (!isLong) {
-                      return <MarkdownDisplay content={descText} className="text-sm text-slate-600 dark:text-slate-300" />;
+                      return <MarkdownDisplay content={descText} className="text-sm text-zinc-600 dark:text-zinc-300" />;
                  }
 
                  return (
                      <div className="relative block w-full">
                          <div className="mask-image-gradient-b">
-                                <MarkdownDisplay content={descText} className="text-sm dark:text-slate-300 text-slate-600 line-clamp-2" />
+                                <MarkdownDisplay content={descText} className="text-sm dark:text-zinc-300 text-zinc-600 line-clamp-2" />
                           </div>
                           
                            <div className="mt-2 text-right">
@@ -503,31 +503,31 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                    onClick={(e) => { e.stopPropagation(); setShowDescModal(true); }}
                                    className="text-xs font-bold text-blue-500 hover:text-blue-400 inline-flex items-center group cursor-pointer"
                                 >
-                                 <span className="shrink-0 text-[10px] bg-blue-50 hover:bg-blue-100 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-slate-700/50 flex items-center gap-1 dark:group-hover:border-blue-500/30 transition-colors"><MessageSquare size={8} /> Read More</span>
+                                 <span className="shrink-0 text-[10px] bg-blue-50 hover:bg-blue-100 dark:bg-zinc-800 dark:text-zinc-400 px-1.5 py-0.5 rounded-full border border-blue-100 dark:border-zinc-700/50 flex items-center gap-1 dark:group-hover:border-blue-500/30 transition-colors"><MessageSquare size={8} /> Read More</span>
                                 </button>
                             </div>
                           
                           {/* Popup Modal */}
                           {showDescModal && (
-                              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
+                              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
                                   <div 
-                                     className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
+                                     className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
                                      onClick={e => e.stopPropagation()}
                                  >
-                                      <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 rounded-t-xl">
-                                          <h3 className="font-bold text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                                      <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 rounded-t-xl">
+                                          <h3 className="font-bold text-zinc-900 dark:text-zinc-200 flex items-center gap-2">
                                               {/* Icon here if needed */}
                                               Description
                                           </h3>
                                           <button 
                                             onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}
-                                            className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                            className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                                           >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                                           </button>
                                       </div>
                                      <div className="p-6 overflow-y-auto custom-scrollbar">
-                                        <MarkdownDisplay content={descText} className="text-sm text-slate-300" />
+                                        <MarkdownDisplay content={descText} className="text-sm text-zinc-300" />
                                      </div>
                                  </div>
                              </div>
@@ -542,8 +542,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             {/* Left Col: Request Parameters & Body */}
             <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full" : ""}`}>
               {/* Tab Navigation for Request */}
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
+                <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
                   Request
                 </h3>
                 <div className="flex gap-1">
@@ -561,8 +561,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         }}
                         className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                           activeTab === tab
-                            ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600"
-                            : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                            ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600"
+                            : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
                         } ${isDisabled ? "opacity-30 cursor-not-allowed hidden" : ""}`}
                       >
                         {tab === "params"
@@ -576,29 +576,29 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className={`p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 min-h-[250px] flex-1 shadow-inner transition-colors ${forcedOpen ? "flex flex-col overflow-hidden" : ""}`}>
+              <div className={`p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 min-h-[250px] flex-1 shadow-inner transition-colors ${forcedOpen ? "flex flex-col overflow-hidden" : ""}`}>
                 {/* Params Tab */}
                 {activeTab === "params" && (
                   <div className="space-y-4 overflow-y-auto custom-scrollbar max-h-[500px] pr-2">
                     {!endpoint.parameters ||
                     endpoint.parameters.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-slate-500 text-sm italic opacity-60 flex-1">
+                      <div className="h-full flex flex-col items-center justify-center text-zinc-500 text-sm italic opacity-60 flex-1">
                         <span>No parameters required</span>
                       </div>
                     ) : (
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase text-slate-500 font-bold tracking-wider">
+                          <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
                             <th className="pb-2 w-1/3">Name</th>
                             <th className="pb-2">Value</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                           {endpoint.parameters.map((param) => (
                             <tr key={param.name}>
                               <td className="py-3 align-top pr-2">
                                 <div className="flex flex-col">
-                                  <span className="text-xs font-mono font-semibold text-slate-700 dark:text-slate-300">
+                                  <span className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">
                                     {param.name}
                                     {param.required && (
                                       <span className="text-red-500 ml-0.5">
@@ -606,7 +606,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                       </span>
                                     )}
                                   </span>
-                                  <span className="text-[10px] text-slate-500 mt-0.5">
+                                  <span className="text-[10px] text-zinc-500 mt-0.5">
                                     {param.in} • {param.type}
                                     {param.default !== undefined && (
                                       <span className="ml-1 text-blue-500 dark:text-blue-400">
@@ -615,7 +615,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     )}
                                   </span>
                                     {param.description && (
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-600 mt-1 leading-tight">
+                                    <p className="text-[10px] text-zinc-500 dark:text-zinc-600 mt-1 leading-tight">
                                       {param.description}
                                     </p>
                                   )}
@@ -625,7 +625,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 {param.enum ? (
                                   <div className="relative">
                                     <select
-                                      className="w-full appearance-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
+                                      className="w-full appearance-none bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
                                       value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
                                       onChange={(e) =>
                                         setParamValues((prev) => ({
@@ -641,12 +641,12 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                         </option>
                                       ))}
                                     </select>
-                                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -tranzinc-y-1/2 text-zinc-500 pointer-events-none" />
                                   </div>
                                 ) : (
                                   <input
                                     type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-700"
+                                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
                                     placeholder={param.default !== undefined ? String(param.default) : `Enter ${param.name}...`}
                                     value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
                                     onChange={(e) =>
@@ -670,21 +670,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 {activeTab === "body" && (
                   <div className={`h-full flex flex-col overflow-hidden ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
                     <div className="flex justify-between items-center mb-3 shrink-0 px-1">
-                      <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-900 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800">
                         {endpoint.requestBodyType || "application/json"}
                       </span>
                       {!isMultipart && (
                         <div className="flex items-center gap-2">
-                             <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200 dark:border-slate-800">
+                             <div className="flex bg-zinc-100 dark:bg-zinc-900 rounded-lg p-0.5 border border-zinc-200 dark:border-zinc-800">
                                 <button
                                     onClick={() => setBodyMode('json')}
-                                    className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-all ${bodyMode === 'json' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                    className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-all ${bodyMode === 'json' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                                 >
                                     JSON
                                 </button>
                                 <button
                                     onClick={() => setBodyMode('ui')}
-                                    className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-all ${bodyMode === 'ui' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                    className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-all ${bodyMode === 'ui' ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                                 >
                                     UI Builder
                                 </button>
@@ -718,10 +718,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             return (
                             <div
                               key={prop.name}
-                              className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded p-3"
+                              className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-3"
                             >
                               <div className="mb-2 flex items-center gap-2">
-                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
                                   {prop.name}
                                 </span>
                                 {prop.required && (
@@ -729,7 +729,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     *
                                   </span>
                                 )}
-                                <span className="text-[10px] text-slate-500 font-mono bg-white dark:bg-slate-950 px-1.5 rounded border border-slate-200 dark:border-transparent">
+                                <span className="text-[10px] text-zinc-500 font-mono bg-white dark:bg-zinc-950 px-1.5 rounded border border-zinc-200 dark:border-transparent">
                                   {prop.type}
                                   {prop.format ? ` (${prop.format})` : ""}
                                 </span>
@@ -740,7 +740,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 <div className="relative">
                                   {formValues[prop.name] &&
                                   formValues[prop.name] instanceof File ? (
-                                                                    <div className="flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded">
+                                                                    <div className="flex items-center justify-between p-2 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded">
                                       <div className="flex items-center gap-2 overflow-hidden">
                                         <div className="w-8 h-8 bg-blue-500/10 rounded flex items-center justify-center shrink-0">
                                           <FileIcon
@@ -749,13 +749,13 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                           />
                                         </div>
                                         <div className="min-w-0">
-                                          <p className="text-xs text-slate-700 dark:text-slate-300 truncate">
+                                          <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
                                             {
                                               (formValues[prop.name] as File)
                                                 .name
                                             }
                                           </p>
-                                          <p className="text-[10px] text-slate-500">
+                                          <p className="text-[10px] text-zinc-500">
                                             {(
                                               (formValues[prop.name] as File)
                                                 .size / 1024
@@ -766,7 +766,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                       </div>
                                       <button
                                         onClick={() => removeFile(prop.name)}
-                                        className="p-1 hover:bg-red-500/10 text-slate-500 hover:text-red-400 rounded transition-colors"
+                                        className="p-1 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded transition-colors"
                                       >
                                         <X size={14} />
                                       </button>
@@ -780,12 +780,12 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                           handleFormFileChange(prop.name, e)
                                         }
                                       />
-                                      <div className="border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/50 rounded p-4 text-center group-hover:border-blue-500/30 transition-colors">
+                                      <div className="border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950/50 rounded p-4 text-center group-hover:border-blue-500/30 transition-colors">
                                         <Upload
                                           size={16}
-                                          className="mx-auto mb-1 text-slate-500 group-hover:text-blue-400"
+                                          className="mx-auto mb-1 text-zinc-500 group-hover:text-blue-400"
                                         />
-                                        <p className="text-xs text-slate-500">
+                                        <p className="text-xs text-zinc-500">
                                           Click or drag to upload
                                         </p>
                                       </div>
@@ -796,7 +796,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 // Standard Text Input
                                 <input
                                   type="text"
-                                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500/50"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
                                   placeholder={`Enter ${prop.name}`}
                                   onChange={(e) =>
                                     handleFormTextChange(
@@ -807,7 +807,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 />
                               )}
                               {prop.description && (
-                                <p className="text-[10px] text-slate-500 mt-1.5">
+                                <p className="text-[10px] text-zinc-500 mt-1.5">
                                   {prop.description}
                                 </p>
                               )}
@@ -818,19 +818,19 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     ) : (
                       // JSON Editor UI
                       // JSON Editor UI
-                      <div className={`w-full flex-1 border border-slate-200 dark:border-slate-800 rounded overflow-hidden min-h-[160px] transition-colors ${forcedOpen ? "h-full" : ""}`}>
+                      <div className={`w-full flex-1 border border-zinc-200 dark:border-zinc-800 rounded overflow-hidden min-h-[160px] transition-colors ${forcedOpen ? "h-full" : ""}`}>
                           {bodyMode === 'json' ? (
                             <JsonEditor
                                 value={bodyValue}
                                 onChange={(val) => setBodyValue(val)}
                                 placeholder="{}"
-                                className="bg-slate-50 dark:bg-slate-900/50"
+                                className="bg-zinc-50 dark:bg-zinc-900/50"
                             />
                           ) : (
-                            <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50 min-h-0 max-h-[500px]">
+                            <div className="flex flex-col h-full bg-zinc-50 dark:bg-zinc-900/50 min-h-0 max-h-[500px]">
                                 <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2 min-h-0">
                                     {bodyBuilderItems.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center h-full text-slate-400 text-xs italic opacity-60 min-h-[100px]">
+                                        <div className="flex flex-col items-center justify-center h-full text-zinc-400 text-xs italic opacity-60 min-h-[100px]">
                                             <p>No properties added</p>
                                         </div>
                                     ) : (
@@ -846,7 +846,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                                         setBodyBuilderItems(newItems);
                                                         updateBodyFromBuilder(newItems);
                                                     }}
-                                                    className="flex-1 min-w-0 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500/50"
+                                                    className="flex-1 min-w-0 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
                                                  />
                                                  <select
                                                     value={item.type}
@@ -856,7 +856,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                                         setBodyBuilderItems(newItems);
                                                         updateBodyFromBuilder(newItems);
                                                     }}
-                                                    className="w-20 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-[10px] text-slate-500 outline-none cursor-pointer"
+                                                    className="w-20 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-[10px] text-zinc-500 outline-none cursor-pointer"
                                                  >
                                                      <option value="string">String</option>
                                                      <option value="number">Number</option>
@@ -872,7 +872,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                                         setBodyBuilderItems(newItems);
                                                         updateBodyFromBuilder(newItems);
                                                     }}
-                                                    className="flex-1 min-w-0 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500/50"
+                                                    className="flex-1 min-w-0 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
                                                  />
                                                  <button
                                                     onClick={() => {
@@ -880,7 +880,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                                         setBodyBuilderItems(newItems);
                                                         updateBodyFromBuilder(newItems);
                                                     }}
-                                                    className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                                                    className="p-1 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
                                                  >
                                                      <X size={12} />
                                                  </button>
@@ -888,14 +888,14 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                         ))
                                     )}
                                 </div>
-                                <div className="p-2 border-t border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/30">
+                                <div className="p-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-900/30">
                                     <button
                                         onClick={() => {
                                             const newItems = [...bodyBuilderItems, { id: Math.random().toString(36).substring(7), key: "", value: "", type: "string" as const }];
                                             setBodyBuilderItems(newItems);
                                             updateBodyFromBuilder(newItems);
                                         }}
-                                        className="w-full py-1.5 rounded border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 text-xs hover:bg-white dark:hover:bg-slate-800 hover:text-blue-500 hover:border-blue-300 transition-all flex items-center justify-center gap-1.5"
+                                        className="w-full py-1.5 rounded border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 text-xs hover:bg-white dark:hover:bg-zinc-800 hover:text-blue-500 hover:border-blue-300 transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <Plus size={12} /> Add Property
                                     </button>
@@ -911,7 +911,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 {activeTab === "auth" && (
                   <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar max-h-[500px] pr-2">
                     {!isSecured ? (
-                      <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 text-sm italic py-12 rounded-lg bg-slate-50 dark:bg-slate-900 transition-colors border border-dashed border-slate-200 dark:border-slate-800">
+                      <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm italic py-12 rounded-lg bg-zinc-50 dark:bg-zinc-900 transition-colors border border-dashed border-zinc-200 dark:border-zinc-800">
                         No authorization needed
                       </div>
                     ) : (
@@ -923,7 +923,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             return (
                               <div
                                 key={schemeName}
-                                className="p-3 border border-slate-200 dark:border-slate-800 rounded-md bg-slate-50 dark:bg-slate-900/50"
+                                className="p-3 border border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50 dark:bg-zinc-900/50"
                               >
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-2">
@@ -938,7 +938,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                         className="text-amber-500"
                                       />
                                     )}
-                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
                                       {schemeName}
                                     </span>
                                   </div>
@@ -957,11 +957,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     type="password"
                                     value="************************"
                                     disabled
-                                    className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-600 text-[10px] px-2 py-1.5 rounded cursor-not-allowed font-mono tracking-widest"
+                                    className="w-full bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-600 text-[10px] px-2 py-1.5 rounded cursor-not-allowed font-mono tracking-widest"
                                   />
                                 </div>
                                 {!hasCreds && (
-                                  <p className="text-[10px] text-slate-500 mt-2 italic">
+                                  <p className="text-[10px] text-zinc-500 mt-2 italic">
                                     Please set credentials in the top-right
                                     "Authorize" menu.
                                   </p>
@@ -992,8 +992,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
             {/* Right Col: Responses & Preview */}
             <div className="flex flex-col h-full min-w-0">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Response</h3>
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
+                <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">Response</h3>
 
                 {/* Response Tabs */}
                 <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[200px] sm:max-w-none">
@@ -1001,8 +1001,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     onClick={() => setRightPanelTab("live")}
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-all flex items-center gap-1.5 whitespace-nowrap ${
                       rightPanelTab === "live"
-                        ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600"
-                        : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                        ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600"
+                        : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
                     }`}
                   >
                     <Zap
@@ -1016,15 +1016,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     Live
                   </button>
                   {/* Removed cURL Tab */}
-                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-800 mx-1 self-center"></div>
+                  <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-800 mx-1 self-center"></div>
                   {responseCodes.map((code) => (
                     <button
                       key={code}
                       onClick={() => setRightPanelTab(code)}
                       className={`px-2.5 py-1 text-xs font-mono font-bold rounded-full transition-all whitespace-nowrap ${
                         rightPanelTab === code
-                          ? `bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600`
-                          : `text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50`
+                          ? `bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600`
+                          : `text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50`
                       }`}
                     >
                       <span
@@ -1036,7 +1036,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className={`flex-1 flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 overflow-hidden min-h-[300px] shadow-inner relative ${forcedOpen ? "h-full" : ""}`}>
+              <div className={`flex-1 flex flex-col rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden min-h-[300px] shadow-inner relative ${forcedOpen ? "h-full" : ""}`}>
                 {/* 1. Live Response Tab */}
                 {rightPanelTab === "live" && (
                   <div
@@ -1044,22 +1044,22 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                   >
                     {!response && !isLoading && (
                       <div className="text-center p-6 opacity-60">
-                        <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-900 mx-auto mb-3 flex items-center justify-center border border-slate-200 dark:border-slate-800">
-                          <Zap size={20} className="text-slate-400 dark:text-slate-600" />
+                        <div className="w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-900 mx-auto mb-3 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
+                          <Zap size={20} className="text-zinc-400 dark:text-zinc-600" />
                         </div>
-                        <p className="text-slate-500 font-medium text-xs uppercase tracking-wide">
+                        <p className="text-zinc-500 font-medium text-xs uppercase tracking-wide">
                           Ready to execute
                         </p>
                       </div>
                     )}
 
                     {isLoading && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm z-20">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm z-20">
                         <Loader2
                           size={32}
                           className="text-blue-500 animate-spin mb-3"
                         />
-                        <p className="text-slate-400 text-xs font-medium animate-pulse">
+                        <p className="text-zinc-400 text-xs font-medium animate-pulse">
                           Sending Request...
                         </p>
                       </div>
@@ -1068,7 +1068,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     {response && (
                       <>
                         <div
-                          className={`flex items-center justify-between px-4 py-2 border-b border-slate-800 ${response.status >= 400 ? "bg-red-500/5" : "bg-emerald-500/5"} shrink-0`}
+                          className={`flex items-center justify-between px-4 py-2 border-b border-zinc-800 ${response.status >= 400 ? "bg-red-500/5" : "bg-emerald-500/5"} shrink-0`}
                         >
                           <div className="flex items-center gap-3">
                             <div
@@ -1079,7 +1079,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 className={`w-1 h-1 rounded-full ${response.status >= 400 ? "bg-red-400" : "bg-emerald-400"}`}
                               ></span>
                             </div>
-                            <span className="text-[10px] font-mono text-slate-500">
+                            <span className="text-[10px] font-mono text-zinc-500">
                               {response.latency}ms
                             </span>
                           </div>
@@ -1087,7 +1087,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             onClick={() =>
                               handleCopy(JSON.stringify(response.data, null, 2))
                             }
-                            className="text-slate-500 hover:text-slate-300 transition-colors"
+                            className="text-zinc-500 hover:text-zinc-300 transition-colors"
                           >
                             {copied ? (
                               <Check size={14} className="text-emerald-400" />
@@ -1107,22 +1107,22 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 {/* 2. Example Response Tabs (Replaces the bottom table description) */}
                 {responseCodes.includes(rightPanelTab) &&
                   endpoint.responses[parseInt(rightPanelTab)] && (
-                    <div className="flex-1 flex flex-col overflow-hidden bg-slate-950">
-                      <div className="flex flex-col border-b border-slate-800 bg-slate-900/30 shrink-0">
+                    <div className="flex-1 flex flex-col overflow-hidden bg-zinc-950">
+                      <div className="flex flex-col border-b border-zinc-800 bg-zinc-900/30 shrink-0">
                         {/* Description Section moved here */}
                         <div className="px-4 py-3">
-                          <h5 className="text-[10px] font-bold uppercase text-slate-500 tracking-wider mb-1">
+                          <h5 className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider mb-1">
                             Description
                           </h5>
-                          <p className="text-sm text-slate-300 leading-snug">
+                          <p className="text-sm text-zinc-300 leading-snug">
                             {
                               endpoint.responses[parseInt(rightPanelTab)]
                                 .description
                             }
                           </p>
                         </div>
-                        <div className="px-4 py-1.5 bg-slate-900/50 flex justify-between items-center border-t border-slate-800/50">
-                          <span className="text-[10px] font-mono text-slate-500">
+                        <div className="px-4 py-1.5 bg-zinc-900/50 flex justify-between items-center border-t border-zinc-800/50">
+                          <span className="text-[10px] font-mono text-zinc-500">
                             application/json
                           </span>
                           {endpoint.responses[parseInt(rightPanelTab)]
@@ -1134,7 +1134,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     .schema!,
                                 )
                               }
-                              className="text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1.5 text-[10px] font-medium"
+                              className="text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1.5 text-[10px] font-medium"
                             >
                               {copied ? (
                                 <Check size={12} className="text-emerald-400" />
@@ -1147,7 +1147,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         </div>
                       </div>
 
-                      <div className="p-4 overflow-auto custom-scrollbar flex-1 bg-white dark:bg-slate-950 transition-colors max-h-[500px]">
+                      <div className="p-4 overflow-auto custom-scrollbar flex-1 bg-white dark:bg-zinc-950 transition-colors max-h-[500px]">
                         {endpoint.responses[parseInt(rightPanelTab)].schema ? (
                              (() => {
                                  let dataToDisplay = endpoint.responses[parseInt(rightPanelTab)].schema;
@@ -1165,7 +1165,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                  return <JsonDisplay data={dataToDisplay} />;
                              })()
                         ) : (
-                          <div className="flex flex-col items-center justify-center h-full text-slate-600 italic text-sm">
+                          <div className="flex flex-col items-center justify-center h-full text-zinc-600 italic text-sm">
                             <FileJson size={24} className="mb-2 opacity-30" />
                             No example schema provided
                           </div>
@@ -1179,22 +1179,22 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             {/* Added Modal Portal for this card specifically or just fixed position overlay */}
             {validationErrors && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}>
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
                         <div className="p-6">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-2 bg-red-500/10 rounded-full shrink-0">
                                     <AlertCircle size={24} className="text-red-500" />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Missing Required Fields</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Please complete the following fields:</p>
+                                    <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200">Missing Required Fields</h3>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Please complete the following fields:</p>
                                 </div>
                             </div>
                             
-                            <div className="bg-slate-50 dark:bg-slate-950/50 rounded-md border border-slate-200 dark:border-slate-800/50 p-3 mb-5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                            <div className="bg-zinc-50 dark:bg-zinc-950/50 rounded-md border border-zinc-200 dark:border-zinc-800/50 p-3 mb-5 max-h-[200px] overflow-y-auto custom-scrollbar">
                                 <ul className="space-y-2">
                                     {validationErrors.map((err, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+                                        <li key={idx} className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-300">
                                             <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1 shrink-0" />
                                             {err}
                                         </li>
@@ -1204,7 +1204,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             
                             <button
                                 onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}
-                                className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white text-slate-600 dark:text-slate-300 rounded font-bold text-xs transition-colors border border-slate-200 dark:border-slate-700 uppercase tracking-wide"
+                                className="w-full py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white text-zinc-600 dark:text-zinc-300 rounded font-bold text-xs transition-colors border border-zinc-200 dark:border-zinc-700 uppercase tracking-wide"
                             >
                                 Dismiss
                             </button>

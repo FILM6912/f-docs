@@ -16,7 +16,7 @@ export const JsonEditor: React.FC<JsonEditorProps> = ({
   placeholder
 }) => {
   return (
-    <div className={`relative w-full h-full flex flex-col font-mono text-xs bg-slate-50 dark:bg-slate-900 overflow-hidden ${className}`}>
+    <div className={`relative w-full h-full flex flex-col font-mono text-xs bg-zinc-50 dark:bg-zinc-900 overflow-hidden ${className}`}>
       <Editor
         value={value}
         onValueChange={onChange}

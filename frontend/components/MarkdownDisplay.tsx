@@ -23,9 +23,9 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
       }
 
       if (match[1].startsWith('**')) { // Bold
-        parts.push(<strong key={match.index} className="font-bold text-slate-800 dark:text-amber-200">{match[2]}</strong>);
+        parts.push(<strong key={match.index} className="font-bold text-zinc-800 dark:text-amber-200">{match[2]}</strong>);
       } else if (match[1].startsWith('`')) { // Code
-        parts.push(<code key={match.index} className="bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded text-xs font-mono text-pink-600 dark:text-pink-300 border border-slate-200 dark:border-slate-700/50">{match[4]}</code>);
+        parts.push(<code key={match.index} className="bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded text-xs font-mono text-pink-600 dark:text-pink-300 border border-zinc-200 dark:border-zinc-700/50">{match[4]}</code>);
       } else if (match[1].startsWith('[')) { // Link
         parts.push(<a key={match.index} href={match[6]} target="_blank" rel="noreferrer" className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 hover:underline transition-colors">{match[5]}</a>);
       } else { // Italic
@@ -47,7 +47,7 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
   const parts = content.split(/(```[\s\S]*?```)/g);
 
   return (
-    <div className={`text-slate-600 dark:text-slate-300 text-sm leading-relaxed space-y-3 ${className}`}>
+    <div className={`text-zinc-600 dark:text-zinc-300 text-sm leading-relaxed space-y-3 ${className}`}>
       {parts.map((part, index) => {
         if (part.startsWith('```')) {
           // Render Code Block
@@ -67,8 +67,8 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
                  
                  if (jsonData) {
                      return (
-                         <div key={index} className="bg-slate-50 dark:bg-slate-950 rounded-md border border-slate-200 dark:border-slate-800 p-3 overflow-x-auto my-3 shadow-inner relative group">
-                             <div className="flex justify-between items-center mb-1 text-[10px] text-slate-500 uppercase tracking-wider font-bold">
+                         <div key={index} className="bg-zinc-50 dark:bg-zinc-950 rounded-md border border-zinc-200 dark:border-zinc-800 p-3 overflow-x-auto my-3 shadow-inner relative group">
+                             <div className="flex justify-between items-center mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-bold">
                                 <span>{lang}</span>
                              </div>
                              <JsonDisplay data={jsonData} />
@@ -78,8 +78,8 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
              }
 
              return (
-               <div key={index} className="bg-slate-50 dark:bg-slate-950 rounded-md border border-slate-200 dark:border-slate-800 p-3 overflow-x-auto my-3 shadow-inner relative group">
-                 <div className="flex justify-between items-center mb-1 text-[10px] text-slate-500 uppercase tracking-wider font-bold">
+               <div key={index} className="bg-zinc-50 dark:bg-zinc-950 rounded-md border border-zinc-200 dark:border-zinc-800 p-3 overflow-x-auto my-3 shadow-inner relative group">
+                 <div className="flex justify-between items-center mb-1 text-[10px] text-zinc-500 uppercase tracking-wider font-bold">
                     <span>{lang}</span>
                  </div>
                  <pre className="font-mono text-xs text-blue-800/90 dark:text-blue-100/90 whitespace-pre">{code}</pre>
@@ -101,7 +101,7 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
               // Header
               if (trimmed.startsWith('#')) {
                   if (inList) {
-                      nodes.push(<ul key={`list-${index}-${i}`} className="list-disc list-outside ml-4 space-y-1 mb-3 text-slate-600 dark:text-slate-300">{listItems}</ul>);
+                      nodes.push(<ul key={`list-${index}-${i}`} className="list-disc list-outside ml-4 space-y-1 mb-3 text-zinc-600 dark:text-zinc-300">{listItems}</ul>);
                       inList = false;
                       listItems = [];
                   }
@@ -117,7 +117,7 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
                       switch(level) {
                           case 1: 
                               Tag = 'h1';
-                              headerClass = 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 border-b border-slate-200 dark:border-slate-700/50 pb-1';
+                              headerClass = 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 border-b border-zinc-200 dark:border-zinc-700/50 pb-1';
                               break;
                           case 2:
                               Tag = 'h2';
@@ -129,7 +129,7 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
                               break;
                           default:
                               Tag = 'h4';
-                              headerClass = 'text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide';
+                              headerClass = 'text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide';
                               break;
                       }
 
@@ -141,13 +141,13 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
               // List
               if (trimmed.match(/^(\*|-)\s/)) {
                   if (!inList) inList = true;
-                  listItems.push(<li key={`li-${index}-${i}`} className="pl-1 marker:text-slate-400 dark:marker:text-slate-600">{parseInline(trimmed.substring(2))}</li>);
+                  listItems.push(<li key={`li-${index}-${i}`} className="pl-1 marker:text-zinc-400 dark:marker:text-zinc-600">{parseInline(trimmed.substring(2))}</li>);
                   return;
               }
 
               // End List if we were in one
               if (inList) {
-                  nodes.push(<ul key={`list-${index}-${i}`} className="list-disc list-outside ml-4 space-y-1 mb-3 text-slate-600 dark:text-slate-300">{listItems}</ul>);
+                  nodes.push(<ul key={`list-${index}-${i}`} className="list-disc list-outside ml-4 space-y-1 mb-3 text-zinc-600 dark:text-zinc-300">{listItems}</ul>);
                   inList = false;
                   listItems = [];
               }
@@ -160,12 +160,12 @@ export const MarkdownDisplay: React.FC<MarkdownDisplayProps> = ({ content, class
 
               // Normal Paragraph
               if (trimmed) {
-                  nodes.push(<p key={`p-${index}-${i}`} className="mb-2 last:mb-0 text-slate-600 dark:text-slate-300 leading-relaxed">{parseInline(line)}</p>);
+                  nodes.push(<p key={`p-${index}-${i}`} className="mb-2 last:mb-0 text-zinc-600 dark:text-zinc-300 leading-relaxed">{parseInline(line)}</p>);
               }
            });
            
            if (inList) {
-               nodes.push(<ul key={`list-${index}-end`} className="list-disc list-outside ml-4 space-y-1 mb-3 text-slate-600 dark:text-slate-300">{listItems}</ul>);
+               nodes.push(<ul key={`list-${index}-end`} className="list-disc list-outside ml-4 space-y-1 mb-3 text-zinc-600 dark:text-zinc-300">{listItems}</ul>);
            }
 
            return <div key={index}>{nodes}</div>;

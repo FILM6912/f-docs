@@ -29,16 +29,16 @@ export const WebSocketTester: React.FC<WebSocketTesterProps> = ({
     <div className="p-6 h-full flex flex-col w-full">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
         <div className="shrink-0">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-3">
             <Activity className="text-purple-600 dark:text-purple-400" /> WebSocket Tester
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Real-time path-based monitor.</p>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-1">Real-time path-based monitor.</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar p-1">
         {connectedPaths.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-50">
+          <div className="h-full flex flex-col items-center justify-center text-zinc-500 opacity-50">
             <Radio size={48} className="mb-4" />
             <p className="text-sm italic">No active connections. Enable paths from the sidebar to connect.</p>
           </div>
@@ -112,30 +112,30 @@ const PathCard: React.FC<PathCardProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden flex flex-col h-[600px] shadow-sm hover:border-purple-200 dark:hover:border-slate-700 transition-colors">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col h-[600px] shadow-sm hover:border-purple-200 dark:hover:border-zinc-700 transition-colors">
       {/* Card Header */}
       <div
         className={`px-4 py-3 border-b shrink-0 flex items-center justify-between ${
           isSystem
-            ? "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800"
-            : "bg-slate-50/50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+            ? "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800"
+            : "bg-zinc-50/50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800"
         }`}
       >
         <div className="flex items-center gap-2 overflow-hidden">
-          <div className={`w-2 h-2 rounded-full shrink-0 ${path.isConnected ? "bg-emerald-500 animate-pulse" : "bg-slate-600"}`} />
-          <span className="font-mono font-bold text-sm text-slate-700 dark:text-slate-200 truncate" title={fullUrl}>{path.name}</span>
+          <div className={`w-2 h-2 rounded-full shrink-0 ${path.isConnected ? "bg-emerald-500 animate-pulse" : "bg-zinc-600"}`} />
+          <span className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-200 truncate" title={fullUrl}>{path.name}</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => clearPathData(path.name)}
-            className="text-[10px] text-slate-500 hover:text-purple-500 transition-colors uppercase font-bold tracking-wider px-1"
+            className="text-[10px] text-zinc-500 hover:text-purple-500 transition-colors uppercase font-bold tracking-wider px-1"
           >
             Clear
           </button>
           {!isSystem && (
             <button
               onClick={() => removePath(path.id)}
-              className="text-slate-500 hover:text-red-400 transition-colors p-1"
+              className="text-zinc-500 hover:text-red-400 transition-colors p-1"
             >
               <X size={14} />
             </button>
@@ -160,9 +160,9 @@ const PathCard: React.FC<PathCardProps> = ({
       )}
 
       {/* Card Body (Chat History) */}
-      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-black/20">
+      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar bg-zinc-50/30 dark:bg-black/20">
         {!data || data.history.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
+          <div className="h-full flex flex-col items-center justify-center text-zinc-400 opacity-60">
             <Activity size={32} className="mb-2 opacity-20" />
             <p className="text-xs">Waiting for messages...</p>
           </div>
@@ -177,28 +177,28 @@ const PathCard: React.FC<PathCardProps> = ({
       </div>
 
       {/* Send Section */}
-      <div className="p-3 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 shrink-0">
+      <div className="p-3 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
         <form onSubmit={handleSend} className="relative">
           <textarea
             value={payload}
             onChange={(e) => setPayload(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full h-12 max-h-32 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-3 pr-12 py-3 text-xs font-mono text-slate-700 dark:text-slate-200 focus:outline-none focus:border-purple-500 resize-none shadow-inner"
+            className="w-full h-12 max-h-32 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg pl-3 pr-12 py-3 text-xs font-mono text-zinc-700 dark:text-zinc-200 focus:outline-none focus:border-purple-500 resize-none shadow-inner"
             placeholder='Type a message (Markdown supported)...'
           />
           <button
             type="submit"
             disabled={!path.isConnected || !payload.trim()}
-            className="absolute right-2 bottom-2 p-1.5 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-white rounded-md transition-all shadow-sm"
+            className="absolute right-2 bottom-2 p-1.5 bg-purple-600 hover:bg-purple-500 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed text-white rounded-md transition-all shadow-sm"
           >
             <Send size={14} />
           </button>
         </form>
         <div className="mt-1 flex justify-between px-1">
-             <div className="text-[9px] text-slate-400 flex items-center gap-1">
+             <div className="text-[9px] text-zinc-400 flex items-center gap-1">
                 <span>Markdown & JSON supported</span>
              </div>
-             <div className="text-[9px] text-slate-400 font-mono">
+             <div className="text-[9px] text-zinc-400 font-mono">
                 {data ? `${data.count} messages` : '0 messages'}
              </div>
         </div>
@@ -217,7 +217,7 @@ const MessageBubble = ({ message }: { message: WebSocketMessage }) => {
         <span className={`text-[10px] px-2 py-0.5 rounded-full ${
           message.isError 
             ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-900/50' 
-            : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
+            : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700'
         }`}>
           {message.content}
         </span>
@@ -256,14 +256,14 @@ const MessageBubble = ({ message }: { message: WebSocketMessage }) => {
           <div 
             className={`rounded-lg px-3 py-2 text-xs shadow-sm ${
               isSent 
-                ? 'bg-purple-50 dark:bg-purple-900/20 text-slate-800 dark:text-slate-200 border border-purple-100 dark:border-purple-900/30 rounded-br-none' 
-                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-none'
+                ? 'bg-purple-50 dark:bg-purple-900/20 text-zinc-800 dark:text-zinc-200 border border-purple-100 dark:border-purple-900/30 rounded-br-none' 
+                : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 rounded-bl-none'
             }`}
           >
             <MessageRenderer content={displayContent} />
           </div>
       </div>
-      <span className="text-[9px] text-slate-400 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <span className="text-[9px] text-zinc-400 mt-1 px-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {message.timestamp}
       </span>
     </div>

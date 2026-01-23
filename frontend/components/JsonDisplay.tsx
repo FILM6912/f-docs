@@ -35,7 +35,7 @@ export const highlightXml = (code: string) => {
         </span>
       );
       elements.push(
-        <span key={key++} className="text-slate-500 dark:text-slate-400">
+        <span key={key++} className="text-zinc-500 dark:text-zinc-400">
           =
         </span>
       );
@@ -49,21 +49,21 @@ export const highlightXml = (code: string) => {
     } else if (content && content.trim()) {
       // Text content
       elements.push(
-        <span key={key++} className="text-slate-700 dark:text-slate-200">
+        <span key={key++} className="text-zinc-700 dark:text-zinc-200">
           {content}
         </span>
       );
     } else if (bracket) {
       // Brackets
       elements.push(
-        <span key={key++} className="text-slate-500 dark:text-slate-400">
+        <span key={key++} className="text-zinc-500 dark:text-zinc-400">
           {bracket}
         </span>
       );
     } else if (fullMatch) {
       // Fallback for any unmatched content
       elements.push(
-        <span key={key++} className="text-slate-600 dark:text-slate-300">
+        <span key={key++} className="text-zinc-600 dark:text-zinc-300">
           {fullMatch}
         </span>
       );
@@ -95,14 +95,14 @@ export const highlightJson = (code: string) => {
                 elements.push(<span key={`text-${lastIndex}`}>{code.substring(lastIndex, matchIndex)}</span>);
             }
             const str = match[0];
-            let styleClass = 'text-slate-600 dark:text-slate-300';
+            let styleClass = 'text-zinc-600 dark:text-zinc-300';
             
             if (match[1].startsWith('"')) {
                 if (match[1].endsWith(':')) {
                     styleClass = 'text-blue-600 dark:text-blue-400 font-semibold';
                     const key = str.slice(0, -1);
                     elements.push(<span key={matchIndex} className={styleClass}>{key}</span>);
-                    elements.push(<span key={`${matchIndex}-colon`} className="text-slate-400 dark:text-slate-500">:</span>);
+                    elements.push(<span key={`${matchIndex}-colon`} className="text-zinc-400 dark:text-zinc-500">:</span>);
                     lastIndex = tokenRegex.lastIndex;
                     continue;
                 } else {
@@ -119,7 +119,7 @@ export const highlightJson = (code: string) => {
             lastIndex = tokenRegex.lastIndex;
         }
         if (lastIndex < code.length) {
-            elements.push(<span key="remaining" className="text-slate-500 dark:text-slate-400">{code.substring(lastIndex)}</span>);
+            elements.push(<span key="remaining" className="text-zinc-500 dark:text-zinc-400">{code.substring(lastIndex)}</span>);
         }
         return elements;
       })()}
