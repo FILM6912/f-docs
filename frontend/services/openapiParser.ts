@@ -123,7 +123,8 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                      required: paramDef.required || false,
                      type: paramDef.schema?.type || paramDef.type || 'string', // v3 uses schema.type, v2 uses type directly
                      enum: paramDef.schema?.enum || paramDef.enum,
-                     description: paramDef.description
+                     description: paramDef.description,
+                     default: paramDef.schema?.default || paramDef.default
                    };
              });
 
@@ -284,6 +285,9 @@ function generateExampleFromSchema(schema: any, spec: any, depth = 0): any {
     return combined;
   }
 
+  // Check for default value first (before example)
+  if (schema.default !== undefined) return schema.default;
+  
   if (schema.example) return schema.example;
   
   if (schema.type === 'object' || (!schema.type && schema.properties)) {

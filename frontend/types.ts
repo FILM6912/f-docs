@@ -13,6 +13,7 @@ export interface Parameter {
   type: string;
   enum?: string[];
   description?: string;
+  default?: any;
 }
 
 export interface SecurityRequirement {
