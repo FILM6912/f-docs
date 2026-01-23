@@ -74,7 +74,7 @@ const McpBadge: React.FC<{ type: 'RESOURCE' | 'TOOL' | 'PROMPT'; className?: str
   const colors = {
     RESOURCE: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     TOOL: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    PROMPT: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    PROMPT: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
   };
   return (
     <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider border ${colors[type]} ${className}`}>
@@ -123,11 +123,11 @@ const McpItemCard: React.FC<{
             button: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20'
         },
         PROMPT: { 
-            border: 'border-purple-500/20', 
-            bg: 'bg-purple-500/10', 
+            border: 'border-cyan-500/20', 
+            bg: 'bg-cyan-500/10', 
             hover: 'hover:brightness-110', 
-            text: 'text-purple-400',
-            button: 'bg-purple-600 hover:bg-purple-500'
+            text: 'text-cyan-400',
+            button: 'bg-cyan-600 hover:bg-cyan-500'
         }
     }[type];
 
@@ -702,7 +702,7 @@ export const McpTester: React.FC = () => {
                                       <div className="text-xs text-zinc-500 mt-1">Resources</div>
                                   </div>
                                   <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800 text-center">
-                                      <div className="text-2xl font-bold text-purple-400">{prompts.length}</div>
+                                      <div className="text-2xl font-bold text-cyan-400">{prompts.length}</div>
                                       <div className="text-xs text-zinc-500 mt-1">Prompts</div>
                                   </div>
                               </div>
@@ -792,7 +792,7 @@ export const McpTester: React.FC = () => {
                         </div>
                         {prompts.map(p => (
                              <div key={p.name} className="w-full text-left px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded truncate flex items-center gap-2 transition-colors cursor-pointer">
-                                <MessageSquare size={12} className="text-purple-500/70 shrink-0" /> <span className="truncate">{p.name}</span>
+                                <MessageSquare size={12} className="text-cyan-500/70 shrink-0" /> <span className="truncate">{p.name}</span>
                              </div>
                         ))}
                     </div>

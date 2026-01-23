@@ -30,7 +30,7 @@ export const WebSocketTester: React.FC<WebSocketTesterProps> = ({
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
         <div className="shrink-0">
           <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-3">
-            <Activity className="text-purple-600 dark:text-purple-400" /> WebSocket Tester
+            <Activity className="text-zinc-600 dark:text-zinc-400" /> WebSocket Tester
           </h2>
           <p className="text-zinc-600 dark:text-zinc-400 mt-1">Real-time path-based monitor.</p>
         </div>
@@ -112,7 +112,7 @@ const PathCard: React.FC<PathCardProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col h-[600px] shadow-sm hover:border-purple-200 dark:hover:border-zinc-700 transition-colors">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col h-[600px] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
       {/* Card Header */}
       <div
         className={`px-4 py-3 border-b shrink-0 flex items-center justify-between ${
@@ -128,7 +128,7 @@ const PathCard: React.FC<PathCardProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => clearPathData(path.name)}
-            className="text-[10px] text-zinc-500 hover:text-purple-500 transition-colors uppercase font-bold tracking-wider px-1"
+            className="text-[10px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors uppercase font-bold tracking-wider px-1"
           >
             Clear
           </button>
@@ -183,13 +183,13 @@ const PathCard: React.FC<PathCardProps> = ({
             value={payload}
             onChange={(e) => setPayload(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full h-12 max-h-32 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg pl-3 pr-12 py-3 text-xs font-mono text-zinc-700 dark:text-zinc-200 focus:outline-none focus:border-purple-500 resize-none shadow-inner"
+            className="w-full h-12 max-h-32 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg pl-3 pr-12 py-3 text-xs font-mono text-zinc-700 dark:text-zinc-200 focus:outline-none focus:border-blue-500 resize-none shadow-inner"
             placeholder='Type a message (Markdown supported)...'
           />
           <button
             type="submit"
             disabled={!path.isConnected || !payload.trim()}
-            className="absolute right-2 bottom-2 p-1.5 bg-purple-600 hover:bg-purple-500 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed text-white rounded-md transition-all shadow-sm"
+            className="absolute right-2 bottom-2 p-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:cursor-not-allowed text-white rounded-md transition-all shadow-sm"
           >
             <Send size={14} />
           </button>
@@ -248,7 +248,7 @@ const MessageBubble = ({ message }: { message: WebSocketMessage }) => {
       <div className="flex items-end gap-2 max-w-[85%]">
           {/* Sent Tick - Left side of the box for sent messages */}
           {isSent && (
-              <div className="mb-1 text-purple-500 dark:text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="mb-1 text-blue-500 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Check size={12} strokeWidth={3} />
               </div>
           )}
@@ -256,7 +256,7 @@ const MessageBubble = ({ message }: { message: WebSocketMessage }) => {
           <div 
             className={`rounded-lg px-3 py-2 text-xs shadow-sm ${
               isSent 
-                ? 'bg-purple-50 dark:bg-purple-900/20 text-zinc-800 dark:text-zinc-200 border border-purple-100 dark:border-purple-900/30 rounded-br-none' 
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-zinc-800 dark:text-zinc-200 border border-blue-100 dark:border-blue-900/30 rounded-br-none' 
                 : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 rounded-bl-none'
             }`}
           >

@@ -9,7 +9,7 @@ export const McpBadge: React.FC<{ type: 'RESOURCE' | 'TOOL' | 'PROMPT'; classNam
   const colors = {
     RESOURCE: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     TOOL: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    PROMPT: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    PROMPT: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
   };
   return (
     <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider border ${colors[type]} ${className}`}>
@@ -63,11 +63,11 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
             button: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20'
         },
         PROMPT: { 
-            border: 'border-purple-500/20', 
-            bg: 'bg-purple-500/10', 
+            border: 'border-cyan-500/20', 
+            bg: 'bg-cyan-500/10', 
             hover: 'hover:brightness-110', 
-            text: 'text-purple-400',
-            button: 'bg-purple-600 hover:bg-purple-500'
+            text: 'text-cyan-400',
+            button: 'bg-cyan-600 hover:bg-cyan-500'
         }
     }[type];
 

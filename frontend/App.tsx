@@ -601,14 +601,14 @@ export default function App() {
 
   const getIndicatorColor = () => {
       switch(activeModule) {
-          case 'ws': return 'bg-purple-100 dark:bg-zinc-800';
+          case 'ws': return 'bg-zinc-100 dark:bg-zinc-800';
           default: return 'bg-blue-100 dark:bg-zinc-800';
       }
   };
 
   const getIndicatorBarColor = () => {
       switch(activeModule) {
-          case 'ws': return 'bg-purple-500';
+          case 'ws': return 'bg-zinc-500';
           case 'mcp': return 'bg-orange-500';
           default: return 'bg-blue-500';
       }
@@ -1009,7 +1009,7 @@ export default function App() {
                 <button 
                    ref={setWsRef}
                    onClick={() => setActiveModule('ws')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'ws' ? 'text-purple-600 dark:text-purple-400' : 'text-zinc-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'}`}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'ws' ? 'text-zinc-600 dark:text-zinc-400' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'}`}
                    title="WebSocket Tester"
                 >
                    <Activity size={22} />
@@ -1277,7 +1277,7 @@ export default function App() {
                                     <button
                                         key={p.name}
                                         onClick={() => setActiveMcpItem({ type: 'PROMPT', data: p })}
-                                        className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === p.name ? 'bg-zinc-800 text-purple-400 border-l-2 border-purple-500' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 border-l-2 border-transparent'}`}
+                                        className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === p.name ? 'bg-zinc-800 text-cyan-400 border-l-2 border-cyan-500' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 border-l-2 border-transparent'}`}
                                     >
                                         <MessageSquare size={12} className="shrink-0 opacity-70" />
                                         <span className="truncate">{p.name}</span>
@@ -1333,7 +1333,7 @@ export default function App() {
 
             <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
                 <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-3 flex items-center gap-2">
-                    <Activity size={18} className="text-purple-500" />
+                    <Activity size={18} className="text-zinc-500" />
                     <span>WebSocket Tester</span>
                 </h1>
                 
@@ -1374,7 +1374,7 @@ export default function App() {
                                         type="text"
                                         value={tempWsUrl}
                                         onChange={(e) => setTempWsUrl(e.target.value)}
-                                        className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-4 text-sm text-zinc-800 dark:text-white focus:outline-none focus:border-purple-500 font-mono"
+                                        className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-4 text-sm text-zinc-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
                                         placeholder="wss://echo.websocket.org"
                                     />
                                     <p className="text-xs text-zinc-500 mt-2">
@@ -1391,7 +1391,7 @@ export default function App() {
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded text-sm font-bold shadow-lg shadow-purple-900/20"
+                                        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-bold shadow-lg shadow-blue-900/20"
                                     >
                                         Save
                                     </button>
@@ -1409,12 +1409,12 @@ export default function App() {
                             value={newWsPath}
                             onChange={(e) => setNewWsPath(e.target.value)}
                             placeholder="Add path/label..."
-                            className="flex-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-purple-500 text-zinc-800 dark:text-white"
+                            className="flex-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500 text-zinc-800 dark:text-white"
                         />
                         <button 
                             type="submit"
                             disabled={!newWsPath.trim()}
-                            className="px-2 py-1.5 bg-purple-100 text-purple-600 dark:bg-zinc-800 dark:text-purple-400 rounded hover:bg-purple-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                            className="px-2 py-1.5 bg-blue-100 text-blue-600 dark:bg-zinc-800 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
                         >
                             <Plus size={14} />
                         </button>

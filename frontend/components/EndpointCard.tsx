@@ -174,10 +174,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       button: "bg-red-600 hover:bg-red-500 shadow-red-900/20",
     },
     [Method.PATCH]: {
-      bg: "bg-purple-50 dark:bg-purple-500/10",
-      border: "border-purple-200 dark:border-purple-500/20",
-      text: "text-purple-700 dark:text-purple-400",
-      button: "bg-purple-600 hover:bg-purple-500 shadow-purple-900/20",
+      bg: "bg-orange-50 dark:bg-orange-500/10",
+      border: "border-orange-200 dark:border-orange-500/20",
+      text: "text-orange-700 dark:text-orange-400",
+      button: "bg-orange-600 hover:bg-orange-500 shadow-orange-900/20",
     },
   }[endpoint.method];
 
@@ -477,7 +477,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       {/* Expanded Content */}
       {isOpen && (
         <div
-          className={`bg-zinc-50/50 dark:bg-zinc-900/30 p-4 border-t border-zinc-200 dark:border-zinc-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg ${forcedOpen ? "flex-1 flex flex-col min-h-0 overflow-hidden" : ""}`}
+          className={`bg-zinc-50/50 dark:bg-zinc-900/30 p-4 border-t border-zinc-200 dark:border-zinc-800/50 animate-in fade-in slide-in-from-top-1 duration-200 rounded-b-lg ${forcedOpen ? "flex-1 flex flex-col min-h-0 overflow-hidden max-h-[calc(100vh-200px)]" : ""}`}
         >
           <div className="mb-6 px-4">
              <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">
@@ -538,9 +538,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           </div>
 
           {/* Controls Container */}
-          <div className={`grid lg:grid-cols-2 gap-6 ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
+          <div className={`grid lg:grid-cols-2 gap-6 ${forcedOpen ? "flex-1 min-h-0 overflow-hidden" : ""}`}>
             {/* Left Col: Request Parameters & Body */}
-            <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full" : ""}`}>
+            <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : ""}`}>
               {/* Tab Navigation for Request */}
               <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
                 <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
@@ -576,10 +576,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className={`p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 min-h-[250px] flex-1 shadow-inner transition-colors ${forcedOpen ? "flex flex-col overflow-hidden" : ""}`}>
+              <div className={`p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-inner transition-colors ${forcedOpen ? "flex-1 flex flex-col overflow-hidden min-h-0" : "min-h-[250px]"}`}>
                 {/* Params Tab */}
                 {activeTab === "params" && (
-                  <div className="space-y-4 overflow-y-auto custom-scrollbar max-h-[500px] pr-2">
+                  <div className={`space-y-4 pr-2 ${forcedOpen ? "flex-1 overflow-y-auto custom-scrollbar" : "overflow-y-auto custom-scrollbar max-h-[500px]"}`}>
                     {!endpoint.parameters ||
                     endpoint.parameters.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-zinc-500 text-sm italic opacity-60 flex-1">
@@ -692,14 +692,14 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                              <button
                               onClick={handleAiGenerate}
                               disabled={isGenerating}
-                              className="group flex items-center gap-1.5 text-[10px] font-medium bg-purple-500/5 text-purple-400 px-2.5 py-1 rounded-full border border-purple-500/20 hover:bg-purple-500/20 transition-all disabled:opacity-50"
+                              className="group flex items-center gap-1.5 text-[10px] font-medium bg-blue-500/5 text-blue-400 px-2.5 py-1 rounded-full border border-blue-500/20 hover:bg-blue-500/20 transition-all disabled:opacity-50"
                             >
                               {isGenerating ? (
                                 <Loader2 size={10} className="animate-spin" />
                               ) : (
                                 <Sparkles
                                   size={10}
-                                  className="group-hover:text-purple-300"
+                                  className="group-hover:text-blue-300"
                                 />
                               )}
                               Generate Example
@@ -990,8 +990,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             </div>
 
             {/* Right Col: Responses & Preview */}
-            <div className="flex flex-col h-full min-w-0">
-              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
+            <div className="flex flex-col h-full min-w-0 min-h-0">
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2 shrink-0">
                 <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">Response</h3>
 
                 {/* Response Tabs */}
@@ -1035,11 +1035,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 </div>
               </div>
 
-              <div className={`flex-1 flex flex-col rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden min-h-[300px] shadow-inner relative ${forcedOpen ? "h-full" : ""}`}>
+              <div className={`flex-1 flex flex-col rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-inner relative ${forcedOpen ? "min-h-0" : "min-h-[300px]"}`}>
                 {/* 1. Live Response Tab */}
                 {rightPanelTab === "live" && (
                   <div
-                    className={`flex-1 flex flex-col overflow-auto custom-scrollbar relative ${!response && "items-center justify-center"}`}
+                    className={`flex-1 flex flex-col overflow-hidden relative ${!response && "items-center justify-center"}`}
                   >
                     {!response && !isLoading && (
                       <div className="text-center p-6 opacity-60">
@@ -1095,7 +1095,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             )}
                           </button>
                         </div>
-                        <div className="p-4 overflow-y-auto max-h-[500px] custom-scrollbar">
+                        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0">
                             <JsonDisplay data={response.data} />
                         </div>
                       </>

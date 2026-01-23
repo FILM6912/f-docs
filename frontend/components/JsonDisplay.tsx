@@ -30,7 +30,7 @@ export const highlightXml = (code: string) => {
     } else if (attr) {
       // Attribute name
       elements.push(
-        <span key={key++} className="text-purple-600 dark:text-purple-400">
+        <span key={key++} className="text-zinc-600 dark:text-zinc-400">
           {attr}
         </span>
       );
@@ -113,7 +113,7 @@ export const highlightJson = (code: string) => {
             } else if (/null/.test(str)) {
                 styleClass = 'text-red-500 dark:text-red-400 font-bold';
             } else {
-                styleClass = 'text-purple-600 dark:text-purple-400';
+                styleClass = 'text-zinc-500 dark:text-zinc-400';
             }
             elements.push(<span key={matchIndex} className={styleClass}>{str}</span>);
             lastIndex = tokenRegex.lastIndex;

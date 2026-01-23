@@ -39,7 +39,7 @@ export const MessageRenderer: React.FC<MessageRendererProps> = React.memo(({ con
             </div>
           ),
           code: ({ node, ...props }) => (
-            <code {...props} className="bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs font-mono text-purple-600 dark:text-purple-400" />
+            <code {...props} className="bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-xs font-mono text-blue-600 dark:text-blue-400" />
           )
         }}
       >
