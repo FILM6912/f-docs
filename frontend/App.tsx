@@ -37,16 +37,16 @@ const TagSection: React.FC<TagSectionProps> = ({
     if (endpoints.length === 0) return null;
 
     return (
-        <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden bg-white dark:bg-slate-900/30">
+        <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden bg-white dark:bg-zinc-900/30">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200 dark:border-slate-800"
+                className="w-full flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors border-b border-zinc-200 dark:border-zinc-800"
             >
                 <div className="flex items-baseline gap-3 overflow-hidden">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 truncate">{tag.name}</h3>
-                    <p className="text-xs text-slate-500 truncate hidden sm:block">{tag.description}</p>
+                    <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-200 truncate">{tag.name}</h3>
+                    <p className="text-xs text-zinc-500 truncate hidden sm:block">{tag.description}</p>
                 </div>
-                <div className="text-slate-500 dark:text-slate-400">
+                <div className="text-zinc-500 dark:text-zinc-400">
                     {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                 </div>
             </button>
@@ -180,19 +180,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                    <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                    <h2 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2">
                         <Lock size={18} /> Available Authorizations
                     </h2>
-                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
+                    <button onClick={onClose} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-white transition-colors">
                         <X size={20} />
                     </button>
                 </div>
                 
                 <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                     {schemeKeys.length === 0 ? (
-                        <p className="text-slate-500 text-sm italic">No security schemes defined in this spec.</p>
+                        <p className="text-zinc-500 text-sm italic">No security schemes defined in this spec.</p>
                     ) : (
                         <div className="space-y-6">
                             {schemeKeys.map(key => {
@@ -202,12 +202,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                 const isLoggedIn = !!credentials[key];
 
                                 return (
-                                    <div key={key} className="bg-slate-50 dark:bg-slate-950 p-5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                                        <div className="mb-4 pb-3 border-b border-slate-200 dark:border-slate-800/50">
+                                    <div key={key} className="bg-zinc-50 dark:bg-zinc-950 p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                                        <div className="mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-800/50">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-base text-slate-800 dark:text-slate-200">{key}</span>
-                                                    <span className="text-xs bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400 font-mono">
+                                                    <span className="font-bold text-base text-zinc-800 dark:text-zinc-200">{key}</span>
+                                                    <span className="text-xs bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-500 dark:text-zinc-400 font-mono">
                                                         {scheme.type === 'http' ? scheme.scheme : scheme.type}
                                                         {scheme.in ? ` (${scheme.in})` : ''}
                                                     </span>
@@ -218,20 +218,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                      </div>
                                                 )}
                                             </div>
-                                            {scheme.description && <p className="text-sm text-slate-400 mt-2">{scheme.description}</p>}
+                                            {scheme.description && <p className="text-sm text-zinc-400 mt-2">{scheme.description}</p>}
                                         </div>
 
                                         {/* Render Logic based on Type */}
                                         {isOAuth2Password ? (
                                             <div className="space-y-4">
-                                                <div className="text-xs text-slate-500 font-mono mb-2">
-                                                    <div className="flex gap-2"><span className="w-20 text-slate-400">Flow:</span> password</div>
-                                                    <div className="flex gap-2"><span className="w-20 text-slate-400">Token URL:</span> {scheme.flows?.password?.tokenUrl}</div>
+                                                <div className="text-xs text-zinc-500 font-mono mb-2">
+                                                    <div className="flex gap-2"><span className="w-20 text-zinc-400">Flow:</span> password</div>
+                                                    <div className="flex gap-2"><span className="w-20 text-zinc-400">Token URL:</span> {scheme.flows?.password?.tokenUrl}</div>
                                                 </div>
 
                                                 {!isLoggedIn ? (
                                                     <form 
-                                                        className="space-y-3 bg-white dark:bg-slate-900/50 p-4 rounded border border-slate-200 dark:border-slate-800"
+                                                        className="space-y-3 bg-white dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800"
                                                         onSubmit={(e) => {
                                                             e.preventDefault();
                                                             handleOauthLogin(key, scheme.flows?.password?.tokenUrl!);
@@ -239,40 +239,40 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     >
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                             <div className="space-y-1">
-                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Username *</label>
+                                                                <label className="text-[10px] font-bold uppercase text-zinc-500">Username *</label>
                                                                 <input 
                                                                     type="text" 
-                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="username"
                                                                     value={oauthForms[key]?.username || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'username', e.target.value)}
                                                                 />
                                                             </div>
                                                             <div className="space-y-1">
-                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Password *</label>
+                                                                <label className="text-[10px] font-bold uppercase text-zinc-500">Password *</label>
                                                                 <input 
                                                                     type="password" 
-                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="password"
                                                                     value={oauthForms[key]?.password || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'password', e.target.value)}
                                                                 />
                                                             </div>
                                                             <div className="space-y-1">
-                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Client ID</label>
+                                                                <label className="text-[10px] font-bold uppercase text-zinc-500">Client ID</label>
                                                                 <input 
                                                                     type="text" 
-                                                                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="client_id"
                                                                     value={oauthForms[key]?.client_id || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'client_id', e.target.value)}
                                                                 />
                                                             </div>
                                                             <div className="space-y-1">
-                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Client Secret</label>
+                                                                <label className="text-[10px] font-bold uppercase text-zinc-500">Client Secret</label>
                                                                 <input 
                                                                     type="password" 
-                                                                    className="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="client_secret"
                                                                     value={oauthForms[key]?.client_secret || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'client_secret', e.target.value)}
@@ -299,17 +299,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                 ) : (
                                                     <div className="flex gap-2 items-end">
                                                         <div className="flex-1 space-y-1">
-                                                            <label className="text-[10px] font-bold uppercase text-slate-500">Access Token</label>
+                                                            <label className="text-[10px] font-bold uppercase text-zinc-500">Access Token</label>
                                                             <input 
                                                                 type="text" 
-                                                                className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-500 dark:text-slate-400 font-mono truncate"
+                                                                className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 font-mono truncate"
                                                                 value={credentials[key] || ''}
                                                                 disabled
                                                             />
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
-                                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 text-slate-600 dark:text-slate-400 rounded text-sm border border-slate-200 dark:border-slate-700 transition-colors h-[38px] font-medium"
+                                                            className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 text-zinc-600 dark:text-zinc-400 rounded text-sm border border-zinc-200 dark:border-zinc-700 transition-colors h-[38px] font-medium"
                                                         >
                                                             Logout
                                                         </button>
@@ -321,7 +321,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                             <div className="space-y-4">
                                                 {!isLoggedIn ? (
                                                     <form 
-                                                        className="space-y-3 bg-white dark:bg-slate-900/50 p-4 rounded border border-slate-200 dark:border-slate-800"
+                                                        className="space-y-3 bg-white dark:bg-zinc-900/50 p-4 rounded border border-zinc-200 dark:border-zinc-800"
                                                         onSubmit={(e) => {
                                                             e.preventDefault();
                                                             handleBasicAuthLogin(key);
@@ -329,20 +329,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     >
                                                         <div className="space-y-3">
                                                             <div className="space-y-1">
-                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Username</label>
+                                                                <label className="text-[10px] font-bold uppercase text-zinc-500">Username</label>
                                                                 <input 
                                                                     type="text" 
-                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="username"
                                                                     value={oauthForms[key]?.username || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'username', e.target.value)}
                                                                 />
                                                             </div>
                                                             <div className="space-y-1">
-                                                                <label className="text-[10px] font-bold uppercase text-slate-500">Password</label>
+                                                                <label className="text-[10px] font-bold uppercase text-zinc-500">Password</label>
                                                                 <input 
                                                                     type="password" 
-                                                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                                                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                                     placeholder="password"
                                                                     value={oauthForms[key]?.password || ''}
                                                                     onChange={(e) => handleOauthFormChange(key, 'password', e.target.value)}
@@ -368,17 +368,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                 ) : (
                                                     <div className="flex gap-2 items-end">
                                                         <div className="flex-1 space-y-1">
-                                                            <label className="text-[10px] font-bold uppercase text-slate-500">Credentials (Base64)</label>
+                                                            <label className="text-[10px] font-bold uppercase text-zinc-500">Credentials (Base64)</label>
                                                             <input 
                                                                 type="text" 
-                                                                className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-600 dark:text-slate-400 font-mono truncate transition-colors"
+                                                                className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 font-mono truncate transition-colors"
                                                                 value={credentials[key] || ''}
                                                                 disabled
                                                             />
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
-                                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-500 dark:text-slate-400 rounded text-sm border border-slate-200 dark:border-slate-700 transition-colors h-[38px] font-medium"
+                                                            className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 dark:text-zinc-400 rounded text-sm border border-zinc-200 dark:border-zinc-700 transition-colors h-[38px] font-medium"
                                                         >
                                                             Logout
                                                         </button>
@@ -388,13 +388,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                         ) : (
                                             // Standard API Key / Bearer Token Input
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-bold uppercase text-slate-500">
+                                                <label className="text-[10px] font-bold uppercase text-zinc-500">
                                                     Value {scheme.in === 'header' ? '(Header)' : ''}
                                                 </label>
                                                 <div className="flex gap-2">
                                                     <input 
                                                         type="text" 
-                                                        className="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                                                        className="flex-1 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-blue-500"
                                                         placeholder={scheme.type === 'http' && scheme.scheme === 'bearer' ? 'e.g. eyJhbGci...' : 'Required'}
                                                         value={credentials[key] || ''}
                                                         onChange={(e) => handleInputChange(key, e.target.value)}
@@ -403,13 +403,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     {credentials[key] && (
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
-                                                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-500 dark:text-slate-400 rounded text-sm border border-slate-200 dark:border-slate-700 transition-colors font-medium"
+                                                            className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-red-500/20 hover:text-red-400 text-zinc-500 dark:text-zinc-400 rounded text-sm border border-zinc-200 dark:border-zinc-700 transition-colors font-medium"
                                                         >
                                                             Logout
                                                         </button>
                                                     )}
                                                 </div>
-                                                <p className="text-[10px] text-slate-500 pt-1">
+                                                <p className="text-[10px] text-zinc-500 pt-1">
                                                     Enter the {scheme.type === 'http' ? 'token' : 'key'} value directly.
                                                 </p>
                                             </div>
@@ -421,7 +421,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                     )}
                 </div>
 
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-end gap-2 shrink-0">
+                <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex justify-end gap-2 shrink-0">
                     <button onClick={onClose} className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors shadow-lg shadow-blue-900/20">
                         Done
                     </button>
@@ -456,30 +456,30 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-lg overflow-hidden">
-                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
-                    <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-lg overflow-hidden">
+                 <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+                    <h2 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2">
                         <Settings size={18} /> API Configuration
                     </h2>
-                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
+                    <button onClick={onClose} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-white transition-colors">
                         <X size={20} />
                     </button>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                      <div>
-                        <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">OpenAPI Specification URL</label>
+                        <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">OpenAPI Specification URL</label>
                         <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
+                            <Globe className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
                             <input 
                                 type="text" 
                                 placeholder="http://localhost:8000/openapi.json" 
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                                className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md pl-10 pr-4 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                             />
                         </div>
-                        <p className="text-xs text-slate-500 mt-2">
+                        <p className="text-xs text-zinc-500 mt-2">
                             Enter the URL to a JSON format OpenAPI (Swagger) v2 or v3 definition.
                         </p>
                     </div>
@@ -488,7 +488,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                         <button 
                             type="button"
                             onClick={() => { setInputValue(''); onLoad(''); onClose(); }}
-                            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-sm font-medium transition-colors border border-slate-200 dark:border-slate-700"
+                            className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded text-sm font-medium transition-colors border border-zinc-200 dark:border-zinc-700"
                         >
                             Reset to Demo
                         </button>
@@ -601,14 +601,14 @@ export default function App() {
 
   const getIndicatorColor = () => {
       switch(activeModule) {
-          case 'ws': return 'bg-purple-100 dark:bg-slate-800';
-          default: return 'bg-blue-100 dark:bg-slate-800';
+          case 'ws': return 'bg-zinc-100 dark:bg-zinc-800';
+          default: return 'bg-blue-100 dark:bg-zinc-800';
       }
   };
 
   const getIndicatorBarColor = () => {
       switch(activeModule) {
-          case 'ws': return 'bg-purple-500';
+          case 'ws': return 'bg-zinc-500';
           case 'mcp': return 'bg-orange-500';
           default: return 'bg-blue-500';
       }
@@ -963,10 +963,10 @@ export default function App() {
   const activeEndpoint = activeEndpointId ? endpoints.find(e => e.id === activeEndpointId) : null;
 
   return (
-    <div className="h-screen bg-inherit text-slate-900 dark:text-slate-200 flex flex-row font-sans overflow-hidden">
+    <div className="h-screen bg-inherit text-zinc-900 dark:text-zinc-200 flex flex-row font-sans overflow-hidden">
       
       {/* 1. Activity Bar (Module Switcher) */}
-      <nav className="w-16 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
+      <nav className="w-16 bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
 
           
           <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>
@@ -998,7 +998,7 @@ export default function App() {
                 <button 
                    ref={setApiRef}
                    onClick={() => setActiveModule('api')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'api' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'api' ? 'text-blue-600 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'}`}
                    title="REST API Documentation"
                 >
                    <Layers size={22} />
@@ -1009,7 +1009,7 @@ export default function App() {
                 <button 
                    ref={setWsRef}
                    onClick={() => setActiveModule('ws')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'ws' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'ws' ? 'text-zinc-600 dark:text-zinc-400' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'}`}
                    title="WebSocket Tester"
                 >
                    <Activity size={22} />
@@ -1020,7 +1020,7 @@ export default function App() {
                 <button 
                    ref={setIoRef}
                    onClick={() => setActiveModule('io')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'io' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'io' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'}`}
                    title="Socket.IO Tester"
                 >
                    <Radio size={22} />
@@ -1031,7 +1031,7 @@ export default function App() {
                 <button 
                    ref={setMcpRef}
                    onClick={() => setActiveModule('mcp')}
-                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'mcp' ? 'text-blue-600 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-900'}`}
+                   className={`p-3 rounded-xl flex justify-center transition-all group relative z-10 ${activeModule === 'mcp' ? 'text-blue-600 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'}`}
                    title="MCP Inspector"
                 >
                    <Database size={22} />
@@ -1041,8 +1041,13 @@ export default function App() {
           
           <div className="mt-auto px-2 flex flex-col gap-4">
               <button 
-                  onClick={toggleTheme}
-                  className="p-3 rounded-xl flex justify-center transition-all text-slate-500 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-slate-200 dark:hover:bg-slate-900"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Theme button clicked');
+                    toggleTheme();
+                  }}
+                  className="p-3 rounded-xl flex justify-center transition-all text-zinc-500 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-zinc-200 dark:hover:bg-zinc-900"
                   title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                   {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
@@ -1056,7 +1061,7 @@ export default function App() {
       {activeModule === 'api' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-zinc-50 dark:bg-[#18181b] border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1065,24 +1070,24 @@ export default function App() {
             onMouseDown={startResizing}
             />
 
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3">F-<span className="text-blue-500">Docs</span></h1>
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-3">F-<span className="text-blue-500">Docs</span></h1>
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
-                        <span className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 rounded text-slate-600 dark:text-slate-400">v{apiVersion}</span>
+                    <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
+                        <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">v{apiVersion}</span>
                     </div>
                     
-                    <div className="flex bg-slate-200 dark:bg-slate-800 rounded p-0.5 border border-slate-300 dark:border-slate-700">
+                    <div className="flex bg-zinc-200 dark:bg-zinc-800 rounded p-0.5 border border-zinc-300 dark:border-zinc-700">
                         <button 
                             onClick={() => setViewMode('list')}
-                            className={`p-1 rounded ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+                            className={`p-1 rounded ${viewMode === 'list' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
                             title="List View"
                         >
                             <LayoutList size={14} />
                         </button>
                         <button 
                             onClick={() => setViewMode('focused')}
-                            className={`p-1 rounded ${viewMode === 'focused' ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}
+                            className={`p-1 rounded ${viewMode === 'focused' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
                             title="Focused View"
                         >
                             <Sidebar size={14} />
@@ -1094,7 +1099,7 @@ export default function App() {
             <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0 relative" ref={apiListContainerRef}>
               {/* Sliding Active Indicator for API List */}
               <div 
-                  className="absolute bg-blue-50 dark:bg-slate-800 border-l-2 border-blue-500 transition-all duration-300 ease-out pointer-events-none z-0"
+                  className="absolute bg-blue-50 dark:bg-zinc-800 border-l-2 border-blue-500 transition-all duration-300 ease-out pointer-events-none z-0"
                   style={{
                       top: apiIndicatorStyle.top,
                       height: apiIndicatorStyle.height,
@@ -1107,13 +1112,13 @@ export default function App() {
                 // List Mode Sidebar
                 <>
                     <div className="mb-4 px-1">
-                        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-2">Resources</h3>
+                        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 px-2">Resources</h3>
                         <button 
                             onClick={() => setSelectedTag('All')}
-                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${selectedTag === 'All' ? 'bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${selectedTag === 'All' ? 'bg-blue-100 dark:bg-zinc-800 text-blue-700 dark:text-white' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
                         >
                             <span className="flex items-center gap-2 truncate"><Layers size={14} /> All Resources</span>
-                            <span className="text-[10px] bg-slate-200 dark:bg-slate-950 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-500">{endpoints.length}</span>
+                            <span className="text-[10px] bg-zinc-200 dark:bg-zinc-950 px-1.5 py-0.5 rounded-full text-zinc-500 dark:text-zinc-500">{endpoints.length}</span>
                         </button>
                     </div>
 
@@ -1122,7 +1127,7 @@ export default function App() {
                             <button
                                 key={tag.name}
                                 onClick={() => setSelectedTag(tag.name)}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${selectedTag === tag.name ? 'bg-blue-100 dark:bg-slate-800 text-blue-700 dark:text-white' : 'text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200'}`}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${selectedTag === tag.name ? 'bg-blue-100 dark:bg-zinc-800 text-blue-700 dark:text-white' : 'text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
                             >
                                 <Terminal size={12} className="opacity-70 shrink-0" />
                                 <span className="truncate">{tag.name}</span>
@@ -1143,21 +1148,21 @@ export default function App() {
                             <div key={tag.name} className="space-y-1">
                                 <button 
                                     onClick={() => toggleSidebarTag(tag.name)}
-                                    className="w-full flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors group uppercase tracking-wide"
+                                    className="w-full flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white px-2 py-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors group uppercase tracking-wide"
                                 >
                                     <span>{tag.name}</span>
                                     {isExpanded ? <ChevronDown size={12} className="opacity-50 group-hover:opacity-100"/> : <ChevronRight size={12} className="opacity-50 group-hover:opacity-100"/>}
                                 </button>
                                 
                                 {isExpanded && (
-                                    <div className="pl-2 space-y-0.5 border-l-2 border-slate-300 dark:border-slate-700 ml-3">
+                                    <div className="pl-2 space-y-0.5 border-l-2 border-zinc-300 dark:border-zinc-700 ml-3">
                                         {tagEndpoints.map(ep => (
                                             <button
                                                 key={ep.id}
                                                 data-id={ep.id}
                                                 ref={setEndpointRef}
                                                 onClick={() => setActiveEndpointId(ep.id)}
-                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] relative z-10 ${activeEndpointId === ep.id ? 'text-blue-700 dark:text-white border-transparent font-semibold' : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/30'}`}
+                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] relative z-10 ${activeEndpointId === ep.id ? 'text-blue-700 dark:text-white border-transparent font-semibold' : 'text-zinc-600 dark:text-zinc-400 border-transparent hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/30'}`}
                                             >
                                                 <div className="w-14 shrink-0">
                                                     <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
@@ -1176,13 +1181,13 @@ export default function App() {
             
             {/* Only show Authorize button if security schemes exist */}
             {securitySchemes && Object.keys(securitySchemes).length > 0 && (
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#18181b] shrink-0">
+                <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181b] shrink-0">
                     <button 
                         onClick={() => setIsAuthModalOpen(true)}
                         className={`w-full py-2 px-3 rounded-md text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${
                             isAuthorized 
                             ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20' 
-                            : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
+                            : 'bg-white hover:bg-zinc-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500'
                         }`}
                     >
                         {isAuthorized ? <Unlock size={14} /> : <Lock size={14} />}
@@ -1197,7 +1202,7 @@ export default function App() {
       {activeModule === 'mcp' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-zinc-50 dark:bg-[#18181b] border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1206,21 +1211,21 @@ export default function App() {
             onMouseDown={startResizing}
             />
 
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3 flex items-center gap-2">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-3 flex items-center gap-2">
                     <Database size={18} className="text-orange-500" />
                     <span>MCP Inspector</span>
                 </h1>
                 
                 {/* Search Bar */}
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={14} />
+                    <Search className="absolute left-2.5 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={14} />
                     <input 
                         type="text" 
                         placeholder="Filter items..." 
                         value={mcp.filter}
                         onChange={(e) => mcp.setFilter(e.target.value)}
-                        className="w-full h-8 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded pl-8 pr-2 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-orange-500"
+                        className="w-full h-8 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded pl-8 pr-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-orange-500"
                     />
                 </div>
             </div>
@@ -1230,16 +1235,16 @@ export default function App() {
                     <div className="space-y-6">
                         {/* Tools Group */}
                         <div>
-                            <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                            <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between items-center mb-1">
                                 <span>Tools</span>
-                                <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{mcp.tools.length}</span>
+                                <span className="bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400">{mcp.tools.length}</span>
                             </div>
-                            {mcp.filteredTools.length === 0 && <p className="px-2 text-xs text-slate-600 italic">No tools found</p>}
+                            {mcp.filteredTools.length === 0 && <p className="px-2 text-xs text-zinc-600 italic">No tools found</p>}
                             {mcp.filteredTools.map(t => (
                                 <button
                                     key={t.name}
                                     onClick={() => setActiveMcpItem({ type: 'TOOL', data: t })}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === t.name ? 'bg-emerald-50 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border-l-2 border-emerald-500' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 border-l-2 border-transparent'}`}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === t.name ? 'bg-emerald-50 dark:bg-zinc-800 text-emerald-700 dark:text-emerald-400 border-l-2 border-emerald-500' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 border-l-2 border-transparent'}`}
                                 >
                                     <Wrench size={12} className="shrink-0 opacity-70" />
                                     <span className="truncate">{t.name}</span>
@@ -1249,16 +1254,16 @@ export default function App() {
 
                         {/* Resources Group */}
                         <div>
-                            <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                            <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between items-center mb-1">
                                 <span>Resources</span>
-                                <span className="bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">{mcp.resources.length}</span>
+                                <span className="bg-zinc-800 px-1.5 py-0.5 rounded-full text-zinc-400">{mcp.resources.length}</span>
                             </div>
-                             {mcp.filteredResources.length === 0 && <p className="px-2 text-xs text-slate-600 italic">No resources found</p>}
+                             {mcp.filteredResources.length === 0 && <p className="px-2 text-xs text-zinc-600 italic">No resources found</p>}
                             {mcp.filteredResources.map(r => (
                                 <button
                                     key={r.uri}
                                     onClick={() => setActiveMcpItem({ type: 'RESOURCE', data: r })}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.uri === r.uri ? 'bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400 border-l-2 border-blue-500' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 border-l-2 border-transparent'}`}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.uri === r.uri ? 'bg-blue-50 dark:bg-zinc-800 text-blue-700 dark:text-blue-400 border-l-2 border-blue-500' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 border-l-2 border-transparent'}`}
                                 >
                                     <Box size={12} className="shrink-0 opacity-70" />
                                     <span className="truncate">{r.name}</span>
@@ -1269,15 +1274,15 @@ export default function App() {
                          {/* Prompts Group */}
                          {mcp.prompts.length > 0 && (
                             <div>
-                                <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                                <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between items-center mb-1">
                                     <span>Prompts</span>
-                                    <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{mcp.prompts.length}</span>
+                                    <span className="bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400">{mcp.prompts.length}</span>
                                 </div>
                                 {mcp.filteredPrompts.map(p => (
                                     <button
                                         key={p.name}
                                         onClick={() => setActiveMcpItem({ type: 'PROMPT', data: p })}
-                                        className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === p.name ? 'bg-slate-800 text-purple-400 border-l-2 border-purple-500' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'}`}
+                                        className={`w-full text-left px-3 py-2 rounded-md text-xs transition-colors flex items-center gap-2 ${activeMcpItem?.data.name === p.name ? 'bg-zinc-800 text-cyan-400 border-l-2 border-cyan-500' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 border-l-2 border-transparent'}`}
                                     >
                                         <MessageSquare size={12} className="shrink-0 opacity-70" />
                                         <span className="truncate">{p.name}</span>
@@ -1287,7 +1292,7 @@ export default function App() {
                          )}
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-64 text-slate-500 text-center px-4">
+                    <div className="flex flex-col items-center justify-center h-64 text-zinc-500 text-center px-4">
                         <Database size={32} className="mb-4 opacity-50" />
                         <p className="text-xs">Connect to an MCP server to view available tools and resources.</p>
                     </div>
@@ -1295,7 +1300,7 @@ export default function App() {
             </div>
             
             {/* Footer Connection Status */}
-             <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#18181b] shrink-0">
+             <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181b] shrink-0">
                  {mcp.isConnected ? (
                      <button 
                         onClick={() => mcp.disconnect()}
@@ -1322,7 +1327,7 @@ export default function App() {
       {activeModule === 'ws' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-zinc-50 dark:bg-[#18181b] border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1331,16 +1336,16 @@ export default function App() {
             onMouseDown={startResizing}
             />
 
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3 flex items-center gap-2">
-                    <Activity size={18} className="text-purple-500" />
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-3 flex items-center gap-2">
+                    <Activity size={18} className="text-zinc-500" />
                     <span>WebSocket Tester</span>
                 </h1>
                 
                 {/* WebSocket Base URL */}
-                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900/50 p-2 rounded-lg border border-zinc-200 dark:border-zinc-800">
                     <div 
-                        className="flex-1 truncate text-xs font-mono text-slate-500 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                        className="flex-1 truncate text-xs font-mono text-zinc-500 cursor-pointer hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
                         onClick={() => {
                             if(!ws.isAnyConnected) {
                                 setIsWsUrlModalOpen(true);
@@ -1351,7 +1356,7 @@ export default function App() {
                     >
                         {ws.baseUrl}
                     </div>
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${ws.isAnyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${ws.isAnyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
                 </div>
             </div>
 
@@ -1359,25 +1364,25 @@ export default function App() {
                {/* URL Edit Modal */}
                  {isWsUrlModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
-                                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Connection URL</h2>
-                                <button onClick={() => setIsWsUrlModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                             <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+                                <h2 className="text-lg font-bold text-zinc-800 dark:text-white">Connection URL</h2>
+                                <button onClick={() => setIsWsUrlModalOpen(false)} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-white">
                                     <X size={20} />
                                 </button>
                             </div>
                             <form onSubmit={handleWsUrlSubmit} className="p-6 space-y-4">
                                  <div>
-                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">WebSocket Server URL</label>
+                                    <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">WebSocket Server URL</label>
                                     <input
                                         ref={wsUrlInputRef}
                                         type="text"
                                         value={tempWsUrl}
                                         onChange={(e) => setTempWsUrl(e.target.value)}
-                                        className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-purple-500 font-mono"
+                                        className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-4 text-sm text-zinc-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
                                         placeholder="wss://echo.websocket.org"
                                     />
-                                    <p className="text-xs text-slate-500 mt-2">
+                                    <p className="text-xs text-zinc-500 mt-2">
                                         Press Enter to save.
                                     </p>
                                 </div>
@@ -1385,13 +1390,13 @@ export default function App() {
                                     <button
                                         type="button"
                                         onClick={() => setIsWsUrlModalOpen(false)}
-                                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-sm font-bold"
+                                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-sm font-bold"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded text-sm font-bold shadow-lg shadow-purple-900/20"
+                                        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-bold shadow-lg shadow-blue-900/20"
                                     >
                                         Save
                                     </button>
@@ -1409,50 +1414,50 @@ export default function App() {
                             value={newWsPath}
                             onChange={(e) => setNewWsPath(e.target.value)}
                             placeholder="Add path/label..."
-                            className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-purple-500 text-slate-800 dark:text-white"
+                            className="flex-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500 text-zinc-800 dark:text-white"
                         />
                         <button 
                             type="submit"
                             disabled={!newWsPath.trim()}
-                            className="px-2 py-1.5 bg-purple-100 text-purple-600 dark:bg-slate-800 dark:text-purple-400 rounded hover:bg-purple-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                            className="px-2 py-1.5 bg-blue-100 text-blue-600 dark:bg-zinc-800 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
                         >
                             <Plus size={14} />
                         </button>
                     </div>
                 </form>
 
-                <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between items-center mb-1">
                     <span>Active Paths</span>
-                    <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{ws.activePaths.length}</span>
+                    <span className="bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400">{ws.activePaths.length}</span>
                 </div>
 
                 {ws.activePaths.length === 0 && (
                      <div className="text-center py-8 px-4">
-                        <Activity size={24} className="mx-auto mb-2 text-slate-400 opacity-50" />
-                        <p className="text-xs text-slate-500 italic">No active paths. Add one to start monitoring.</p>
+                        <Activity size={24} className="mx-auto mb-2 text-zinc-400 opacity-50" />
+                        <p className="text-xs text-zinc-500 italic">No active paths. Add one to start monitoring.</p>
                      </div>
                 )}
                 
                 {ws.activePaths.map(path => {
                     const data = ws.pathData[path.name];
                     return (
-                        <div key={path.id} className={`bg-white dark:bg-slate-950 border rounded p-2 text-xs relative group mb-2 transition-all ${path.isConnected ? 'border-emerald-500/50 dark:border-emerald-500/30' : 'border-slate-200 dark:border-slate-800'}`}>
+                        <div key={path.id} className={`bg-white dark:bg-zinc-950 border rounded p-2 text-xs relative group mb-2 transition-all ${path.isConnected ? 'border-emerald-500/50 dark:border-emerald-500/30' : 'border-zinc-200 dark:border-zinc-800'}`}>
                             <div className="flex justify-between items-start mb-1">
                                 <div className="flex items-center gap-2 overflow-hidden flex-1">
                                     {/* Connection Status Indicator */}
                                     <div className={`w-2 h-2 rounded-full shrink-0 ${
                                         path.isConnecting ? 'bg-yellow-500 animate-pulse' :
                                         path.isConnected ? 'bg-emerald-500 animate-pulse' : 
-                                        path.error ? 'bg-red-500' : 'bg-slate-400'
+                                        path.error ? 'bg-red-500' : 'bg-zinc-400'
                                     }`} />
-                                    <span className={`font-bold truncate flex-1 font-mono ${path.isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-200'}`}>{path.name}</span>
+                                    <span className={`font-bold truncate flex-1 font-mono ${path.isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-700 dark:text-zinc-200'}`}>{path.name}</span>
                                      <button
                                         onClick={() => ws.togglePath(path.id)}
                                         disabled={path.isConnecting}
                                         className={`w-8 h-4 rounded-full flex items-center transition-colors shrink-0 ${
                                             path.isConnecting ? 'bg-yellow-500 cursor-wait' :
                                             path.isConnected ? 'bg-emerald-500 justify-end' : 
-                                            'bg-slate-300 dark:bg-slate-700 justify-start'
+                                            'bg-zinc-300 dark:bg-zinc-700 justify-start'
                                         }`}
                                         title={path.isConnecting ? "Connecting..." : path.isConnected ? "Disconnect" : "Connect"}
                                      >
@@ -1466,7 +1471,7 @@ export default function App() {
                                 <button 
                                     onClick={() => ws.removePath(path.id)}
                                     disabled={path.isConnected || path.isConnecting}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                                    className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-30 disabled:cursor-not-allowed"
                                     title="Remove Path"
                                 >
                                     <Trash2 size={14} />
@@ -1488,7 +1493,7 @@ export default function App() {
                             )}
                             
                             {data && !path.error && (
-                                <div className="text-[10px] text-slate-500 font-mono mt-1 flex justify-between pl-1">
+                                <div className="text-[10px] text-zinc-500 font-mono mt-1 flex justify-between pl-1">
                                     <span>Count: {data.count}</span>
                                     <span>{data.lastActivity}</span>
                                 </div>
@@ -1498,12 +1503,12 @@ export default function App() {
                 })}
 
                 <div>
-                    <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                    <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between items-center mb-1">
                         <span>Global Actions</span>
                     </div>
                     <button
                         onClick={ws.clearData}
-                        className="w-full text-left px-3 py-2 rounded-md text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 transition-colors flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 rounded-md text-xs text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors flex items-center gap-2"
                     >
                         <Trash2 size={12} />
                         <span>Clear All Data</span>
@@ -1511,8 +1516,8 @@ export default function App() {
                 </div>
             </div>
 
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#18181b] shrink-0">
-                <p className="text-[10px] text-slate-500 text-center italic">
+            <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#18181b] shrink-0">
+                <p className="text-[10px] text-zinc-500 text-center italic">
                     Use Ctrl+Q to quickly edit the WebSocket URL.
                 </p>
             </div>
@@ -1523,7 +1528,7 @@ export default function App() {
       {activeModule === 'io' && (
         <aside 
             ref={sidebarRef}
-            className="w-[var(--sidebar-width)] bg-slate-50 dark:bg-[#18181b] border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
+            className="w-[var(--sidebar-width)] bg-zinc-50 dark:bg-[#18181b] border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex flex-col relative group/sidebar h-screen hidden md:flex"
             style={{ '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties}
         >
             {/* Resize Handle */}
@@ -1532,17 +1537,17 @@ export default function App() {
             onMouseDown={startResizing}
             />
 
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-slate-900 dark:text-white truncate mb-3 flex items-center gap-2">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-3 flex items-center gap-2">
                     <Radio size={18} className="text-blue-500" />
                     <span>Socket.IO Tester</span>
                 </h1>
                 
                 {/* Socket.IO Sidebar Header */}
-                <div className="flex flex-col gap-2 bg-slate-100 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="flex flex-col gap-2 bg-zinc-100 dark:bg-zinc-900/50 p-2 rounded-lg border border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center justify-between">
                          <div 
-                            className="flex-1 truncate text-xs font-mono text-slate-500 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                            className="flex-1 truncate text-xs font-mono text-zinc-500 cursor-pointer hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
                             onClick={() => {
                                 if(!socketIo.isConnected) {
                                     setIsIoUrlModalOpen(true);
@@ -1579,25 +1584,25 @@ export default function App() {
                {/* URL Edit Modal */}
                  {isIoUrlModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
-                                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Connection URL</h2>
-                                <button onClick={() => setIsIoUrlModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                             <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+                                <h2 className="text-lg font-bold text-zinc-800 dark:text-white">Connection URL</h2>
+                                <button onClick={() => setIsIoUrlModalOpen(false)} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-white">
                                     <X size={20} />
                                 </button>
                             </div>
                             <form onSubmit={handleIoUrlSubmit} className="p-6 space-y-4">
                                  <div>
-                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Socket.IO Server URL</label>
+                                    <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">Socket.IO Server URL</label>
                                     <input
                                         ref={ioUrlInputRef}
                                         type="text"
                                         value={tempIoUrl}
                                         onChange={(e) => setTempIoUrl(e.target.value)}
-                                        className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
+                                        className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-4 text-sm text-zinc-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
                                         placeholder="http://localhost:3000"
                                     />
-                                    <p className="text-xs text-slate-500 mt-2">
+                                    <p className="text-xs text-zinc-500 mt-2">
                                         Press Enter to save.
                                     </p>
                                 </div>
@@ -1605,7 +1610,7 @@ export default function App() {
                                     <button
                                         type="button"
                                         onClick={() => setIsIoUrlModalOpen(false)}
-                                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-sm font-bold"
+                                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-sm font-bold"
                                     >
                                         Cancel
                                     </button>
@@ -1624,30 +1629,30 @@ export default function App() {
                {/* Emit Modal */}
                  {isEmitModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
-                                <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"><Send size={18}/> Emit Event</h2>
-                                <button onClick={() => setIsEmitModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                             <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+                                <h2 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2"><Send size={18}/> Emit Event</h2>
+                                <button onClick={() => setIsEmitModalOpen(false)} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-white">
                                     <X size={20} />
                                 </button>
                             </div>
                             <form onSubmit={handleEmit} className="p-6 space-y-4">
                                  <div>
-                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Event Name</label>
+                                    <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">Event Name</label>
                                     <input
                                         type="text"
                                         value={emitEventName}
                                         onChange={(e) => setEmitEventName(e.target.value)}
-                                        className="w-full h-11 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md px-4 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                        className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-4 text-sm text-zinc-800 dark:text-white focus:outline-none focus:border-blue-500"
                                         placeholder="message"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">JSON Data</label>
+                                    <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">JSON Data</label>
                                     <textarea
                                         value={emitMessageData}
                                         onChange={(e) => setEmitMessageData(e.target.value)}
-                                        className="w-full h-32 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-md p-3 text-sm font-mono text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
+                                        className="w-full h-32 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md p-3 text-sm font-mono text-zinc-800 dark:text-white focus:outline-none focus:border-blue-500 resize-none"
                                         placeholder="{}"
                                     />
                                 </div>
@@ -1655,7 +1660,7 @@ export default function App() {
                                     <button
                                         type="button"
                                         onClick={() => setIsEmitModalOpen(false)}
-                                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-sm font-bold"
+                                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded text-sm font-bold"
                                     >
                                         Cancel
                                     </button>
@@ -1678,40 +1683,40 @@ export default function App() {
                             value={newIoListener}
                             onChange={(e) => setNewIoListener(e.target.value)}
                             placeholder="Add listener..."
-                            className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
+                            className="flex-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500 text-zinc-800 dark:text-white"
                         />
                         <button 
                             type="submit"
                             disabled={!newIoListener.trim()}
-                            className="px-2 py-1.5 bg-blue-100 text-blue-600 dark:bg-slate-800 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                            className="px-2 py-1.5 bg-blue-100 text-blue-600 dark:bg-zinc-800 dark:text-blue-400 rounded hover:bg-blue-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
                         >
                             <Plus size={14} />
                         </button>
                     </div>
                 </form>
 
-                <div className="px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between items-center mb-1">
+                <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between items-center mb-1">
                     <span>Active Listeners</span>
-                    <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-500 dark:text-slate-400">{socketIo.activeListeners.length}</span>
+                    <span className="bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full text-zinc-500 dark:text-zinc-400">{socketIo.activeListeners.length}</span>
                 </div>
 
                 {socketIo.activeListeners.length === 0 && (
                      <div className="text-center py-8 px-4">
-                        <Activity size={24} className="mx-auto mb-2 text-slate-400 opacity-50" />
-                        <p className="text-xs text-slate-500 italic">No active listeners. Add one to start monitoring events.</p>
+                        <Activity size={24} className="mx-auto mb-2 text-zinc-400 opacity-50" />
+                        <p className="text-xs text-zinc-500 italic">No active listeners. Add one to start monitoring events.</p>
                      </div>
                 )}
                 
                 {socketIo.activeListeners.map(listener => {
                     const data = socketIo.listenerData[listener.name];
                     return (
-                        <div key={listener.id} className={`bg-white dark:bg-slate-950 border rounded p-2 text-xs relative group mb-2 transition-all ${listener.isEnabled ? 'border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                        <div key={listener.id} className={`bg-white dark:bg-zinc-950 border rounded p-2 text-xs relative group mb-2 transition-all ${listener.isEnabled ? 'border-zinc-200 dark:border-zinc-800' : 'border-zinc-200 dark:border-zinc-800 opacity-60'}`}>
                             <div className="flex justify-between items-start mb-1">
                                 <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                    <span className={`font-bold truncate flex-1 ${listener.isEnabled ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-500 line-through'}`}>{listener.name}</span>
+                                    <span className={`font-bold truncate flex-1 ${listener.isEnabled ? 'text-zinc-700 dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-500 line-through'}`}>{listener.name}</span>
                                      <button
                                         onClick={() => socketIo.toggleListener(listener.id)}
-                                        className={`w-8 h-4 rounded-full flex items-center transition-colors shrink-0 ${listener.isEnabled ? 'bg-green-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
+                                        className={`w-8 h-4 rounded-full flex items-center transition-colors shrink-0 ${listener.isEnabled ? 'bg-green-500 justify-end' : 'bg-zinc-300 dark:bg-zinc-700 justify-start'}`}
                                         title={listener.isEnabled ? "Disable Listener" : "Enable Listener"}
                                      >
                                          <div className="w-3 h-3 bg-white rounded-full shadow-sm mx-0.5" />
@@ -1719,14 +1724,14 @@ export default function App() {
                                 </div>
                                 <button 
                                     onClick={() => socketIo.removeListener(listener.id)}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                    className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                                     title="Remove Listener"
                                 >
                                     <Trash2 size={14} />
                                 </button>
                             </div>
                             {data && (
-                                <div className="text-[10px] text-slate-500 font-mono mt-1 flex justify-between pl-1">
+                                <div className="text-[10px] text-zinc-500 font-mono mt-1 flex justify-between pl-1">
                                     <span>Count: {data.count}</span>
                                     <span>{data.timestamp}</span>
                                 </div>
@@ -1739,23 +1744,23 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto h-screen bg-slate-50 dark:bg-slate-950 relative w-full flex flex-col transition-colors">
+      <main className="flex-1 overflow-y-auto h-screen bg-zinc-50 dark:bg-zinc-950 relative w-full flex flex-col transition-colors">
         
         {activeModule === 'api' ? (
             <div key="api" className="w-full h-full flex flex-col">
                 {/* REST API Header */}
-                <header className="sticky top-0 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg transition-colors">
-                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 transition-colors">
+                <header className="sticky top-0 z-20 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-lg transition-colors">
+                    <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/30 transition-colors">
                         <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
                             <div className="flex flex-1 w-full gap-3 items-center min-w-0">
                                     <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
+                                        <Search className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
                                         <input 
                                             type="text"
                                             placeholder="Filter endpoints by path or summary..."
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full h-10 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
+                                            className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md pl-10 pr-4 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                                         />
                                     </div>
 
@@ -1766,7 +1771,7 @@ export default function App() {
                 </header>
 
                 {/* REST API Content */}
-                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col">
+                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col overflow-hidden">
                     {error ? (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-start gap-4 text-red-400">
                             <AlertCircle size={24} className="shrink-0" />
@@ -1781,7 +1786,7 @@ export default function App() {
                             {viewMode === 'list' && (
                                 <div className="mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     <div className="flex flex-wrap items-center gap-4 mb-2">
-                                        <h2 className="text-2xl font-bold text-slate-800 dark:text-white break-words">{apiTitle}</h2>
+                                        <h2 className="text-2xl font-bold text-zinc-800 dark:text-white break-words">{apiTitle}</h2>
                                         {currentSpecUrl && (
                                             <a 
                                                 href={currentSpecUrl} 
@@ -1795,7 +1800,7 @@ export default function App() {
                                             </a>
                                         )}
                                     </div>
-                                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">
+                                    <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed max-w-3xl">
                                         {apiTitle === "Cosmos Store API" ? 
                                             "This is a demonstration of a next-generation API documentation interface. It features interactive request building, simulated responses, and AI-assisted payload generation powered by Gemini." : 
                                             `Documentation for ${apiTitle} v${apiVersion}. Explore endpoints, generate payloads, and execute requests below.`
@@ -1807,7 +1812,7 @@ export default function App() {
                             {isLoading ? (
                                 <div className="flex flex-col items-center justify-center py-20 opacity-50">
                                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
-                                    <p className="text-slate-500 text-sm">Parsing Specification...</p>
+                                    <p className="text-zinc-500 text-sm">Parsing Specification...</p>
                                 </div>
                             ) : (
                                 <>
@@ -1828,16 +1833,16 @@ export default function App() {
                                             })}
                                             {filteredEndpoints.length === 0 && (
                                                 <div className="text-center py-20">
-                                                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 mb-4">
-                                                        <Search className="text-slate-600" size={32} />
+                                                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-900 mb-4">
+                                                        <Search className="text-zinc-600" size={32} />
                                                     </div>
-                                                    <h3 className="text-slate-300 font-medium">No endpoints found</h3>
-                                                    <p className="text-slate-500 text-sm mt-1">Try adjusting your search criteria.</p>
+                                                    <h3 className="text-zinc-300 font-medium">No endpoints found</h3>
+                                                    <p className="text-zinc-500 text-sm mt-1">Try adjusting your search criteria.</p>
                                                 </div>
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col">
+                                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col overflow-hidden min-h-0">
                                             {activeEndpoint ? (
                                                 <EndpointCard 
                                                     key={activeEndpoint.id} 
@@ -1848,12 +1853,12 @@ export default function App() {
                                                     forcedOpen={true}
                                                 />
                                             ) : (
-                                                <div className="flex flex-col items-center justify-center py-32 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900/20 border-dashed transition-colors h-full">
-                                                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800 transition-colors">
-                                                        <Terminal className="text-slate-400 dark:text-slate-600" size={32} />
+                                                <div className="flex flex-col items-center justify-center py-32 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900/20 border-dashed transition-colors h-full">
+                                                    <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4 border border-zinc-200 dark:border-zinc-800 transition-colors">
+                                                        <Terminal className="text-zinc-400 dark:text-zinc-600" size={32} />
                                                     </div>
-                                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-300">Select an Endpoint</h3>
-                                                    <p className="text-slate-600 dark:text-slate-500 mt-2 max-w-sm text-center">
+                                                    <h3 className="text-xl font-bold text-zinc-800 dark:text-zinc-300">Select an Endpoint</h3>
+                                                    <p className="text-zinc-600 dark:text-zinc-500 mt-2 max-w-sm text-center">
                                                         Choose an endpoint from the sidebar to view its details, build requests, and test responses.
                                                     </p>
                                                 </div>
@@ -1879,24 +1884,24 @@ export default function App() {
              {mcp.isConnected ? (
                 <>
                     {/* MCP Header */}
-                    <header className="sticky top-0 z-20 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg transition-colors">
-                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 transition-colors">
+                    <header className="sticky top-0 z-20 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-lg transition-colors">
+                        <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/30 transition-colors">
                             <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
                                 <div className="flex flex-1 w-full gap-3 items-center min-w-0">
                                         <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
+                                            <Search className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
                                             <input 
                                                 type="text"
                                                 placeholder="Filter tools, resources, and prompts..."
                                                 value={mcp.filter}
                                                 onChange={(e) => mcp.setFilter(e.target.value)}
-                                                className="w-full h-10 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md pl-10 pr-4 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
+                                                className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md pl-10 pr-4 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
                                             />
                                         </div>
 
                                         <button 
                                             onClick={() => mcp.disconnect()}
-                                            className="h-10 px-4 bg-white hover:bg-red-50 dark:bg-slate-800 dark:hover:bg-red-950/30 text-slate-700 hover:text-red-600 dark:text-slate-300 dark:hover:text-red-400 rounded-md border border-slate-300 hover:border-red-200 dark:border-slate-700 dark:hover:border-red-500/50 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
+                                            className="h-10 px-4 bg-white hover:bg-red-50 dark:bg-zinc-800 dark:hover:bg-red-950/30 text-zinc-700 hover:text-red-600 dark:text-zinc-300 dark:hover:text-red-400 rounded-md border border-zinc-300 hover:border-red-200 dark:border-zinc-700 dark:hover:border-red-500/50 transition-all flex items-center gap-2 font-medium text-sm whitespace-nowrap shadow-sm"
                                             title="Disconnect from MCP Server"
                                         >
                                             <Database size={16} />
@@ -1918,12 +1923,12 @@ export default function App() {
                                     forcedOpen={true}
                                 />
                             ) : (
-                                <div className="flex flex-col items-center justify-center py-32 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900/20 border-dashed transition-colors">
-                                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800">
-                                        <Wrench className="text-slate-400 dark:text-slate-600" size={32} />
+                                <div className="flex flex-col items-center justify-center py-32 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900/20 border-dashed transition-colors">
+                                    <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4 border border-zinc-200 dark:border-zinc-800">
+                                        <Wrench className="text-zinc-400 dark:text-zinc-600" size={32} />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-300">Select an Item</h3>
-                                    <p className="text-slate-600 dark:text-slate-500 mt-2 max-w-sm text-center">
+                                    <h3 className="text-xl font-bold text-zinc-800 dark:text-zinc-300">Select an Item</h3>
+                                    <p className="text-zinc-600 dark:text-zinc-500 mt-2 max-w-sm text-center">
                                         Choose a tool or resource from the sidebar to view details and execute.
                                     </p>
                                 </div>
@@ -1934,10 +1939,10 @@ export default function App() {
                     </div>
                 </>
              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-600 dark:text-slate-500 p-8">
-                    <div className="bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 p-8 rounded-2xl flex flex-col items-center shadow-xl max-w-md w-full animate-in fade-in zoom-in-95 duration-500">
+                <div className="flex flex-col items-center justify-center h-full text-zinc-600 dark:text-zinc-500 p-8">
+                    <div className="bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-300 dark:border-zinc-700 p-8 rounded-2xl flex flex-col items-center shadow-xl max-w-md w-full animate-in fade-in zoom-in-95 duration-500">
                         <Database size={64} className="mb-6 text-orange-500" />
-                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">MCP Not Connected</h3>
+                        <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">MCP Not Connected</h3>
                         
                         {mcp.error ? (
                             <div className="mb-6 p-4 bg-red-100 dark:bg-red-500/10 border-2 border-red-300 dark:border-red-500/30 rounded-lg text-red-700 dark:text-red-400 text-sm text-center space-y-2 w-full">
@@ -1945,7 +1950,7 @@ export default function App() {
                                 <p className="leading-relaxed text-red-600 dark:text-red-400">{mcp.error}</p>
                             </div>
                         ) : (
-                            <p className="text-sm text-center text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+                            <p className="text-sm text-center text-zinc-600 dark:text-zinc-400 mb-6 leading-relaxed">
                                 Please connect to an MCP server (SSE mode) to inspect available tools, resources, and prompts.
                             </p>
                         )}
@@ -1963,7 +1968,7 @@ export default function App() {
                                 <button 
                                     onClick={() => mcp.connect()}
                                     disabled={mcp.isConnecting}
-                                    className="w-full h-12 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg font-bold text-base flex items-center justify-center gap-2 border-2 border-slate-300 dark:border-slate-600 transition-all"
+                                    className="w-full h-12 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-lg font-bold text-base flex items-center justify-center gap-2 border-2 border-zinc-300 dark:border-zinc-600 transition-all"
                                 >
                                     {mcp.isConnecting ? <Loader2 size={18} className="animate-spin" /> : <Activity size={18} />}
                                     Retry Connection
@@ -1999,18 +2004,18 @@ export default function App() {
         {/* MCP Connect Modal */}
         {isMcpConnectModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
-                    <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
                         <div className="flex items-center justify-between mb-2">
-                             <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                             <h2 className="text-xl font-bold text-zinc-800 dark:text-white flex items-center gap-2">
                                 <Database className="text-orange-500" size={24} />
                                 Connect to MCP Server
                              </h2>
-                             <button onClick={() => setIsMcpConnectModalOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors">
+                             <button onClick={() => setIsMcpConnectModalOpen(false)} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-white transition-colors">
                                 <X size={20} />
                              </button>
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm">Enter the URL of your Model Context Protocol server.</p>
+                        <p className="text-zinc-600 dark:text-zinc-400 text-sm">Enter the URL of your Model Context Protocol server.</p>
                     </div>
                     
                     <div className="p-6 space-y-4">
@@ -2024,13 +2029,13 @@ export default function App() {
                         )}
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Server URL</label>
+                            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Server URL</label>
                             <input 
                                 type="text" 
                                 value={mcp.url}
                                 onChange={(e) => mcp.setUrl(e.target.value)}
                                 placeholder="http://localhost:8000/mcp"
-                                className={`w-full h-10 bg-slate-50 dark:bg-slate-950 border rounded-md px-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-slate-600 ${mcp.error ? 'border-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-orange-500'}`}
+                                className={`w-full h-10 bg-zinc-50 dark:bg-zinc-950 border rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 ${mcp.error ? 'border-red-500/50 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-700 focus:border-orange-500'}`}
                                 onKeyDown={async (e) => {
                                     if(e.key === 'Enter') {
                                         const success = await mcp.connect();
@@ -2055,7 +2060,7 @@ export default function App() {
                         </div>
                     </div>
                     
-                    <div className="p-4 bg-slate-50 dark:bg-slate-950/50 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 text-center">
+                    <div className="p-4 bg-zinc-50 dark:bg-zinc-950/50 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 text-center">
                         Make sure your server supports SSE (Server-Sent Events).
                     </div>
                 </div>

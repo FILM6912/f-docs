@@ -4,9 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>F-Docs</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Immediate Theme Application to prevent FOUC (Flash of Unstyled Content)
+      // Immediate Theme Application - Pure Gray/Zinc
       (function() {
         try {
           const saved = localStorage.getItem('theme');
@@ -15,151 +14,20 @@
           
           if (isDark) {
             document.documentElement.classList.add('dark');
-            // Apply background immediately before CSS loads
-            document.documentElement.style.backgroundColor = '#09090b';
+            document.documentElement.style.backgroundColor = '#09090b'; // zinc-950
           }
         } catch (e) {}
       })();
-    </script>
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              slate: {
-                50: "#fafafa",
-                100: "#f4f4f5",
-                200: "#e4e4e7",
-                300: "#d4d4d8",
-                400: "#a1a1aa",
-                500: "#71717a",
-                600: "#52525b",
-                700: "#3f3f46",
-                800: "#27272a",
-                900: "#18181b",
-                950: "#09090b",
-              },
-            },
-            fontFamily: {
-              mono: [
-                "ui-monospace",
-                "SFMono-Regular",
-                "Menlo",
-                "Monaco",
-                "Consolas",
-                "Liberation Mono",
-                "Courier New",
-                "monospace",
-              ],
-            },
-            keyframes: {
-              fadeInUp: {
-                '0%': { opacity: '0', transform: 'translateY(40px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
-              },
-              fadeInDown: {
-                '0%': { opacity: '0', transform: 'translateY(-40px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
-              },
-            },
-            animation: {
-              fadeInUp: 'fadeInUp 0.5s ease-out forwards',
-              fadeInDown: 'fadeInDown 0.5s ease-out forwards',
-            },
-          },
-        },
-      };
-    </script>
-    <style>
-      html, body, #root {
-        height: 100%;
-        margin: 0;
-        overflow: hidden; /* Prevent body scrolling */
-      }
-      /* Dark mode base - applied immediately by inline script */
-      html.dark,
-      html.dark body,
-      html.dark #root {
-        background-color: #09090b !important; /* slate-950 */
-      }
-      /* Force all direct children to inherit dark background initially */
-      html.dark #root > * {
-        background-color: inherit;
-      }
-      
-      /* PRE-LOAD CRITICAL DARK STYLES TO PREVENT FOUC */
-      html.dark .dark\:bg-slate-950 { background-color: #09090b !important; }
-      html.dark .dark\:bg-slate-900 { background-color: #0f172a !important; }
-      html.dark .dark\:bg-blue-500\/10 { background-color: rgb(59 130 246 / 0.1) !important; }
-      html.dark .dark\:bg-emerald-500\/10 { background-color: rgb(16 185 129 / 0.1) !important; }
-      html.dark .dark\:bg-amber-500\/10 { background-color: rgb(245 158 11 / 0.1) !important; }
-      html.dark .dark\:bg-red-500\/10 { background-color: rgb(239 68 68 / 0.1) !important; }
-      html.dark .dark\:bg-purple-500\/10 { background-color: rgb(168 85 247 / 0.1) !important; }
-      
-      html.dark .dark\:text-slate-200 { color: #e2e8f0 !important; }
-      html.dark .dark\:text-white { color: #ffffff !important; }
-      
-      body {
-        /* Default to Light */
-        background-color: #ffffff;
-        color: #0f172a;
-      }
-      html.dark body {
-        background-color: #09090b; /* slate-950 (zinc-950) */
-        color: #f4f4f5; /* slate-100 (zinc-100) */
-      }
-      /* Custom scrollbar class */
-      .custom-scrollbar {
-        scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 transparent;
-      }
-      .dark .custom-scrollbar {
-        scrollbar-color: #334155 transparent;
-      }
-      /* Webkit Scrollbar Global */
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #cbd5e1; /* slate-300 */
-        border-radius: 3px;
-      }
-      .dark ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      .dark ::-webkit-scrollbar-thumb {
-        background: #334155; 
-      }
-      .dark ::-webkit-scrollbar-thumb:hover {
-        background: #475569; 
-      }
-    </style>
-    <script type="importmap">
-      {
-        "imports": {
-          "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-          "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-          "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
-          "react/": "https://esm.sh/react@^19.2.3/",
-          "react": "https://esm.sh/react@^19.2.3",
-          "socket.io-client": "https://esm.sh/socket.io-client@4.7.5"
-        }
-      }
     </script>
     <link rel="stylesheet" href="/index.css" />
   </head>
   <body>
     <script>
-      // Apply dark background to body immediately
+      // Apply pure gray background immediately
       (function() {
         try {
           if (document.documentElement.classList.contains('dark')) {
-            document.body.style.backgroundColor = '#09090b';
+            document.body.style.backgroundColor = '#09090b'; // zinc-950
           }
         } catch (e) {}
       })();

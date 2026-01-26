@@ -18,15 +18,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   useLayoutEffect(() => {
+    console.log('Theme changed to:', theme);
     const root = document.documentElement;
     // We don't strictly need to update body class anymore since CSS targets html.dark body
     // but keeping it for compatibility with any existing CSS targeting body.dark doesn't hurt.
     const body = document.body;
     
     if (theme === 'dark') {
+      console.log('Adding dark class');
       root.classList.add('dark');
       body.classList.add('dark'); 
     } else {
+      console.log('Removing dark class');
       root.classList.remove('dark');
       body.classList.remove('dark');
     }
@@ -35,7 +38,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    console.log('Toggle theme called, current theme:', theme);
+    setTheme(prev => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      console.log('Switching to:', newTheme);
+      return newTheme;
+    });
   };
 
   return (

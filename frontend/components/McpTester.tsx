@@ -74,7 +74,7 @@ const McpBadge: React.FC<{ type: 'RESOURCE' | 'TOOL' | 'PROMPT'; className?: str
   const colors = {
     RESOURCE: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     TOOL: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    PROMPT: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+    PROMPT: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
   };
   return (
     <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold tracking-wider border ${colors[type]} ${className}`}>
@@ -123,11 +123,11 @@ const McpItemCard: React.FC<{
             button: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20'
         },
         PROMPT: { 
-            border: 'border-purple-500/20', 
-            bg: 'bg-purple-500/10', 
+            border: 'border-cyan-500/20', 
+            bg: 'bg-cyan-500/10', 
             hover: 'hover:brightness-110', 
-            text: 'text-purple-400',
-            button: 'bg-purple-600 hover:bg-purple-500'
+            text: 'text-cyan-400',
+            button: 'bg-cyan-600 hover:bg-cyan-500'
         }
     }[type];
 
@@ -162,7 +162,7 @@ const McpItemCard: React.FC<{
     const description = data.description || (type === 'RESOURCE' ? data.uri : '');
 
     return (
-        <div className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen ? 'ring-1 ring-opacity-50 shadow-lg' : ''} ${theme.border} bg-slate-950`}>
+        <div className={`mb-4 rounded-lg border transition-all duration-200 ${isOpen ? 'ring-1 ring-opacity-50 shadow-lg' : ''} ${theme.border} bg-zinc-950`}>
              <div 
                 className={`flex items-center justify-between p-3 px-4 cursor-pointer select-none group ${theme.bg} ${theme.hover} transition-all ${!isOpen ? 'rounded-lg' : 'rounded-t-lg'}`}
                 onClick={() => setIsOpen(!isOpen)}
@@ -171,40 +171,40 @@ const McpItemCard: React.FC<{
                     <div className="w-20 shrink-0">
                         <McpBadge type={type} className="shadow-sm w-full block text-center" />
                     </div>
-                    <span className="font-mono text-slate-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
+                    <span className="font-mono text-zinc-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
                         <span className="opacity-90">{name}</span>
-                        <span className="text-slate-400 text-sm hidden sm:block truncate shrink-0 font-sans opacity-60">- {description}</span>
+                        <span className="text-zinc-400 text-sm hidden sm:block truncate shrink-0 font-sans opacity-60">- {description}</span>
                     </span>
                 </div>
-                 <div className="text-slate-400 group-hover:text-slate-200 transition-colors ml-4">
+                 <div className="text-zinc-400 group-hover:text-zinc-200 transition-colors ml-4">
                     {isOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                 </div>
             </div>
 
             {isOpen && (
-                <div className="bg-slate-900/30 p-4 border-t border-slate-800/50 rounded-b-lg animate-in fade-in slide-in-from-top-1">
+                <div className="bg-zinc-900/30 p-4 border-t border-zinc-800/50 rounded-b-lg animate-in fade-in slide-in-from-top-1">
                      
                      <div className="mb-6 px-1">
-                         <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Description</h4>
-                         <p className="text-slate-300 text-sm leading-relaxed">{data.description || "No description provided."}</p>
+                         <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Description</h4>
+                         <p className="text-zinc-300 text-sm leading-relaxed">{data.description || "No description provided."}</p>
                      </div>
 
                      {/* --- RESOURCE VIEW --- */}
                      {type === 'RESOURCE' && (
-                         <div className="space-y-4 bg-slate-950 border border-slate-800 rounded-lg p-4">
+                         <div className="space-y-4 bg-zinc-950 border border-zinc-800 rounded-lg p-4">
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                  <div>
-                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">URI</label>
-                                     <div className="font-mono text-xs text-blue-300 bg-slate-900 p-2 rounded border border-slate-800 mt-1 select-all break-all flex items-center justify-between group/uri">
+                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">URI</label>
+                                     <div className="font-mono text-xs text-blue-300 bg-zinc-900 p-2 rounded border border-zinc-800 mt-1 select-all break-all flex items-center justify-between group/uri">
                                          <span>{data.uri}</span>
-                                         <button onClick={() => handleCopy(data.uri)} className="opacity-0 group-hover/uri:opacity-100 transition-opacity text-slate-500 hover:text-white">
+                                         <button onClick={() => handleCopy(data.uri)} className="opacity-0 group-hover/uri:opacity-100 transition-opacity text-zinc-500 hover:text-white">
                                              {copied ? <Check size={12}/> : <Copy size={12}/>}
                                          </button>
                                      </div>
                                  </div>
                                  <div>
-                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">MIME Type</label>
-                                     <div className="text-sm text-slate-300 mt-1 font-mono bg-slate-900 p-2 rounded border border-slate-800">{data.mimeType || 'N/A'}</div>
+                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">MIME Type</label>
+                                     <div className="text-sm text-zinc-300 mt-1 font-mono bg-zinc-900 p-2 rounded border border-zinc-800">{data.mimeType || 'N/A'}</div>
                                  </div>
                              </div>
                          </div>
@@ -216,25 +216,25 @@ const McpItemCard: React.FC<{
                             {/* Left Column: Inputs */}
                              <div className="space-y-4 flex flex-col">
                                  <div className="space-y-4 flex-1">
-                                     <div className="flex items-center gap-2 pb-2 border-b border-slate-800/50">
-                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Input Parameters</span>
+                                     <div className="flex items-center gap-2 pb-2 border-b border-zinc-800/50">
+                                        <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Input Parameters</span>
                                      </div>
                                      
                                      {data.inputSchema?.properties && Object.keys(data.inputSchema.properties).length > 0 ? (
-                                         <div className="space-y-3 bg-slate-950 p-4 rounded-lg border border-slate-800">
+                                         <div className="space-y-3 bg-zinc-950 p-4 rounded-lg border border-zinc-800">
                                             {Object.entries(data.inputSchema.properties).map(([key, prop]: [string, any]) => (
                                                 <div key={key}>
                                                     <div className="flex items-baseline justify-between mb-1.5">
-                                                        <label className="block text-xs font-mono font-medium text-slate-300">
+                                                        <label className="block text-xs font-mono font-medium text-zinc-300">
                                                             {key}
                                                             {data.inputSchema?.required?.includes(key) && <span className="text-red-500 ml-0.5">*</span>}
                                                         </label>
-                                                        <span className="text-[10px] text-slate-500 font-mono">{prop.type}</span>
+                                                        <span className="text-[10px] text-zinc-500 font-mono">{prop.type}</span>
                                                     </div>
                                                     
                                                     {prop.type === 'boolean' ? (
                                                         <select
-                                                            className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition-colors"
+                                                            className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors"
                                                             value={String(toolArgs[key])}
                                                             onChange={(e) => handleInputChange(key, e.target.value === 'true', 'boolean')}
                                                         >
@@ -244,18 +244,18 @@ const McpItemCard: React.FC<{
                                                     ) : (
                                                         <input 
                                                             type={prop.type === 'integer' || prop.type === 'number' ? 'number' : 'text'}
-                                                            className="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 placeholder:text-slate-600 transition-colors"
+                                                            className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-emerald-500 placeholder:text-zinc-600 transition-colors"
                                                             placeholder={prop.description || `Enter ${key}...`}
                                                             value={toolArgs[key]}
                                                             onChange={(e) => handleInputChange(key, e.target.value, prop.type)}
                                                         />
                                                     )}
-                                                    {prop.description && <p className="text-[10px] text-slate-500 mt-1">{prop.description}</p>}
+                                                    {prop.description && <p className="text-[10px] text-zinc-500 mt-1">{prop.description}</p>}
                                                 </div>
                                             ))}
                                          </div>
                                      ) : (
-                                         <div className="text-xs text-slate-500 italic p-6 border border-dashed border-slate-800 rounded-lg text-center bg-slate-950/50">No arguments required.</div>
+                                         <div className="text-xs text-zinc-500 italic p-6 border border-dashed border-zinc-800 rounded-lg text-center bg-zinc-950/50">No arguments required.</div>
                                      )}
                                  </div>
 
@@ -270,9 +270,9 @@ const McpItemCard: React.FC<{
                              </div>
 
                              {/* Right Column: Response */}
-                             <div className="flex flex-col h-full min-h-[300px] bg-slate-950 rounded-lg border border-slate-800 overflow-hidden shadow-inner">
-                                 <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800 bg-slate-900/50">
-                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                             <div className="flex flex-col h-full min-h-[300px] bg-zinc-950 rounded-lg border border-zinc-800 overflow-hidden shadow-inner">
+                                 <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-800 bg-zinc-900/50">
+                                     <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
                                          <Code size={14} /> Result
                                      </span>
                                      <div className="flex items-center gap-2">
@@ -290,13 +290,13 @@ const McpItemCard: React.FC<{
                                  </div>
                                  <div className="flex-1 p-4 overflow-auto custom-scrollbar relative">
                                      {!executionResult && !isExecuting && (
-                                         <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 opacity-30 pointer-events-none">
+                                         <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600 opacity-30 pointer-events-none">
                                              <Activity size={48} className="mb-3" />
                                              <p className="text-sm font-medium">Ready to execute</p>
                                          </div>
                                      )}
                                      {isExecuting && (
-                                         <div className="absolute inset-0 flex items-center justify-center bg-slate-950/50 backdrop-blur-[1px] z-10">
+                                         <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/50 backdrop-blur-[1px] z-10">
                                              <Loader2 size={32} className="animate-spin text-emerald-500" />
                                          </div>
                                      )}
@@ -312,10 +312,10 @@ const McpItemCard: React.FC<{
 
                      {/* --- PROMPT VIEW --- */}
                      {type === 'PROMPT' && (
-                          <div className="bg-slate-950/50 border border-slate-800 rounded-lg p-8 text-center">
-                              <MessageSquare size={32} className="text-slate-700 mx-auto mb-3" />
-                              <h5 className="text-slate-400 font-medium mb-1">Prompt Execution</h5>
-                              <p className="text-xs text-slate-500">Prompt testing is not yet supported in this interface.</p>
+                          <div className="bg-zinc-950/50 border border-zinc-800 rounded-lg p-8 text-center">
+                              <MessageSquare size={32} className="text-zinc-700 mx-auto mb-3" />
+                              <h5 className="text-zinc-400 font-medium mb-1">Prompt Execution</h5>
+                              <p className="text-xs text-zinc-500">Prompt testing is not yet supported in this interface.</p>
                           </div>
                      )}
                 </div>
@@ -610,16 +610,16 @@ export const McpTester: React.FC = () => {
   const filteredPrompts = prompts.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
 
   return (
-      <div className="flex h-full bg-slate-950 text-slate-200 overflow-hidden relative">
+      <div className="flex h-full bg-zinc-950 text-zinc-200 overflow-hidden relative">
           
           {/* View Mode Toggle - Top Right */}
-          <div className="absolute top-4 right-4 z-50 flex gap-2 bg-slate-900 rounded-lg p-1 border border-slate-700">
+          <div className="absolute top-4 right-4 z-50 flex gap-2 bg-zinc-900 rounded-lg p-1 border border-zinc-700">
               <button
                   onClick={() => setViewMode('simple')}
                   className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
                       viewMode === 'simple' 
                       ? 'bg-orange-600 text-white shadow-lg' 
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-zinc-400 hover:text-white'
                   }`}
               >
                   Simple
@@ -629,7 +629,7 @@ export const McpTester: React.FC = () => {
                   className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
                       viewMode === 'advanced' 
                       ? 'bg-orange-600 text-white shadow-lg' 
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-zinc-400 hover:text-white'
                   }`}
               >
                   Advanced
@@ -645,18 +645,18 @@ export const McpTester: React.FC = () => {
                           <div className="text-center mb-8">
                               <Database className="w-16 h-16 text-orange-500 mx-auto mb-4" />
                               <h1 className="text-3xl font-bold text-white mb-2">MCP Inspector</h1>
-                              <p className="text-slate-400">Connect to your Model Context Protocol server</p>
+                              <p className="text-zinc-400">Connect to your Model Context Protocol server</p>
                           </div>
 
-                          <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 shadow-2xl">
+                          <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800 shadow-2xl">
                               <div className="space-y-4">
                                   <div>
-                                      <label className="block text-sm font-medium text-slate-300 mb-2">Server URL</label>
+                                      <label className="block text-sm font-medium text-zinc-300 mb-2">Server URL</label>
                                       <input 
                                           type="text" 
                                           value={url}
                                           onChange={(e) => setUrl(e.target.value)}
-                                          className="w-full h-12 bg-slate-950 border border-slate-700 rounded-lg px-4 text-sm text-slate-200 focus:outline-none focus:border-orange-500 transition-colors font-mono"
+                                          className="w-full h-12 bg-zinc-950 border border-zinc-700 rounded-lg px-4 text-sm text-zinc-200 focus:outline-none focus:border-orange-500 transition-colors font-mono"
                                           placeholder="http://localhost:8000/mcp"
                                           disabled={isConnected || isConnecting}
                                       />
@@ -676,7 +676,7 @@ export const McpTester: React.FC = () => {
                                           isConnected 
                                           ? 'bg-red-500/10 text-red-400 border-2 border-red-500/20 hover:bg-red-500/20' 
                                           : isConnecting 
-                                              ? 'bg-slate-800 text-slate-400 cursor-not-allowed border-2 border-slate-700'
+                                              ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed border-2 border-zinc-700'
                                               : 'bg-orange-600 hover:bg-orange-500 text-white border-2 border-orange-500 shadow-orange-900/20'
                                       }`}
                                   >
@@ -693,32 +693,32 @@ export const McpTester: React.FC = () => {
 
                           {isConnected && (
                               <div className="grid grid-cols-3 gap-4">
-                                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-800 text-center">
+                                  <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800 text-center">
                                       <div className="text-2xl font-bold text-emerald-400">{tools.length}</div>
-                                      <div className="text-xs text-slate-500 mt-1">Tools</div>
+                                      <div className="text-xs text-zinc-500 mt-1">Tools</div>
                                   </div>
-                                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-800 text-center">
+                                  <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800 text-center">
                                       <div className="text-2xl font-bold text-blue-400">{resources.length}</div>
-                                      <div className="text-xs text-slate-500 mt-1">Resources</div>
+                                      <div className="text-xs text-zinc-500 mt-1">Resources</div>
                                   </div>
-                                  <div className="bg-slate-900 rounded-lg p-4 border border-slate-800 text-center">
-                                      <div className="text-2xl font-bold text-purple-400">{prompts.length}</div>
-                                      <div className="text-xs text-slate-500 mt-1">Prompts</div>
+                                  <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800 text-center">
+                                      <div className="text-2xl font-bold text-cyan-400">{prompts.length}</div>
+                                      <div className="text-xs text-zinc-500 mt-1">Prompts</div>
                                   </div>
                               </div>
                           )}
 
                           {isConnected && tools.length > 0 && (
-                              <div className="bg-slate-900 rounded-xl p-6 border border-slate-800">
+                              <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
                                   <h3 className="text-lg font-bold text-white mb-4">Available Tools</h3>
                                   <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                                       {tools.map(tool => (
-                                          <div key={tool.name} className="bg-slate-950 rounded-lg p-4 border border-slate-800 hover:border-emerald-500/50 transition-colors">
+                                          <div key={tool.name} className="bg-zinc-950 rounded-lg p-4 border border-zinc-800 hover:border-emerald-500/50 transition-colors">
                                               <div className="flex items-start justify-between">
                                                   <div className="flex-1">
                                                       <div className="font-mono text-sm text-emerald-400 font-medium">{tool.name}</div>
                                                       {tool.description && (
-                                                          <div className="text-xs text-slate-400 mt-1">{tool.description}</div>
+                                                          <div className="text-xs text-zinc-400 mt-1">{tool.description}</div>
                                                       )}
                                                   </div>
                                                   <Wrench size={16} className="text-emerald-500/50 ml-2" />
@@ -735,8 +735,8 @@ export const McpTester: React.FC = () => {
               // Advanced Mode - Full Inspector UI
               <>
           {/* Internal Sidebar for MCP Items */}
-          <aside className="w-64 bg-slate-900 border-r border-slate-800 flex-shrink-0 flex flex-col hidden md:flex">
-                <div className="p-4 border-b border-slate-800">
+          <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex-shrink-0 flex flex-col hidden md:flex">
+                <div className="p-4 border-b border-zinc-800">
                     <h2 className="font-bold text-white flex items-center gap-2">
                         <Database className="text-orange-400" size={20}/>
                         <span>MCP Inspector</span>
@@ -744,15 +744,15 @@ export const McpTester: React.FC = () => {
                 </div>
                 
                 {/* Search in Sidebar */}
-                <div className="p-2 border-b border-slate-800 bg-slate-900/50">
+                <div className="p-2 border-b border-zinc-800 bg-zinc-900/50">
                      <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                        <Search className="absolute left-2.5 top-1/2 -tranzinc-y-1/2 text-zinc-500" size={14} />
                         <input 
                             type="text" 
                             placeholder="Filter items..." 
                             value={filter}
                             onChange={(e) => setFilter(e.target.value)}
-                            className="w-full h-8 bg-slate-950 border border-slate-700 rounded pl-8 pr-2 text-xs text-slate-200 focus:outline-none focus:border-orange-500"
+                            className="w-full h-8 bg-zinc-950 border border-zinc-700 rounded pl-8 pr-2 text-xs text-zinc-200 focus:outline-none focus:border-orange-500"
                         />
                      </div>
                 </div>
@@ -760,12 +760,12 @@ export const McpTester: React.FC = () => {
                 <div className="flex-1 overflow-y-auto p-2 space-y-4 custom-scrollbar">
                     {/* Resources Group */}
                     <div>
-                        <div className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+                        <div className="px-3 py-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between">
                             <span>Resources</span>
-                            <span className="bg-slate-800 px-1.5 rounded-full text-slate-400">{resources.length}</span>
+                            <span className="bg-zinc-800 px-1.5 rounded-full text-zinc-400">{resources.length}</span>
                         </div>
                         {resources.map(r => (
-                             <div key={r.name} className="w-full text-left px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-800 rounded truncate flex items-center gap-2 transition-colors cursor-pointer">
+                             <div key={r.name} className="w-full text-left px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded truncate flex items-center gap-2 transition-colors cursor-pointer">
                                 <Box size={12} className="text-blue-500/70 shrink-0" /> <span className="truncate">{r.name}</span>
                              </div>
                         ))}
@@ -773,12 +773,12 @@ export const McpTester: React.FC = () => {
 
                     {/* Tools Group */}
                     <div>
-                        <div className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+                        <div className="px-3 py-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between">
                             <span>Tools</span>
-                            <span className="bg-slate-800 px-1.5 rounded-full text-slate-400">{tools.length}</span>
+                            <span className="bg-zinc-800 px-1.5 rounded-full text-zinc-400">{tools.length}</span>
                         </div>
                         {tools.map(t => (
-                             <div key={t.name} className="w-full text-left px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-800 rounded truncate flex items-center gap-2 transition-colors cursor-pointer">
+                             <div key={t.name} className="w-full text-left px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded truncate flex items-center gap-2 transition-colors cursor-pointer">
                                 <Wrench size={12} className="text-emerald-500/70 shrink-0" /> <span className="truncate">{t.name}</span>
                              </div>
                         ))}
@@ -786,23 +786,23 @@ export const McpTester: React.FC = () => {
 
                     {/* Prompts Group */}
                     <div>
-                        <div className="px-3 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+                        <div className="px-3 py-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex justify-between">
                             <span>Prompts</span>
-                            <span className="bg-slate-800 px-1.5 rounded-full text-slate-400">{prompts.length}</span>
+                            <span className="bg-zinc-800 px-1.5 rounded-full text-zinc-400">{prompts.length}</span>
                         </div>
                         {prompts.map(p => (
-                             <div key={p.name} className="w-full text-left px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-slate-800 rounded truncate flex items-center gap-2 transition-colors cursor-pointer">
-                                <MessageSquare size={12} className="text-purple-500/70 shrink-0" /> <span className="truncate">{p.name}</span>
+                             <div key={p.name} className="w-full text-left px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded truncate flex items-center gap-2 transition-colors cursor-pointer">
+                                <MessageSquare size={12} className="text-cyan-500/70 shrink-0" /> <span className="truncate">{p.name}</span>
                              </div>
                         ))}
                     </div>
                 </div>
                 
                 {/* Logs Toggle */}
-                <div className="p-3 border-t border-slate-800">
+                <div className="p-3 border-t border-zinc-800">
                     <button 
                         onClick={() => setShowLogs(!showLogs)}
-                        className={`w-full py-2 px-3 rounded text-xs font-bold flex items-center justify-center gap-2 transition-all ${showLogs ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
+                        className={`w-full py-2 px-3 rounded text-xs font-bold flex items-center justify-center gap-2 transition-all ${showLogs ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}
                     >
                         <Terminal size={14} />
                         {showLogs ? 'Hide Logs' : 'Show Logs'}
@@ -811,22 +811,22 @@ export const McpTester: React.FC = () => {
           </aside>
 
           {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-w-0 bg-slate-950 relative">
+          <div className="flex-1 flex flex-col min-w-0 bg-zinc-950 relative">
              
              {/* Top Connection Bar */}
-             <header className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 shadow-lg px-6 py-4">
+             <header className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800 shadow-lg px-6 py-4">
                  <div className="max-w-5xl mx-auto space-y-3">
                      <div className="flex items-center gap-3 w-full">
 
                         <div className="flex-1 relative group">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 group-focus-within:text-orange-500 transition-colors">
+                            <span className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-xs font-bold text-zinc-500 group-focus-within:text-orange-500 transition-colors">
                                 MCP URL
                             </span>
                             <input 
                                 type="text" 
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
-                                className="w-full h-10 bg-slate-900 border border-slate-700 rounded-md pl-24 pr-4 text-sm text-slate-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-slate-600 font-mono"
+                                className="w-full h-10 bg-zinc-900 border border-zinc-700 rounded-md pl-24 pr-4 text-sm text-zinc-200 focus:outline-none focus:border-orange-500 transition-colors placeholder:text-zinc-600 font-mono"
                                 placeholder="http://localhost:8000/mcp"
                                 disabled={isConnected || isConnecting}
                             />
@@ -834,7 +834,7 @@ export const McpTester: React.FC = () => {
 
                         <button 
                             onClick={() => setShowSettings(!showSettings)}
-                            className={`h-10 w-10 flex items-center justify-center rounded-md border transition-all ${showSettings ? 'bg-slate-800 border-slate-600 text-white' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'}`}
+                            className={`h-10 w-10 flex items-center justify-center rounded-md border transition-all ${showSettings ? 'bg-zinc-800 border-zinc-600 text-white' : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:text-white'}`}
                             title="Connection Settings"
                             disabled={isConnected}
                         >
@@ -848,7 +848,7 @@ export const McpTester: React.FC = () => {
                                 isConnected 
                                 ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' 
                                 : isConnecting 
-                                    ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
+                                    ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
                                     : 'bg-orange-600 hover:bg-orange-500 text-white shadow-orange-900/20'
                             }`}
                         >
@@ -859,7 +859,7 @@ export const McpTester: React.FC = () => {
                      
                      {/* Extended Settings */}
                      {showSettings && !isConnected && (
-                         <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-md animate-in fade-in slide-in-from-top-2">
+                         <div className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-md animate-in fade-in slide-in-from-top-2">
                              <div className="grid gap-4">
                                  <div className="flex items-center gap-2 pt-1">
                                     <input 
@@ -867,18 +867,18 @@ export const McpTester: React.FC = () => {
                                         id="includeCredentials" 
                                         checked={includeCredentials} 
                                         onChange={(e) => setIncludeCredentials(e.target.checked)}
-                                        className="rounded border-slate-700 bg-slate-950 text-orange-500 focus:ring-orange-500/50"
+                                        className="rounded border-zinc-700 bg-zinc-950 text-orange-500 focus:ring-orange-500/50"
                                     />
-                                    <label htmlFor="includeCredentials" className="text-xs text-slate-300 font-medium select-none cursor-pointer">
+                                    <label htmlFor="includeCredentials" className="text-xs text-zinc-300 font-medium select-none cursor-pointer">
                                         Include Credentials (Cookies/Auth)
                                     </label>
-                                    <span className="text-[10px] text-slate-500 ml-2">Requires <code>Access-Control-Allow-Credentials: true</code> on server.</span>
+                                    <span className="text-[10px] text-zinc-500 ml-2">Requires <code>Access-Control-Allow-Credentials: true</code> on server.</span>
                                  </div>
 
                                  {/* Custom Headers */}
                                  <div>
                                      <div className="flex items-center justify-between mb-2">
-                                         <label className="text-xs font-bold text-slate-500 uppercase">Custom Headers</label>
+                                         <label className="text-xs font-bold text-zinc-500 uppercase">Custom Headers</label>
                                          <button onClick={addHeader} className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
                                              <Plus size={12} /> Add Header
                                          </button>
@@ -891,28 +891,28 @@ export const McpTester: React.FC = () => {
                                                     placeholder="Key (e.g. Authorization)" 
                                                     value={h.key}
                                                     onChange={(e) => updateHeader(h.id, 'key', e.target.value)}
-                                                    className="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
+                                                    className="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1.5 text-xs text-white"
                                                  />
                                                  <input 
                                                     type="text" 
                                                     placeholder="Value" 
                                                     value={h.value}
                                                     onChange={(e) => updateHeader(h.id, 'value', e.target.value)}
-                                                    className="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
+                                                    className="flex-1 bg-zinc-950 border border-zinc-700 rounded px-2 py-1.5 text-xs text-white"
                                                  />
-                                                 <button onClick={() => removeHeader(h.id)} className="text-slate-500 hover:text-red-400 p-1">
+                                                 <button onClick={() => removeHeader(h.id)} className="text-zinc-500 hover:text-red-400 p-1">
                                                      <Trash2 size={14} />
                                                  </button>
                                              </div>
                                          ))}
-                                         {customHeaders.length === 0 && <p className="text-[10px] text-slate-600 italic">No custom headers</p>}
+                                         {customHeaders.length === 0 && <p className="text-[10px] text-zinc-600 italic">No custom headers</p>}
                                      </div>
                                  </div>
 
                                  {/* OAuth2 Authentication Helper */}
-                                 <div className="border-t border-slate-800 pt-4">
+                                 <div className="border-t border-zinc-800 pt-4">
                                      <div className="flex items-center justify-between mb-3">
-                                         <label className="text-xs font-bold text-slate-500 uppercase">OAuth2 Authentication</label>
+                                         <label className="text-xs font-bold text-zinc-500 uppercase">OAuth2 Authentication</label>
                                          <button 
                                              onClick={() => setShowAuthHelper(!showAuthHelper)}
                                              className="text-xs text-emerald-400 hover:text-emerald-300"
@@ -926,7 +926,7 @@ export const McpTester: React.FC = () => {
                                              <div className="flex items-center gap-2 text-emerald-400 mb-1">
                                                  <Check size={12} /> Token Active
                                              </div>
-                                             <div className="text-[10px] text-slate-400 font-mono truncate">
+                                             <div className="text-[10px] text-zinc-400 font-mono truncate">
                                                  {authToken.substring(0, 40)}...
                                              </div>
                                              <button 
@@ -939,20 +939,20 @@ export const McpTester: React.FC = () => {
                                      )}
                                      
                                      {showAuthHelper && (
-                                         <div className="space-y-2 bg-slate-950 p-3 rounded border border-slate-800">
+                                         <div className="space-y-2 bg-zinc-950 p-3 rounded border border-zinc-800">
                                              <input 
                                                  type="text" 
                                                  placeholder="Username (default: admin)" 
                                                  value={authUsername}
                                                  onChange={(e) => setAuthUsername(e.target.value)}
-                                                 className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
+                                                 className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-xs text-white"
                                              />
                                              <input 
                                                  type="password" 
                                                  placeholder="Password (default: admin)" 
                                                  value={authPassword}
                                                  onChange={(e) => setAuthPassword(e.target.value)}
-                                                 className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white"
+                                                 className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-xs text-white"
                                              />
                                              <button 
                                                  onClick={handleLogin}
@@ -962,7 +962,7 @@ export const McpTester: React.FC = () => {
                                                  {isAuthenticating ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
                                                  {isAuthenticating ? 'Logging in...' : 'Get Token'}
                                              </button>
-                                             <p className="text-[10px] text-slate-500 italic">
+                                             <p className="text-[10px] text-zinc-500 italic">
                                                  Token will be automatically added to all MCP requests
                                              </p>
                                          </div>
@@ -974,7 +974,7 @@ export const McpTester: React.FC = () => {
                      
                      {/* Connection Hint */}
                      {!isConnected && !isConnecting && !showSettings && (
-                         <div className="text-[10px] text-slate-500 flex items-center gap-1.5 justify-center">
+                         <div className="text-[10px] text-zinc-500 flex items-center gap-1.5 justify-center">
                              <AlertTriangle size={10} />
                              <span>Ensure your MCP server allows CORS (Access-Control-Allow-Origin: *) for browser access.</span>
                          </div>
@@ -987,14 +987,14 @@ export const McpTester: React.FC = () => {
                  <div className="max-w-5xl mx-auto pb-20">
                      
                      {!isConnected ? (
-                        <div className="flex flex-col items-center justify-center py-32 border border-slate-800 rounded-lg bg-slate-900/20 border-dashed">
-                            <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800 shadow-lg">
-                                <Zap className="text-slate-600" size={32} />
+                        <div className="flex flex-col items-center justify-center py-32 border border-zinc-800 rounded-lg bg-zinc-900/20 border-dashed">
+                            <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mb-4 border border-zinc-800 shadow-lg">
+                                <Zap className="text-zinc-600" size={32} />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-300">
+                            <h3 className="text-xl font-bold text-zinc-300">
                                 {isConnecting ? 'Connecting...' : 'Ready to Connect'}
                             </h3>
-                            <p className="text-slate-500 mt-2 max-w-sm text-center text-sm">
+                            <p className="text-zinc-500 mt-2 max-w-sm text-center text-sm">
                                 Enter your MCP Server URL. Auto-detects SSE or HTTP transport.
                             </p>
                         </div>
@@ -1004,7 +1004,7 @@ export const McpTester: React.FC = () => {
                              {/* Resources Section */}
                              {filteredResources.length > 0 && (
                                  <div>
-                                     <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider px-1">
+                                     <h3 className="flex items-center gap-2 text-sm font-bold text-zinc-400 mb-4 uppercase tracking-wider px-1">
                                          <Box size={16} /> Resources
                                      </h3>
                                      <div className="space-y-4">
@@ -1018,7 +1018,7 @@ export const McpTester: React.FC = () => {
                              {/* Tools Section */}
                              {filteredTools.length > 0 && (
                                  <div>
-                                     <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider px-1">
+                                     <h3 className="flex items-center gap-2 text-sm font-bold text-zinc-400 mb-4 uppercase tracking-wider px-1">
                                          <Wrench size={16} /> Tools
                                      </h3>
                                      <div className="space-y-4">
@@ -1038,7 +1038,7 @@ export const McpTester: React.FC = () => {
                              {/* Prompts Section */}
                              {filteredPrompts.length > 0 && (
                                  <div>
-                                     <h3 className="flex items-center gap-2 text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider px-1">
+                                     <h3 className="flex items-center gap-2 text-sm font-bold text-zinc-400 mb-4 uppercase tracking-wider px-1">
                                          <MessageSquare size={16} /> Prompts
                                      </h3>
                                      <div className="space-y-4">
@@ -1050,12 +1050,12 @@ export const McpTester: React.FC = () => {
                              )}
                              
                              {filteredResources.length === 0 && filteredTools.length === 0 && filteredPrompts.length === 0 && (
-                                 <div className="text-center py-20 border border-slate-800 rounded-lg bg-slate-900/20 border-dashed">
-                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-900 mb-3">
-                                         <Server size={24} className="text-slate-600" />
+                                 <div className="text-center py-20 border border-zinc-800 rounded-lg bg-zinc-900/20 border-dashed">
+                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-900 mb-3">
+                                         <Server size={24} className="text-zinc-600" />
                                      </div>
-                                     <h4 className="text-slate-300 font-medium">Connected, but no items found.</h4>
-                                     <p className="text-slate-500 text-sm mt-1 max-w-sm mx-auto">
+                                     <h4 className="text-zinc-300 font-medium">Connected, but no items found.</h4>
+                                     <p className="text-zinc-500 text-sm mt-1 max-w-sm mx-auto">
                                          The server initialized successfully but returned no capabilities.
                                      </p>
                                  </div>
@@ -1067,19 +1067,19 @@ export const McpTester: React.FC = () => {
              
              {/* Logs Drawer (Bottom Sheet style) */}
              {showLogs && (
-                 <div className="h-64 border-t border-slate-800 bg-slate-900 flex flex-col shrink-0 animate-in slide-in-from-bottom-10 duration-200 shadow-[0_-5px_15px_rgba(0,0,0,0.3)] z-30">
-                     <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-950">
-                        <div className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                 <div className="h-64 border-t border-zinc-800 bg-zinc-900 flex flex-col shrink-0 animate-in slide-in-from-bottom-10 duration-200 shadow-[0_-5px_15px_rgba(0,0,0,0.3)] z-30">
+                     <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-950">
+                        <div className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2">
                             <Terminal size={14} /> JSON-RPC Traffic
                         </div>
-                        <button onClick={() => setLogs([])} className="text-slate-500 hover:text-white transition-colors" title="Clear Logs">
+                        <button onClick={() => setLogs([])} className="text-zinc-500 hover:text-white transition-colors" title="Clear Logs">
                             <X size={16} />
                         </button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 space-y-1 font-mono text-xs custom-scrollbar">
-                        {logs.length === 0 && <p className="text-slate-600 italic">No logs yet.</p>}
+                        {logs.length === 0 && <p className="text-zinc-600 italic">No logs yet.</p>}
                         {logs.map((log, i) => (
-                            <div key={i} className={`border-b border-slate-800/50 pb-1 break-all ${log.includes('<<') ? 'text-emerald-400/80' : log.includes('>>') ? 'text-blue-400/80' : log.includes('error') ? 'text-red-400' : 'text-slate-400'}`}>
+                            <div key={i} className={`border-b border-zinc-800/50 pb-1 break-all ${log.includes('<<') ? 'text-emerald-400/80' : log.includes('>>') ? 'text-blue-400/80' : log.includes('error') ? 'text-red-400' : 'text-zinc-400'}`}>
                                 {log}
                             </div>
                         ))}

@@ -58,10 +58,10 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
     <div className="p-6 h-full flex flex-col w-full">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
         <div className="shrink-0">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-zinc-800 dark:text-white flex items-center gap-3">
             <Radio className="text-blue-600 dark:text-blue-400" /> Socket.IO Tester
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Real-time listener dashboard.</p>
+          <p className="text-zinc-600 dark:text-zinc-400 mt-1">Real-time listener dashboard.</p>
         </div>
 
         {/* Unified Controls Toolbar */}
@@ -77,7 +77,7 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
         {/* Listeners Grid */}
         <div className="lg:col-span-4 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <h3 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2">
             </h3>
           </div>
 
@@ -134,30 +134,30 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden flex flex-col min-h-[320px] shadow-sm hover:border-blue-200 dark:hover:border-slate-700 transition-colors">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col min-h-[320px] shadow-sm hover:border-blue-200 dark:hover:border-zinc-700 transition-colors">
       {/* Card Header */}
       <div
         className={`px-4 py-3 border-b flex items-center justify-between ${
           isSystem
-            ? "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800"
-            : "bg-slate-50/50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+            ? "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800"
+            : "bg-zinc-50/50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800"
         }`}
       >
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${data ? "bg-green-500 animate-pulse" : "bg-slate-600"}`} />
-          <span className="font-mono font-bold text-sm text-slate-700 dark:text-slate-200">{listener.name}</span>
+          <div className={`w-2 h-2 rounded-full ${data ? "bg-green-500 animate-pulse" : "bg-zinc-600"}`} />
+          <span className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-200">{listener.name}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => clearListenerData(listener.name)}
-            className="text-[10px] text-slate-500 hover:text-blue-500 transition-colors uppercase font-bold tracking-wider px-1"
+            className="text-[10px] text-zinc-500 hover:text-blue-500 transition-colors uppercase font-bold tracking-wider px-1"
           >
             Clear
           </button>
           {!isSystem && (
             <button
               onClick={() => removeListener(listener.id)}
-              className="text-slate-500 hover:text-red-400 transition-colors p-1"
+              className="text-zinc-500 hover:text-red-400 transition-colors p-1"
             >
               <X size={14} />
             </button>
@@ -166,13 +166,13 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
       </div>
 
       {/* Card Body (Messages) */}
-      <div className="flex-1 p-0 relative group min-h-[120px] border-b border-slate-100 dark:border-slate-800 overflow-hidden">
+      <div className="flex-1 p-0 relative group min-h-[120px] border-b border-zinc-100 dark:border-zinc-800 overflow-hidden">
         {data ? (
           <div className="w-full h-full p-4 overflow-y-auto custom-scrollbar">
             <JsonDisplay data={data.lastEvent} />
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
+          <div className="w-full h-full flex flex-col items-center justify-center text-zinc-600">
             <Activity size={32} className="mb-2 opacity-20" />
             <p className="text-xs">Waiting for events...</p>
           </div>
@@ -180,12 +180,12 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
       </div>
 
       {/* Emit Section */}
-      <div className="p-3 bg-slate-50/50 dark:bg-slate-950/30">
+      <div className="p-3 bg-zinc-50/50 dark:bg-zinc-950/30">
         <form onSubmit={handleEmit} className="flex flex-col gap-2">
           <textarea
             value={payload}
             onChange={(e) => setPayload(e.target.value)}
-            className="w-full h-16 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded p-2 text-[10px] font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500 resize-none"
+            className="w-full h-16 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-2 text-[10px] font-mono text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-blue-500 resize-none"
             placeholder='{"key": "value"}'
           />
           <button
@@ -199,7 +199,7 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
 
       {/* Card Footer */}
       {data && (
-        <div className="px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-[10px] text-slate-500 flex items-center gap-2 font-mono">
+        <div className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-500 flex items-center gap-2 font-mono">
           <Clock size={10} /> Last update: {data.timestamp}
         </div>
       )}

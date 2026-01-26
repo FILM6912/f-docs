@@ -6,7 +6,7 @@ const methodColors: Record<Method, string> = {
   [Method.POST]: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   [Method.PUT]: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   [Method.DELETE]: 'bg-red-500/10 text-red-400 border-red-500/20',
-  [Method.PATCH]: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  [Method.PATCH]: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
 };
 
 export const MethodBadge: React.FC<{ method: Method; className?: string }> = ({ method, className = '' }) => {

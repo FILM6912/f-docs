@@ -8,14 +8,7 @@ export const parseOpenApi = async (url: string): Promise<ApiSpec> => {
   }
 
   try {
-    let response = await fetch(url).catch(() => null);
-    
-    // If direct fetch fails (likely CORS), try a proxy
-    if (!response) {
-         console.warn("Direct fetch failed, attempting via CORS proxy...");
-         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-         response = await fetch(proxyUrl);
-    }
+    const response = await fetch(url);
 
     if (!response.ok) throw new Error(`Failed to fetch OpenAPI spec: ${response.status} ${response.statusText}`);
     const spec = await response.json();

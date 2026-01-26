@@ -26,18 +26,18 @@ export const McpConnection: React.FC<McpConnectionProps> = ({
                 <div className="text-center mb-8">
                     <Database className="w-16 h-16 text-orange-500 mx-auto mb-4" />
                     <h1 className="text-3xl font-bold text-white mb-2">MCP Inspector</h1>
-                    <p className="text-slate-400">Connect to your Model Context Protocol server</p>
+                    <p className="text-zinc-400">Connect to your Model Context Protocol server</p>
                 </div>
 
-                <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 shadow-2xl">
+                <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800 shadow-2xl">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-2">Server URL</label>
+                            <label className="block text-sm font-medium text-zinc-300 mb-2">Server URL</label>
                             <input 
                                 type="text" 
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
-                                className="w-full h-12 bg-slate-950 border border-slate-700 rounded-lg px-4 text-sm text-slate-200 focus:outline-none focus:border-orange-500 transition-colors font-mono"
+                                className="w-full h-12 bg-zinc-950 border border-zinc-700 rounded-lg px-4 text-sm text-zinc-200 focus:outline-none focus:border-orange-500 transition-colors font-mono"
                                 placeholder="http://localhost:8000/mcp"
                                 disabled={isConnected || isConnecting}
                             />
@@ -57,7 +57,7 @@ export const McpConnection: React.FC<McpConnectionProps> = ({
                                 isConnected 
                                 ? 'bg-red-500/10 text-red-400 border-2 border-red-500/20 hover:bg-red-500/20' 
                                 : isConnecting 
-                                    ? 'bg-slate-800 text-slate-400 cursor-not-allowed border-2 border-slate-700'
+                                    ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed border-2 border-zinc-700'
                                     : 'bg-orange-600 hover:bg-orange-500 text-white border-2 border-orange-500 shadow-orange-900/20'
                             }`}
                         >
