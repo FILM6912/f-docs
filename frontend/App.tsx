@@ -958,8 +958,23 @@ export default function App() {
 
   // Filter logic
   const filteredEndpoints = endpoints.filter(ep => {
-    const matchesSearch = ep.path.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          ep.summary.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!searchTerm.trim()) {
+      // No search term, show based on tag only
+      if (viewMode === 'list') {
+        const matchesTag = selectedTag === 'All' || ep.tags.includes(selectedTag);
+        return matchesTag;
+      }
+      return true;
+    }
+
+    // Search in multiple fields for better matching
+    const search = searchTerm.toLowerCase();
+    const matchesSearch = 
+      ep.path.toLowerCase().includes(search) || 
+      ep.summary.toLowerCase().includes(search) ||
+      ep.description.toLowerCase().includes(search) ||
+      ep.method.toLowerCase().includes(search) ||
+      ep.tags.some(tag => tag.toLowerCase().includes(search));
     
     if (viewMode === 'list') {
         const matchesTag = selectedTag === 'All' || ep.tags.includes(selectedTag);
