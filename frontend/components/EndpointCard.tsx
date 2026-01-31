@@ -460,9 +460,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           {isSecured && (
             <div title={authorized ? "Authorized" : "Authorization required"}>
               {authorized ? (
-                <Unlock size={14} className="text-emerald-500 dark:text-emerald-400" />
+                <Unlock size={14} className="text-emerald-500" />
               ) : (
-                <Lock size={14} className="text-zinc-400 dark:text-zinc-600" />
+                <Lock size={14} className="text-red-500" />
               )}
             </div>
           )}
