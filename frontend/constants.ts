@@ -33,6 +33,7 @@ export const DEFAULT_SPEC = {
         "summary": "Get Users",
         "description": "ดึงรายการ users ทั้งหมด",
         "operationId": "get_users_users_get",
+        "deprecated": true,
         "security": [
           {
             "HTTPBasic": []

@@ -233,7 +233,8 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                requestBodyType,
                requestBodyProperties,
                responses,
-               security
+               security,
+               deprecated: op.deprecated || false
              });
            }
         });

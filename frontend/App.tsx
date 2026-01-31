@@ -1167,7 +1167,7 @@ export default function App() {
                                                 <div className="w-14 shrink-0">
                                                     <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
                                                 </div>
-                                                <span className="truncate font-mono">{ep.path}</span>
+                                                <span className={`truncate font-mono ${ep.deprecated ? 'line-through opacity-60' : ''}`}>{ep.path}</span>
                                             </button>
                                         ))}
                                     </div>
