@@ -50,14 +50,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
 
-  // Persistence Hook
+  // Persistence Hook - manages all endpoint state
   const { 
       activeTab, 
       setActiveTab, 
       paramValues, 
       setParamValues, 
       bodyValue, 
-      setBodyValue 
+      setBodyValue,
+      formValues,
+      setFormValues,
+      response,
+      setResponse,
+      rightPanelTab,
+      setRightPanelTab,
+      reset
   } = useEndpointPersistence(endpoint.id, {
       activeTab: (() => {
         const hasParams = endpoint.parameters && endpoint.parameters.length > 0;
@@ -65,22 +72,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         return !hasParams && supportsBody ? "body" : "params";
       })(),
       paramValues: {},
-      bodyValue: endpoint.requestBodySchema || ""
+      bodyValue: endpoint.requestBodySchema || "",
+      formValues: {},
+      response: null,
+      rightPanelTab: "0"
   });
 
-  const [rightPanelTab, setRightPanelTab] = useState("0");
-  const [showDescModal, setShowDescModal] = useState(false); // New state for modal
-  // const [paramValues, setParamValues] = useState<Record<string, string>>({});  <-- Replaced
-  // const [bodyValue, setBodyValue] = useState(endpoint.requestBodySchema || ""); <-- Replaced
-
-  // State for multipart/form-data: supports files and text fields
-  const [formValues, setFormValues] = useState<Record<string, string | File>>(
-    {},
-  );
-
+  const [showDescModal, setShowDescModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [response, setResponse] = useState<SimulationResponse | null>(null);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
 
@@ -544,9 +544,22 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : "max-h-[calc(100vh-400px)]"}`}>
               {/* Tab Navigation for Request */}
               <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
-                <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                  Request
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
+                    Request
+                  </h3>
+                  {/* Reset Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      reset();
+                    }}
+                    className="p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    title="Reset endpoint data"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
                 <div className="flex gap-1">
                   {(["params", "body", "auth"] as const).map((tab) => {
                     const isDisabled =
