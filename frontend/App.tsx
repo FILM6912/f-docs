@@ -1173,6 +1173,12 @@ export default function App() {
                                             const isSecured = ep.security && ep.security.length > 0;
                                             const copied = copiedEndpoints[ep.id] || false;
                                             
+                                            // Check if endpoint is authorized
+                                            const isEndpointAuthorized = isSecured && ep.security?.some(sec => {
+                                                const schemeName = Object.keys(sec)[0];
+                                                return authCredentials[schemeName] && authCredentials[schemeName].length > 0;
+                                            });
+                                            
                                             const handleCopyUrl = (e: React.MouseEvent) => {
                                                 e.stopPropagation();
                                                 const fullUrl = `${baseUrl.replace(/\/$/, "")}${ep.path}`;
@@ -1202,7 +1208,11 @@ export default function App() {
                                                         {/* Icons */}
                                                         <div className="flex items-center gap-1 shrink-0">
                                                             {isSecured && (
-                                                                <Lock size={10} className="text-zinc-400 dark:text-zinc-500" title="Requires authorization" />
+                                                                isEndpointAuthorized ? (
+                                                                    <Unlock size={10} className="text-emerald-500" title="Authorized" />
+                                                                ) : (
+                                                                    <Lock size={10} className="text-red-500" title="Requires authorization" />
+                                                                )
                                                             )}
                                                             <div
                                                                 onClick={handleCopyUrl}
