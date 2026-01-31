@@ -46,6 +46,7 @@ export interface Endpoint {
   requestBodyProperties?: RequestBodyProperty[]; // For multipart/form-data fields
   responses: Record<number, ResponseDefinition>;
   security?: SecurityRequirement[];
+  deprecated?: boolean; // Mark if endpoint is deprecated
 }
 
 export interface ApiTag {

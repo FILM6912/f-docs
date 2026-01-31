@@ -9,6 +9,9 @@ import {
   Clock,
   Eraser,
   Send,
+  Copy,
+  Check,
+  AlertTriangle,
 } from "lucide-react";
 import { ListenerData, ListenerItem } from "../hooks/useSocketIO";
 import { JsonDisplay } from "./JsonDisplay";
@@ -17,6 +20,9 @@ interface SocketIoTesterProps {
   url: string;
   setUrl: (url: string) => void;
   isConnected: boolean;
+  isConnecting: boolean;
+  timeout: number;
+  setTimeout: (timeout: number) => void;
   connect: () => void;
   disconnect: () => void;
   activeListeners: ListenerItem[];
@@ -34,6 +40,9 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
   url,
   setUrl,
   isConnected,
+  isConnecting,
+  timeout,
+  setTimeout,
   connect,
   disconnect,
   activeListeners,
@@ -49,6 +58,7 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
   // Emit state (Local UI state)
   const [eventName, setEventName] = useState("message");
   const [messageData, setMessageData] = useState("{}");
+  const [showTimeoutSettings, setShowTimeoutSettings] = useState(false);
 
 
 
@@ -98,12 +108,28 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
       
       {/* Error Toast */}
       {error && (
-        <div className="fixed bottom-6 right-6 bg-red-500/10 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4">
-          <ZapOff size={20} className="text-red-400" />
-          <div className="flex-1 text-sm font-medium">{error}</div>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-white transition-colors">
-            <X size={16} />
-          </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setError(null)}>
+          <div className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/50 rounded-xl shadow-2xl max-w-md w-full mx-4 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={24} className="text-red-600 dark:text-red-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Connection Failed</h3>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{error}</p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 rounded-b-xl flex justify-end gap-3">
+              <button 
+                onClick={() => setError(null)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -126,11 +152,20 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
   emitEvent,
 }) => {
   const [payload, setPayload] = useState("{}");
+  const [copied, setCopied] = useState(false);
   const isSystem = ["connect", "disconnect", "error", "system"].includes(listener.name);
 
   const handleEmit = (e: React.FormEvent) => {
     e.preventDefault();
     emitEvent(listener.name, payload);
+  };
+
+  const handleCopy = () => {
+    if (data?.lastEvent) {
+      navigator.clipboard.writeText(JSON.stringify(data.lastEvent, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -148,6 +183,14 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
           <span className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-200">{listener.name}</span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopy}
+            disabled={!data}
+            className="text-zinc-500 hover:text-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors p-1"
+            title="Copy data"
+          >
+            {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+          </button>
           <button
             onClick={() => clearListenerData(listener.name)}
             className="text-[10px] text-zinc-500 hover:text-blue-500 transition-colors uppercase font-bold tracking-wider px-1"

@@ -397,9 +397,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
               className="shadow-sm w-full block text-center"
             />
           </div>
-          <span className="font-mono text-zinc-700 dark:text-zinc-200 font-medium truncate min-w-0 flex-1 flex items-center gap-3">
+          <span className={`font-mono font-medium truncate min-w-0 flex-1 flex items-center gap-3 text-zinc-700 dark:text-zinc-200 ${endpoint.deprecated ? 'line-through opacity-60' : ''}`}>
             <span className="opacity-90">{endpoint.path}</span>
-            <span className="text-zinc-400 text-sm hidden sm:block truncate shrink-0 font-sans opacity-60">
+            <span className={`text-sm hidden sm:block truncate shrink-0 font-sans opacity-60 text-zinc-400`}>
               - {endpoint.summary}
             </span>
           </span>

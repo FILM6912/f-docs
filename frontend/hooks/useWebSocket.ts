@@ -33,6 +33,11 @@ export const useWebSocket = () => {
     return port ? `${protocol}//${host}:${port}` : `${protocol}//${host}`;
   });
   
+  const [timeout, setTimeout] = useState(() => {
+    const saved = localStorage.getItem('ws_timeout');
+    return saved ? parseInt(saved) : 1000;
+  });
+  
   const [activePaths, setActivePaths] = useState<PathItem[]>(() => {
     const saved = localStorage.getItem('ws_paths');
     if (saved) {
@@ -54,6 +59,7 @@ export const useWebSocket = () => {
   const [pathData, setPathData] = useState<Record<string, PathData>>({});
   
   const socketsRef = useRef<Record<string, WebSocket>>({});
+  const timeoutsRef = useRef<Record<string, number>>({});
   
   // Track recently sent messages for echo cancellation
   // Map of pathName -> Set of message contents
@@ -64,6 +70,10 @@ export const useWebSocket = () => {
     const toSave = activePaths.map(p => ({ id: p.id, name: p.name }));
     localStorage.setItem('ws_paths', JSON.stringify(toSave));
   }, [activePaths]);
+
+  useEffect(() => {
+    localStorage.setItem('ws_timeout', timeout.toString());
+  }, [timeout]);
 
   const addMessage = useCallback((pathName: string, type: 'sent' | 'received' | 'system', content: string, isError = false) => {
     setPathData(prev => {
@@ -111,10 +121,35 @@ export const useWebSocket = () => {
       sentMessagesRef.current[path.name] = new Set();
     }
 
+    // Set timeout for connection
+    const connectionTimeout = window.setTimeout(() => {
+      if (!socketsRef.current[pathId] || socketsRef.current[pathId].readyState !== WebSocket.OPEN) {
+        updatePathState(pathId, { 
+          isConnecting: false,
+          isConnected: false,
+          isEnabled: false,
+          error: `Connection timeout after ${timeout}ms. Please check the server URL.`
+        });
+        addMessage(path.name, 'system', `Connection timeout after ${timeout}ms`, true);
+        
+        if (socketsRef.current[pathId]) {
+          socketsRef.current[pathId].close();
+          delete socketsRef.current[pathId];
+        }
+      }
+      delete timeoutsRef.current[pathId];
+    }, timeout);
+    
+    timeoutsRef.current[pathId] = connectionTimeout;
+
     try {
       const ws = new WebSocket(fullUrl);
 
       ws.onopen = () => {
+        if (timeoutsRef.current[pathId]) {
+          clearTimeout(timeoutsRef.current[pathId]);
+          delete timeoutsRef.current[pathId];
+        }
         updatePathState(pathId, { 
           isConnected: true, 
           isConnecting: false, 
@@ -162,6 +197,10 @@ export const useWebSocket = () => {
       };
 
       ws.onclose = (event) => {
+        if (timeoutsRef.current[pathId]) {
+          clearTimeout(timeoutsRef.current[pathId]);
+          delete timeoutsRef.current[pathId];
+        }
         delete socketsRef.current[pathId];
         // Clear pending sent messages on close
         if (sentMessagesRef.current[path.name]) {
@@ -187,6 +226,10 @@ export const useWebSocket = () => {
       };
 
       ws.onerror = () => {
+        if (timeoutsRef.current[pathId]) {
+          clearTimeout(timeoutsRef.current[pathId]);
+          delete timeoutsRef.current[pathId];
+        }
         delete socketsRef.current[pathId];
         updatePathState(pathId, { 
           isConnecting: false,
@@ -199,6 +242,10 @@ export const useWebSocket = () => {
 
       socketsRef.current[pathId] = ws;
     } catch (err: any) {
+      if (timeoutsRef.current[pathId]) {
+        clearTimeout(timeoutsRef.current[pathId]);
+        delete timeoutsRef.current[pathId];
+      }
       updatePathState(pathId, { 
         isConnecting: false,
         isEnabled: false,
@@ -206,7 +253,7 @@ export const useWebSocket = () => {
       });
       addMessage(path.name, 'system', `Error: ${err.message}`, true);
     }
-  }, [baseUrl, activePaths, addMessage, updatePathState]);
+  }, [baseUrl, timeout, activePaths, addMessage, updatePathState]);
 
   const disconnectPath = useCallback((pathId: string) => {
     const ws = socketsRef.current[pathId];
@@ -296,6 +343,7 @@ export const useWebSocket = () => {
   useEffect(() => {
     return () => {
       Object.values(socketsRef.current).forEach(ws => ws.close());
+      Object.values(timeoutsRef.current).forEach(t => clearTimeout(t));
     };
   }, []);
 
@@ -304,6 +352,8 @@ export const useWebSocket = () => {
   return {
     baseUrl,
     setBaseUrl,
+    timeout,
+    setTimeout,
     activePaths,
     pathData,
     isAnyConnected,
