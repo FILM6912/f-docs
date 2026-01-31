@@ -627,62 +627,11 @@ export default function App() {
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
 
-  const startResizing = useCallback((e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent text selection
-    setIsResizing(true);
-  }, []);
-
-  const stopResizing = useCallback(() => {
-    setIsResizing(false);
-  }, []);
-
-  const resize = useCallback(
-    (mouseMoveEvent: MouseEvent) => {
-      if (isResizing) {
-        const newWidth = mouseMoveEvent.clientX - 64; // Adjust for Activity Bar width
-        if (newWidth >= 200 && newWidth <= 600) {
-            setSidebarWidth(newWidth);
-        }
-      }
-    },
-    [isResizing]
-  );
-
-  useEffect(() => {
-    if (isResizing) {
-        window.addEventListener("mousemove", resize);
-        window.addEventListener("mouseup", stopResizing);
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-    } else {
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-    }
-    return () => {
-      window.removeEventListener("mousemove", resize);
-      window.removeEventListener("mouseup", stopResizing);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-  }, [isResizing, resize, stopResizing]);
-  
-  // Loaded Data
-  const [apiTitle, setApiTitle] = useState("F-Docs");
-  const [apiVersion, setApiVersion] = useState("1.0.0");
-  const [baseUrl, setBaseUrl] = useState("");
-  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
-  const [tags, setTags] = useState<ApiTag[]>([]);
-  const [securitySchemes, setSecuritySchemes] = useState<Record<string, SecurityScheme>>({});
-  
-  // UI State
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string>('All');
-  const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
-  const { theme, toggleTheme } = useTheme();
+  // API state (must be before updateApiIndicator)
   const [activeEndpointId, setActiveEndpointId] = useState<string | null>(null);
   const [expandedSidebarTags, setExpandedSidebarTags] = useState<Record<string, boolean>>({});
 
-  // API List Animation State (Must be after activeEndpointId)
+  // API List Animation State (Must be before resize callback)
   const apiListContainerRef = useRef<HTMLDivElement>(null);
   const apiEndpointRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [apiIndicatorStyle, setApiIndicatorStyle] = useState<React.CSSProperties>({ opacity: 0 });
@@ -734,12 +683,69 @@ export default function App() {
     }
   }, [activeEndpointId]);
 
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent text selection
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback(
+    (mouseMoveEvent: MouseEvent) => {
+      if (isResizing) {
+        const newWidth = mouseMoveEvent.clientX - 64; // Adjust for Activity Bar width
+        if (newWidth >= 200 && newWidth <= 600) {
+            setSidebarWidth(newWidth);
+            // Update API indicator during resize
+            requestAnimationFrame(() => {
+              updateApiIndicator();
+            });
+        }
+      }
+    },
+    [isResizing, updateApiIndicator]
+  );
+
+  useEffect(() => {
+    if (isResizing) {
+        window.addEventListener("mousemove", resize);
+        window.addEventListener("mouseup", stopResizing);
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    } else {
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+    }
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing, resize, stopResizing]);
+  
+  // Loaded Data
+  const [apiTitle, setApiTitle] = useState("F-Docs");
+  const [apiVersion, setApiVersion] = useState("1.0.0");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
+  const [tags, setTags] = useState<ApiTag[]>([]);
+  const [securitySchemes, setSecuritySchemes] = useState<Record<string, SecurityScheme>>({});
+  
+  // UI State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
+  const { theme, toggleTheme } = useTheme();
+
   useLayoutEffect(() => {
      updateApiIndicator();
      const t1 = setTimeout(() => updateApiIndicator(), 150);
      const t2 = setTimeout(() => updateApiIndicator(), 300);
      return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [activeEndpointId, expandedSidebarTags, viewMode, updateApiIndicator]);
+  }, [activeEndpointId, expandedSidebarTags, viewMode, sidebarWidth, updateApiIndicator]);
 
   // Track active ID in ref for stable callbacks
   const activeEndpointIdRef = useRef(activeEndpointId);
