@@ -22,6 +22,18 @@ html, body, #root {
   overflow: hidden;
 }
 
+/* Smooth theme transition for all elements */
+html,
+html *,
+html *::before,
+html *::after {
+  transition: background-color 0.2s ease-in-out, 
+              color 0.2s ease-in-out, 
+              border-color 0.2s ease-in-out,
+              fill 0.2s ease-in-out,
+              stroke 0.2s ease-in-out !important;
+}
+
 /* Dark mode base - Pure gray/zinc tones */
 html.dark,
 html.dark body,
