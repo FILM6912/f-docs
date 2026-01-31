@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "f-docs"
-version = "0.1.5"
+version = "0.1.6"
 authors = [
   { name="FILM6912" },
   { name="F-Docs Contributors" },
