@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Activity, Radio, X, Send, AlertCircle, Check } from 'lucide-react';
+import { Activity, Radio, X, Send, AlertCircle, Check, Copy, AlertTriangle } from 'lucide-react';
 import { PathData, PathItem, WebSocketMessage } from '../hooks/useWebSocket';
 import { MessageRenderer } from './MessageRenderer';
 
@@ -24,6 +24,25 @@ export const WebSocketTester: React.FC<WebSocketTesterProps> = ({
   clearPathError
 }) => {
   const connectedPaths = activePaths.filter(p => p.isConnected);
+  const [errorPopup, setErrorPopup] = useState<{ pathName: string; error: string } | null>(null);
+
+  // Show error popup when a path has an error
+  useEffect(() => {
+    const pathWithError = activePaths.find(p => p.error && !p.isConnected);
+    if (pathWithError) {
+      setErrorPopup({ pathName: pathWithError.name, error: pathWithError.error! });
+    }
+  }, [activePaths]);
+
+  const handleCloseErrorPopup = () => {
+    if (errorPopup) {
+      const path = activePaths.find(p => p.name === errorPopup.pathName);
+      if (path) {
+        clearPathError(path.id);
+      }
+      setErrorPopup(null);
+    }
+  };
 
   return (
     <div className="p-6 h-full flex flex-col w-full">
@@ -59,6 +78,34 @@ export const WebSocketTester: React.FC<WebSocketTesterProps> = ({
           </div>
         )}
       </div>
+
+      {/* Error Popup */}
+      {errorPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={handleCloseErrorPopup}>
+          <div className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/50 rounded-xl shadow-2xl max-w-md w-full mx-4 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={24} className="text-red-600 dark:text-red-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Connection Failed</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-500 font-mono mb-3">{errorPopup.pathName}</p>
+                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{errorPopup.error}</p>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 rounded-b-xl flex justify-end gap-3">
+              <button 
+                onClick={handleCloseErrorPopup}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -83,6 +130,7 @@ const PathCard: React.FC<PathCardProps> = ({
   sendMessage,
 }) => {
   const [payload, setPayload] = useState("");
+  const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isSystem = ["connect", "disconnect", "error", "system"].includes(path.name);
   const fullUrl = `${baseUrl}${path.name}`;
@@ -111,6 +159,17 @@ const PathCard: React.FC<PathCardProps> = ({
     }
   };
 
+  const handleCopy = () => {
+    if (data?.history && data.history.length > 0) {
+      const allMessages = data.history.map(msg => 
+        `[${msg.timestamp}] ${msg.type === 'sent' ? 'Sent' : msg.type === 'received' ? 'Received' : 'System'}: ${msg.content}`
+      ).join('\n');
+      navigator.clipboard.writeText(allMessages);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden flex flex-col h-[600px] shadow-sm hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
       {/* Card Header */}
@@ -126,6 +185,14 @@ const PathCard: React.FC<PathCardProps> = ({
           <span className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-200 truncate" title={fullUrl}>{path.name}</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleCopy}
+            disabled={!data || data.history.length === 0}
+            className="text-zinc-500 hover:text-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors p-1"
+            title="Copy all messages"
+          >
+            {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+          </button>
           <button
             onClick={() => clearPathData(path.name)}
             className="text-[10px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors uppercase font-bold tracking-wider px-1"

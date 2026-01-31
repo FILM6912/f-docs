@@ -778,6 +778,7 @@ export default function App() {
   const [newIoListener, setNewIoListener] = useState("");
   const [isIoUrlModalOpen, setIsIoUrlModalOpen] = useState(false);
   const [tempIoUrl, setTempIoUrl] = useState(socketIo.url);
+  const [tempIoTimeout, setTempIoTimeout] = useState(socketIo.timeout);
   const ioUrlInputRef = useRef<HTMLInputElement>(null);
 
   // WebSocket State Integration
@@ -859,6 +860,7 @@ export default function App() {
   const handleIoUrlSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       socketIo.setUrl(tempIoUrl);
+      socketIo.setTimeout(tempIoTimeout);
       setIsIoUrlModalOpen(false);
   };
 
@@ -1549,33 +1551,41 @@ export default function App() {
                          <div 
                             className="flex-1 truncate text-xs font-mono text-zinc-500 cursor-pointer hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
                             onClick={() => {
-                                if(!socketIo.isConnected) {
+                                if(!socketIo.isConnected && !socketIo.isConnecting) {
                                     setIsIoUrlModalOpen(true);
                                     setTempIoUrl(socketIo.url);
+                                    setTempIoTimeout(socketIo.timeout);
                                 }
                             }}
                             title="Click or Ctrl+Q to edit URL"
                          >
                             {socketIo.url}
                          </div>
-                         <div className={`w-2 h-2 rounded-full shrink-0 ml-2 ${socketIo.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                         <div className={`w-2 h-2 rounded-full shrink-0 ml-2 ${socketIo.isConnected ? 'bg-emerald-500 animate-pulse' : socketIo.isConnecting ? 'bg-amber-500 animate-pulse' : 'bg-red-500'}`} />
                     </div>
                     
                     <button
                         onClick={socketIo.isConnected ? socketIo.disconnect : socketIo.connect}
-                        className={`w-full py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                        disabled={socketIo.isConnecting}
+                        className={`w-full py-1.5 rounded text-xs font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                             socketIo.isConnected 
                             ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30'
+                            : socketIo.isConnecting
+                            ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400'
                             : 'bg-blue-600 text-white hover:bg-blue-500 shadow-sm'
                         }`}
                     >
                         {socketIo.isConnected ? (
                             <>Disconnect</>
+                        ) : socketIo.isConnecting ? (
+                            <>
+                                <Loader2 size={12} className="animate-spin" />
+                                Connecting...
+                            </>
                         ) : (
                             <>Connect</>
                         )}
                     </button>
-                    
 
                 </div>
             </div>
@@ -1602,10 +1612,27 @@ export default function App() {
                                         className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-4 text-sm text-zinc-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
                                         placeholder="http://localhost:3000"
                                     />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">Connection Timeout</label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="range"
+                                            min="1000"
+                                            max="10000"
+                                            step="500"
+                                            value={tempIoTimeout}
+                                            onChange={(e) => setTempIoTimeout(parseInt(e.target.value))}
+                                            className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+                                        />
+                                        <span className="text-sm font-mono text-zinc-700 dark:text-zinc-300 w-16 text-right">{tempIoTimeout}ms</span>
+                                    </div>
                                     <p className="text-xs text-zinc-500 mt-2">
-                                        Press Enter to save.
+                                        Time to wait before connection timeout (1-10 seconds)
                                     </p>
                                 </div>
+                                
                                 <div className="flex justify-end gap-2 pt-2">
                                     <button
                                         type="button"

@@ -19,6 +19,11 @@ export const useSocketIO = () => {
     return saved || (typeof window !== 'undefined' ? window.location.origin : "http://localhost:3000");
   });
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [timeout, setTimeout] = useState(() => {
+    const saved = localStorage.getItem('io_timeout');
+    return saved ? parseInt(saved) : 1000;
+  });
   const [activeListeners, setActiveListeners] = useState<ListenerItem[]>(() => {
     const saved = localStorage.getItem('io_listeners');
     return saved ? JSON.parse(saved) : [];
@@ -30,6 +35,10 @@ export const useSocketIO = () => {
   useEffect(() => {
     localStorage.setItem('io_url', url);
   }, [url]);
+
+  useEffect(() => {
+    localStorage.setItem('io_timeout', timeout.toString());
+  }, [timeout]);
 
   useEffect(() => {
     localStorage.setItem('io_listeners', JSON.stringify(activeListeners));
@@ -70,26 +79,46 @@ export const useSocketIO = () => {
   const connect = useCallback(() => {
     if (socketRef.current) return;
     setError(null);
+    setIsConnecting(true);
+
+    // Set timeout for connection
+    const connectionTimeout = window.setTimeout(() => {
+      if (!socketRef.current?.connected) {
+        setIsConnecting(false);
+        setError(`Connection timeout after ${timeout}ms. Please check the server URL.`);
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+          socketRef.current = null;
+        }
+      }
+    }, timeout);
 
     try {
       const socket = io(url, {
         transports: ["websocket", "polling"],
         autoConnect: true,
+        timeout: timeout,
       });
 
       socket.on("connect", () => {
+        clearTimeout(connectionTimeout);
         setIsConnected(true);
+        setIsConnecting(false);
         setError(null);
         updateListenerData("system", "Connected", "connect");
       });
 
       socket.on("disconnect", () => {
+        clearTimeout(connectionTimeout);
         setIsConnected(false);
+        setIsConnecting(false);
         updateListenerData("system", "Disconnected", "disconnect");
       });
 
       socket.on("connect_error", (err) => {
+        clearTimeout(connectionTimeout);
         setIsConnected(false);
+        setIsConnecting(false);
         setError(`Connection Error: ${err.message}`);
         updateListenerData("system", `Error: ${err.message}`, "error");
       });
@@ -103,9 +132,11 @@ export const useSocketIO = () => {
 
       socketRef.current = socket;
     } catch (err: any) {
+        clearTimeout(connectionTimeout);
+        setIsConnecting(false);
         updateListenerData("system", `Error: ${err.message}`, "error");
     }
-  }, [url, activeListeners, updateListenerData, bindListener]);
+  }, [url, timeout, activeListeners, updateListenerData, bindListener]);
 
   const disconnect = useCallback(() => {
     if (socketRef.current) {
@@ -203,6 +234,9 @@ export const useSocketIO = () => {
     url,
     setUrl,
     isConnected,
+    isConnecting,
+    timeout,
+    setTimeout,
     connect,
     disconnect,
     activeListeners,
