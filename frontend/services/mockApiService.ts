@@ -62,7 +62,19 @@ const executeRealRequest = async (
     
     // Handle different content types
     if (contentType.includes("application/json")) {
-        data = await res.json();
+        // Check if response has content
+        const text = await res.text();
+        if (text && text.trim().length > 0) {
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            // Invalid JSON, return as text
+            data = text;
+          }
+        } else {
+          // Empty response body
+          data = res.status === 204 || res.status === 205 ? null : { message: "Empty response" };
+        }
     } else if (contentType.includes("image/") || contentType.includes("application/pdf") || 
                contentType.includes("application/octet-stream")) {
         // Binary data - convert to blob
@@ -73,7 +85,8 @@ const executeRealRequest = async (
         data = await res.blob();
     } else {
         // Default to text
-        data = await res.text();
+        const text = await res.text();
+        data = text || null;
     }
 
     return {
