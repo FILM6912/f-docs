@@ -4,8 +4,9 @@ import { SimulationResponse } from '../types';
 interface EndpointState {
   paramValues: Record<string, string>;
   bodyValue: string;
-  activeTab: "params" | "body" | "auth";
+  activeTab: "params" | "body" | "auth" | "headers";
   formValues?: Record<string, string | File>;
+  headerValues?: Record<string, string>;
   response?: SimulationResponse | null;
   rightPanelTab?: string;
 }
@@ -53,7 +54,7 @@ export function useEndpointPersistence(endpointId: string, initialDefaults: Endp
     setState(prev => ({ ...prev, bodyValue: newValue }));
   }, []);
 
-  const setActiveTab = useCallback((newValue: "params" | "body" | "auth") => {
+  const setActiveTab = useCallback((newValue: "params" | "body" | "auth" | "headers") => {
     setState(prev => ({ ...prev, activeTab: newValue }));
   }, []);
 
@@ -61,6 +62,13 @@ export function useEndpointPersistence(endpointId: string, initialDefaults: Endp
     setState(prev => ({
         ...prev,
         formValues: typeof newValues === 'function' ? newValues(prev.formValues || {}) : newValues
+    }));
+  }, []);
+
+  const setHeaderValues = useCallback((newValues: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => {
+    setState(prev => ({
+        ...prev,
+        headerValues: typeof newValues === 'function' ? newValues(prev.headerValues || {}) : newValues
     }));
   }, []);
 
@@ -83,12 +91,14 @@ export function useEndpointPersistence(endpointId: string, initialDefaults: Endp
     bodyValue: state.bodyValue,
     activeTab: state.activeTab,
     formValues: state.formValues || {},
+    headerValues: state.headerValues || {},
     response: state.response,
     rightPanelTab: state.rightPanelTab,
     setParamValues,
     setBodyValue,
     setActiveTab,
     setFormValues,
+    setHeaderValues,
     setResponse,
     setRightPanelTab,
     reset
