@@ -470,7 +470,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                      <div>
                         <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">OpenAPI Specification URL</label>
                         <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
+                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
                             <input 
                                 type="text" 
                                 placeholder="http://localhost:8000/openapi.json" 
@@ -1223,11 +1223,13 @@ export default function App() {
                                                         {/* Icons */}
                                                         <div className="flex items-center gap-1 shrink-0">
                                                             {isSecured && (
-                                                                isEndpointAuthorized ? (
-                                                                    <Unlock size={10} className="text-emerald-500" title="Authorized" />
-                                                                ) : (
-                                                                    <Lock size={10} className="text-red-500" title="Requires authorization" />
-                                                                )
+                                                                <div title={isEndpointAuthorized ? "Authorized" : "Requires authorization"}>
+                                                                    {isEndpointAuthorized ? (
+                                                                        <Unlock size={10} className="text-emerald-500" />
+                                                                    ) : (
+                                                                        <Lock size={10} className="text-red-500" />
+                                                                    )}
+                                                                </div>
                                                             )}
                                                             <div
                                                                 onClick={handleCopyUrl}
@@ -1294,7 +1296,7 @@ export default function App() {
                 
                 {/* Search Bar */}
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={14} />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={14} />
                     <input 
                         type="text" 
                         placeholder="Filter items..." 
@@ -1872,7 +1874,7 @@ export default function App() {
                         <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
                             <div className="flex flex-1 w-full gap-3 items-center min-w-0">
                                     <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
                                         <input 
                                             type="text"
                                             placeholder="Filter endpoints by path or summary..."
@@ -2007,7 +2009,7 @@ export default function App() {
                             <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
                                 <div className="flex flex-1 w-full gap-3 items-center min-w-0">
                                         <div className="relative flex-1">
-                                            <Search className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
                                             <input 
                                                 type="text"
                                                 placeholder="Filter tools, resources, and prompts..."
