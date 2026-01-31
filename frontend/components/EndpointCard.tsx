@@ -658,7 +658,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                         </option>
                                       ))}
                                     </select>
-                                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -tranzinc-y-1/2 text-zinc-500 pointer-events-none" />
+                                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                                   </div>
                                 ) : (
                                   <input
