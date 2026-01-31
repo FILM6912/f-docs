@@ -60,6 +60,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       setBodyValue,
       formValues,
       setFormValues,
+      headerValues,
+      setHeaderValues,
       response,
       setResponse,
       rightPanelTab,
@@ -68,12 +70,12 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   } = useEndpointPersistence(endpoint.id, {
       activeTab: (() => {
         const hasParams = endpoint.parameters && endpoint.parameters.length > 0;
-        const supportsBody = ["POST", "PUT", "PATCH"].includes(endpoint.method);
-        return !hasParams && supportsBody ? "body" : "params";
+        return hasParams ? "params" : "body";
       })(),
       paramValues: {},
       bodyValue: endpoint.requestBodySchema || "",
       formValues: {},
+      headerValues: {},
       response: null,
       rightPanelTab: "0"
   });
@@ -290,12 +292,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         finalBody = formData;
       }
 
+      // Merge auth headers with custom headers
+      const finalHeaders = { ...headers, ...headerValues };
+
       const res = await executeRequest(
         baseUrl,
         endpoint.method,
         finalPath,
         finalBody,
-        headers,
+        finalHeaders,
       );
       setResponse(res);
     } finally {
@@ -560,15 +565,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     <X size={14} />
                   </button>
                 </div>
-                <div className="flex gap-1">
-                  {(["params", "body", "auth"] as const).map((tab) => {
-                    const isDisabled =
-                      tab === "body" &&
-                      !["POST", "PUT", "PATCH"].includes(endpoint.method);
+                <div className="flex gap-1 flex-wrap">
+                  {(["params", "body", "headers", "auth"] as const).map((tab) => {
                     return (
                       <button
                         key={tab}
-                        disabled={isDisabled}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveTab(tab);
@@ -577,13 +578,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           activeTab === tab
                             ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600"
                             : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
-                        } ${isDisabled ? "opacity-30 cursor-not-allowed hidden" : ""}`}
+                        }`}
                       >
                         {tab === "params"
                           ? "Parameters"
                           : tab === "body"
-                            ? "Request Body"
-                            : "Authorization"}
+                            ? "Body"
+                            : tab === "headers"
+                              ? "Headers"
+                              : "Authorization"}
                       </button>
                     );
                   })}
@@ -984,6 +987,73 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           })}
                         </div>
                       ))
+                    )}
+                  </div>
+                )}
+
+                {/* Headers Tab */}
+                {activeTab === "headers" && (
+                  <div className="space-y-3 overflow-y-auto custom-scrollbar max-h-[500px] pr-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-zinc-500">Add custom headers to your request</p>
+                      <button
+                        onClick={() => {
+                          const key = `Header-${Object.keys(headerValues).length + 1}`;
+                          setHeaderValues(prev => ({ ...prev, [key]: '' }));
+                        }}
+                        className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-medium"
+                      >
+                        <Plus size={12} /> Add Header
+                      </button>
+                    </div>
+                    
+                    {Object.keys(headerValues).length === 0 ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm italic py-12 rounded-lg bg-zinc-50 dark:bg-zinc-900 transition-colors border border-dashed border-zinc-200 dark:border-zinc-800">
+                        No custom headers added
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {Object.entries(headerValues).map(([key, value]) => (
+                          <div key={key} className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              placeholder="Header name"
+                              value={key}
+                              onChange={(e) => {
+                                const newKey = e.target.value;
+                                setHeaderValues(prev => {
+                                  const newHeaders = { ...prev };
+                                  delete newHeaders[key];
+                                  newHeaders[newKey] = value;
+                                  return newHeaders;
+                                });
+                              }}
+                              className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Header value"
+                              value={value}
+                              onChange={(e) => {
+                                setHeaderValues(prev => ({ ...prev, [key]: e.target.value }));
+                              }}
+                              className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
+                            />
+                            <button
+                              onClick={() => {
+                                setHeaderValues(prev => {
+                                  const newHeaders = { ...prev };
+                                  delete newHeaders[key];
+                                  return newHeaders;
+                                });
+                              }}
+                              className="p-1.5 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 )}
