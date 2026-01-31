@@ -58,17 +58,29 @@ const executeRealRequest = async (
     const end = performance.now();
     
     let data;
-    const contentType = res.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
+    const contentType = res.headers.get("content-type") || '';
+    
+    // Handle different content types
+    if (contentType.includes("application/json")) {
         data = await res.json();
+    } else if (contentType.includes("image/") || contentType.includes("application/pdf") || 
+               contentType.includes("application/octet-stream")) {
+        // Binary data - convert to blob
+        data = await res.blob();
+    } else if (contentType.includes("text/csv") || contentType.includes("spreadsheet") || 
+               contentType.includes("excel")) {
+        // Spreadsheet data
+        data = await res.blob();
     } else {
+        // Default to text
         data = await res.text();
     }
 
     return {
       status: res.status,
       data: data,
-      latency: Math.round(end - start)
+      latency: Math.round(end - start),
+      contentType: contentType
     };
 
   } catch (error: any) {
@@ -147,6 +159,18 @@ const mockInternalRequest = async (
              // Simulate file download/info
              const filename = path.split('/').pop();
              data = { filename: filename, size: 1024 * 5, url: `https://cdn.cosmos-store.io/uploads/${filename}` };
+        }
+        
+        // --- Download endpoints (return mock file URLs) ---
+        else if (path.includes('/download/image')) {
+            // Return a sample image URL
+            data = "https://picsum.photos/800/600";
+        } else if (path.includes('/download/pdf')) {
+            // Return a sample PDF URL
+            data = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+        } else if (path.includes('/download/csv')) {
+            // Return CSV data
+            data = "Name,Age,City\nJohn Doe,30,New York\nJane Smith,25,Los Angeles\nBob Johnson,35,Chicago";
         }
         
         // --- Root ---

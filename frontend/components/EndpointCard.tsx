@@ -26,6 +26,7 @@ import { useEndpointPersistence } from '../hooks/useEndpointPersistence';
 import { JsonDisplay } from "./JsonDisplay";
 import { JsonEditor } from "./JsonEditor";
 import { MarkdownDisplay } from "./MarkdownDisplay";
+import { FileViewer } from "./FileViewer";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
@@ -1067,7 +1068,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     {response && (
                       <>
                         <div
-                          className={`flex items-center justify-between px-4 py-2 border-b border-zinc-800 ${response.status >= 400 ? "bg-red-500/5" : "bg-emerald-500/5"} shrink-0`}
+                          className={`flex items-center justify-between px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 ${response.status >= 400 ? "bg-red-500/5" : "bg-emerald-500/5"} shrink-0`}
                         >
                           <div className="flex items-center gap-3">
                             <div
@@ -1081,12 +1082,22 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             <span className="text-[10px] font-mono text-zinc-500">
                               {response.latency}ms
                             </span>
+                            {response.contentType && (
+                              <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
+                                {response.contentType.split(';')[0]}
+                              </span>
+                            )}
                           </div>
                           <button
-                            onClick={() =>
-                              handleCopy(JSON.stringify(response.data, null, 2))
-                            }
-                            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                            onClick={() => {
+                              const textData = response.data instanceof Blob 
+                                ? '[Binary Data]' 
+                                : typeof response.data === 'string' 
+                                  ? response.data 
+                                  : JSON.stringify(response.data, null, 2);
+                              handleCopy(textData);
+                            }}
+                            className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors"
                           >
                             {copied ? (
                               <Check size={14} className="text-emerald-400" />
@@ -1095,8 +1106,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             )}
                           </button>
                         </div>
-                        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0">
-                            <JsonDisplay data={response.data} />
+                        <div className="flex-1 overflow-hidden min-h-0">
+                          {/* Check if response is a file (Blob, image, pdf, etc.) */}
+                          {(response.data instanceof Blob || 
+                            response.contentType?.includes('image/') ||
+                            response.contentType?.includes('pdf') ||
+                            response.contentType?.includes('csv') ||
+                            response.contentType?.includes('spreadsheet') ||
+                            response.contentType?.includes('excel') ||
+                            response.contentType?.includes('octet-stream')) ? (
+                            <FileViewer data={response.data} contentType={response.contentType} />
+                          ) : (
+                            <div className="p-4 overflow-y-auto custom-scrollbar h-full">
+                              <JsonDisplay data={response.data} />
+                            </div>
+                          )}
                         </div>
                       </>
                     )}

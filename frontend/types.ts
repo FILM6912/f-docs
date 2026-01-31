@@ -58,6 +58,7 @@ export interface SimulationResponse {
   status: number;
   data: any;
   latency: number;
+  contentType?: string; // Add content-type for file detection
 }
 
 export interface OAuthFlows {
