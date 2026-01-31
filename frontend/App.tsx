@@ -786,6 +786,7 @@ export default function App() {
   const [newWsPath, setNewWsPath] = useState("");
   const [isWsUrlModalOpen, setIsWsUrlModalOpen] = useState(false);
   const [tempWsUrl, setTempWsUrl] = useState(ws.baseUrl);
+  const [tempWsTimeout, setTempWsTimeout] = useState(ws.timeout);
   const wsUrlInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddWsPath = (e: React.FormEvent) => {
@@ -867,6 +868,7 @@ export default function App() {
   const handleWsUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     ws.setBaseUrl(tempWsUrl);
+    ws.setTimeout(tempWsTimeout);
     setIsWsUrlModalOpen(false);
   };
 
@@ -1352,6 +1354,7 @@ export default function App() {
                             if(!ws.isAnyConnected) {
                                 setIsWsUrlModalOpen(true);
                                 setTempWsUrl(ws.baseUrl);
+                                setTempWsTimeout(ws.timeout);
                             }
                         }}
                         title="Click to edit base URL"
@@ -1384,10 +1387,27 @@ export default function App() {
                                         className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-4 text-sm text-zinc-800 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
                                         placeholder="wss://echo.websocket.org"
                                     />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">Connection Timeout</label>
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="range"
+                                            min="1000"
+                                            max="10000"
+                                            step="500"
+                                            value={tempWsTimeout}
+                                            onChange={(e) => setTempWsTimeout(parseInt(e.target.value))}
+                                            className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+                                        />
+                                        <span className="text-sm font-mono text-zinc-700 dark:text-zinc-300 w-16 text-right">{tempWsTimeout}ms</span>
+                                    </div>
                                     <p className="text-xs text-zinc-500 mt-2">
-                                        Press Enter to save.
+                                        Time to wait before connection timeout (1-10 seconds)
                                     </p>
                                 </div>
+                                
                                 <div className="flex justify-end gap-2 pt-2">
                                     <button
                                         type="button"
