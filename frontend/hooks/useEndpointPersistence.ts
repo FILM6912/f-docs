@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
+import { SimulationResponse } from '../types';
 
 interface EndpointState {
   paramValues: Record<string, string>;
   bodyValue: string;
   activeTab: "params" | "body" | "auth";
-  formValues?: Record<string, string>;
+  formValues?: Record<string, string | File>;
+  response?: SimulationResponse | null;
+  rightPanelTab?: string;
 }
 
 // In-memory store: persists as long as the page is not refreshed
@@ -54,12 +57,40 @@ export function useEndpointPersistence(endpointId: string, initialDefaults: Endp
     setState(prev => ({ ...prev, activeTab: newValue }));
   }, []);
 
+  const setFormValues = useCallback((newValues: Record<string, string | File> | ((prev: Record<string, string | File>) => Record<string, string | File>)) => {
+    setState(prev => ({
+        ...prev,
+        formValues: typeof newValues === 'function' ? newValues(prev.formValues || {}) : newValues
+    }));
+  }, []);
+
+  const setResponse = useCallback((newResponse: SimulationResponse | null) => {
+    setState(prev => ({ ...prev, response: newResponse }));
+  }, []);
+
+  const setRightPanelTab = useCallback((newTab: string) => {
+    setState(prev => ({ ...prev, rightPanelTab: newTab }));
+  }, []);
+
+  // Reset function - clears all data for this endpoint
+  const reset = useCallback(() => {
+    setState(initialDefaults);
+    delete memoryStore[endpointId];
+  }, [endpointId, initialDefaults]);
+
   return {
     paramValues: state.paramValues,
     bodyValue: state.bodyValue,
     activeTab: state.activeTab,
+    formValues: state.formValues || {},
+    response: state.response,
+    rightPanelTab: state.rightPanelTab,
     setParamValues,
     setBodyValue,
-    setActiveTab
+    setActiveTab,
+    setFormValues,
+    setResponse,
+    setRightPanelTab,
+    reset
   };
 }
