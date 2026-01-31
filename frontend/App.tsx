@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
-import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send } from 'lucide-react';
+import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send, Copy } from 'lucide-react';
 import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
 import { EndpointCard } from './components/EndpointCard';
@@ -740,6 +740,9 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
   const { theme, toggleTheme } = useTheme();
 
+  // Copied state for sidebar endpoints
+  const [copiedEndpoints, setCopiedEndpoints] = useState<Record<string, boolean>>({});
+
   useLayoutEffect(() => {
      updateApiIndicator();
      const t1 = setTimeout(() => updateApiIndicator(), 150);
@@ -1166,20 +1169,67 @@ export default function App() {
                                 
                                 {isExpanded && (
                                     <div className="pl-2 space-y-0.5 border-l-2 border-zinc-300 dark:border-zinc-700 ml-3">
-                                        {tagEndpoints.map(ep => (
-                                            <button
-                                                key={ep.id}
-                                                data-id={ep.id}
-                                                ref={setEndpointRef}
-                                                onClick={() => setActiveEndpointId(ep.id)}
-                                                className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] relative z-10 ${activeEndpointId === ep.id ? 'text-blue-700 dark:text-white border-transparent font-semibold' : 'text-zinc-600 dark:text-zinc-400 border-transparent hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/30'}`}
-                                            >
-                                                <div className="w-14 shrink-0">
-                                                    <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
+                                        {tagEndpoints.map(ep => {
+                                            const isSecured = ep.security && ep.security.length > 0;
+                                            const copied = copiedEndpoints[ep.id] || false;
+                                            
+                                            // Check if endpoint is authorized
+                                            const isEndpointAuthorized = isSecured && ep.security?.some(sec => {
+                                                const schemeName = Object.keys(sec)[0];
+                                                return authCredentials[schemeName] && authCredentials[schemeName].length > 0;
+                                            });
+                                            
+                                            const handleCopyUrl = (e: React.MouseEvent) => {
+                                                e.stopPropagation();
+                                                const fullUrl = `${baseUrl.replace(/\/$/, "")}${ep.path}`;
+                                                navigator.clipboard.writeText(fullUrl);
+                                                setCopiedEndpoints(prev => ({ ...prev, [ep.id]: true }));
+                                                setTimeout(() => {
+                                                    setCopiedEndpoints(prev => ({ ...prev, [ep.id]: false }));
+                                                }, 2000);
+                                            };
+                                            
+                                            return (
+                                                <div
+                                                    key={ep.id}
+                                                    className="group/endpoint relative"
+                                                >
+                                                    <button
+                                                        data-id={ep.id}
+                                                        ref={setEndpointRef}
+                                                        onClick={() => setActiveEndpointId(ep.id)}
+                                                        className={`w-full text-left px-3 py-2 rounded-r-md text-[11px] transition-colors flex items-center gap-2 border-l-2 -ml-[1px] relative z-10 ${activeEndpointId === ep.id ? 'text-blue-700 dark:text-white border-transparent font-semibold' : 'text-zinc-600 dark:text-zinc-400 border-transparent hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/30'}`}
+                                                    >
+                                                        <div className="w-14 shrink-0">
+                                                            <MethodBadge method={ep.method} className="w-full block text-center scale-[0.80] origin-left" />
+                                                        </div>
+                                                        <span className={`truncate font-mono flex-1 ${ep.deprecated ? 'line-through opacity-60' : ''}`}>{ep.path}</span>
+                                                        
+                                                        {/* Icons */}
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            {isSecured && (
+                                                                isEndpointAuthorized ? (
+                                                                    <Unlock size={10} className="text-emerald-500" title="Authorized" />
+                                                                ) : (
+                                                                    <Lock size={10} className="text-red-500" title="Requires authorization" />
+                                                                )
+                                                            )}
+                                                            <div
+                                                                onClick={handleCopyUrl}
+                                                                className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded transition-colors cursor-pointer"
+                                                                title="Copy URL"
+                                                            >
+                                                                {copied ? (
+                                                                    <Check size={10} className="text-emerald-500" />
+                                                                ) : (
+                                                                    <Copy size={10} className="text-zinc-400 dark:text-zinc-500" />
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </button>
                                                 </div>
-                                                <span className={`truncate font-mono ${ep.deprecated ? 'line-through opacity-60' : ''}`}>{ep.path}</span>
-                                            </button>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
