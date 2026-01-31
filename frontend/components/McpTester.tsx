@@ -746,7 +746,7 @@ export const McpTester: React.FC = () => {
                 {/* Search in Sidebar */}
                 <div className="p-2 border-b border-zinc-800 bg-zinc-900/50">
                      <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 -tranzinc-y-1/2 text-zinc-500" size={14} />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" size={14} />
                         <input 
                             type="text" 
                             placeholder="Filter items..." 
@@ -819,7 +819,7 @@ export const McpTester: React.FC = () => {
                      <div className="flex items-center gap-3 w-full">
 
                         <div className="flex-1 relative group">
-                            <span className="absolute left-3 top-1/2 -tranzinc-y-1/2 text-xs font-bold text-zinc-500 group-focus-within:text-orange-500 transition-colors">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-500 group-focus-within:text-orange-500 transition-colors">
                                 MCP URL
                             </span>
                             <input 

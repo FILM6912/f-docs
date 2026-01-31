@@ -26,6 +26,7 @@ import { useEndpointPersistence } from '../hooks/useEndpointPersistence';
 import { JsonDisplay } from "./JsonDisplay";
 import { JsonEditor } from "./JsonEditor";
 import { MarkdownDisplay } from "./MarkdownDisplay";
+import { FileViewer } from "./FileViewer";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
@@ -49,37 +50,39 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
 
-  // Persistence Hook
+  // Persistence Hook - manages all endpoint state
   const { 
       activeTab, 
       setActiveTab, 
       paramValues, 
       setParamValues, 
       bodyValue, 
-      setBodyValue 
+      setBodyValue,
+      formValues,
+      setFormValues,
+      headerValues,
+      setHeaderValues,
+      response,
+      setResponse,
+      rightPanelTab,
+      setRightPanelTab,
+      reset
   } = useEndpointPersistence(endpoint.id, {
       activeTab: (() => {
         const hasParams = endpoint.parameters && endpoint.parameters.length > 0;
-        const supportsBody = ["POST", "PUT", "PATCH"].includes(endpoint.method);
-        return !hasParams && supportsBody ? "body" : "params";
+        return hasParams ? "params" : "body";
       })(),
       paramValues: {},
-      bodyValue: endpoint.requestBodySchema || ""
+      bodyValue: endpoint.requestBodySchema || "",
+      formValues: {},
+      headerValues: {},
+      response: null,
+      rightPanelTab: "0"
   });
 
-  const [rightPanelTab, setRightPanelTab] = useState("0");
-  const [showDescModal, setShowDescModal] = useState(false); // New state for modal
-  // const [paramValues, setParamValues] = useState<Record<string, string>>({});  <-- Replaced
-  // const [bodyValue, setBodyValue] = useState(endpoint.requestBodySchema || ""); <-- Replaced
-
-  // State for multipart/form-data: supports files and text fields
-  const [formValues, setFormValues] = useState<Record<string, string | File>>(
-    {},
-  );
-
+  const [showDescModal, setShowDescModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [response, setResponse] = useState<SimulationResponse | null>(null);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
 
@@ -289,12 +292,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         finalBody = formData;
       }
 
+      // Merge auth headers with custom headers
+      const finalHeaders = { ...headers, ...headerValues };
+
       const res = await executeRequest(
         baseUrl,
         endpoint.method,
         finalPath,
         finalBody,
-        headers,
+        finalHeaders,
       );
       setResponse(res);
     } finally {
@@ -543,18 +549,27 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : "max-h-[calc(100vh-400px)]"}`}>
               {/* Tab Navigation for Request */}
               <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
-                <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
-                  Request
-                </h3>
-                <div className="flex gap-1">
-                  {(["params", "body", "auth"] as const).map((tab) => {
-                    const isDisabled =
-                      tab === "body" &&
-                      !["POST", "PUT", "PATCH"].includes(endpoint.method);
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
+                    Request
+                  </h3>
+                  {/* Reset Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      reset();
+                    }}
+                    className="p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                    title="Reset endpoint data"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                <div className="flex gap-1 flex-wrap">
+                  {(["params", "body", "headers", "auth"] as const).map((tab) => {
                     return (
                       <button
                         key={tab}
-                        disabled={isDisabled}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveTab(tab);
@@ -563,13 +578,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           activeTab === tab
                             ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600"
                             : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
-                        } ${isDisabled ? "opacity-30 cursor-not-allowed hidden" : ""}`}
+                        }`}
                       >
                         {tab === "params"
                           ? "Parameters"
                           : tab === "body"
-                            ? "Request Body"
-                            : "Authorization"}
+                            ? "Body"
+                            : tab === "headers"
+                              ? "Headers"
+                              : "Authorization"}
                       </button>
                     );
                   })}
@@ -641,7 +658,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                         </option>
                                       ))}
                                     </select>
-                                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -tranzinc-y-1/2 text-zinc-500 pointer-events-none" />
+                                    <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                                   </div>
                                 ) : (
                                   <input
@@ -973,6 +990,73 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     )}
                   </div>
                 )}
+
+                {/* Headers Tab */}
+                {activeTab === "headers" && (
+                  <div className="space-y-3 overflow-y-auto custom-scrollbar max-h-[500px] pr-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-zinc-500">Add custom headers to your request</p>
+                      <button
+                        onClick={() => {
+                          const key = `Header-${Object.keys(headerValues).length + 1}`;
+                          setHeaderValues(prev => ({ ...prev, [key]: '' }));
+                        }}
+                        className="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1 font-medium"
+                      >
+                        <Plus size={12} /> Add Header
+                      </button>
+                    </div>
+                    
+                    {Object.keys(headerValues).length === 0 ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 text-sm italic py-12 rounded-lg bg-zinc-50 dark:bg-zinc-900 transition-colors border border-dashed border-zinc-200 dark:border-zinc-800">
+                        No custom headers added
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {Object.entries(headerValues).map(([key, value]) => (
+                          <div key={key} className="flex gap-2 items-center">
+                            <input
+                              type="text"
+                              placeholder="Header name"
+                              value={key}
+                              onChange={(e) => {
+                                const newKey = e.target.value;
+                                setHeaderValues(prev => {
+                                  const newHeaders = { ...prev };
+                                  delete newHeaders[key];
+                                  newHeaders[newKey] = value;
+                                  return newHeaders;
+                                });
+                              }}
+                              className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Header value"
+                              value={value}
+                              onChange={(e) => {
+                                setHeaderValues(prev => ({ ...prev, [key]: e.target.value }));
+                              }}
+                              className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
+                            />
+                            <button
+                              onClick={() => {
+                                setHeaderValues(prev => {
+                                  const newHeaders = { ...prev };
+                                  delete newHeaders[key];
+                                  return newHeaders;
+                                });
+                              }}
+                              className="p-1.5 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <button
@@ -1067,7 +1151,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     {response && (
                       <>
                         <div
-                          className={`flex items-center justify-between px-4 py-2 border-b border-zinc-800 ${response.status >= 400 ? "bg-red-500/5" : "bg-emerald-500/5"} shrink-0`}
+                          className={`flex items-center justify-between px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 ${response.status >= 400 ? "bg-red-500/5" : "bg-emerald-500/5"} shrink-0`}
                         >
                           <div className="flex items-center gap-3">
                             <div
@@ -1081,12 +1165,22 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             <span className="text-[10px] font-mono text-zinc-500">
                               {response.latency}ms
                             </span>
+                            {response.contentType && (
+                              <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
+                                {response.contentType.split(';')[0]}
+                              </span>
+                            )}
                           </div>
                           <button
-                            onClick={() =>
-                              handleCopy(JSON.stringify(response.data, null, 2))
-                            }
-                            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                            onClick={() => {
+                              const textData = response.data instanceof Blob 
+                                ? '[Binary Data]' 
+                                : typeof response.data === 'string' 
+                                  ? response.data 
+                                  : JSON.stringify(response.data, null, 2);
+                              handleCopy(textData);
+                            }}
+                            className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 transition-colors"
                           >
                             {copied ? (
                               <Check size={14} className="text-emerald-400" />
@@ -1095,8 +1189,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             )}
                           </button>
                         </div>
-                        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0">
-                            <JsonDisplay data={response.data} />
+                        <div className="flex-1 overflow-hidden min-h-0">
+                          {/* Check if response is a file (Blob, image, pdf, etc.) */}
+                          {(response.data instanceof Blob || 
+                            response.contentType?.includes('image/') ||
+                            response.contentType?.includes('pdf') ||
+                            response.contentType?.includes('csv') ||
+                            response.contentType?.includes('spreadsheet') ||
+                            response.contentType?.includes('excel') ||
+                            response.contentType?.includes('octet-stream')) ? (
+                            <FileViewer data={response.data} contentType={response.contentType} />
+                          ) : (
+                            <div className="p-4 overflow-y-auto custom-scrollbar h-full">
+                              <JsonDisplay data={response.data} />
+                            </div>
+                          )}
                         </div>
                       </>
                     )}
