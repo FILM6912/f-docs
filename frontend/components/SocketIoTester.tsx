@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ListenerData, ListenerItem } from "../hooks/useSocketIO";
 import { JsonDisplay } from "./JsonDisplay";
+import { copyToClipboard } from "../utils/clipboard";
 
 interface SocketIoTesterProps {
   url: string;
@@ -162,7 +163,7 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
 
   const handleCopy = () => {
     if (data?.lastEvent) {
-      navigator.clipboard.writeText(JSON.stringify(data.lastEvent, null, 2));
+      copyToClipboard(JSON.stringify(data.lastEvent));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

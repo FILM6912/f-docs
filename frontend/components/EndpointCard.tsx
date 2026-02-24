@@ -40,6 +40,8 @@ interface EndpointCardProps {
   forcedOpen?: boolean;
 }
 
+import { copyToClipboard } from "../utils/clipboard";
+
 export const EndpointCard: React.FC<EndpointCardProps> = ({
   endpoint,
   baseUrl,
@@ -320,15 +322,24 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   };
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
+    copyToClipboard(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleCopyUrl = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const fullUrl = `${baseUrl.replace(/\/$/, "")}${endpoint.path}`;
-    navigator.clipboard.writeText(fullUrl);
+    let base = baseUrl.replace(/\/$/, "");
+    // Ensure absolute URL with protocol
+    if (!base.match(/^https?:\/\//)) {
+        if (base.startsWith('/')) {
+            base = window.location.origin + base;
+        } else {
+            base = window.location.origin + '/' + base;
+        }
+    }
+    const fullUrl = `${base}${endpoint.path}`;
+    copyToClipboard(fullUrl);
     setUrlCopied(true);
     setTimeout(() => setUrlCopied(false), 2000);
   };
@@ -1234,12 +1245,17 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           {endpoint.responses[parseInt(rightPanelTab)]
                             .schema && (
                             <button
-                              onClick={() =>
-                                handleCopy(
-                                  endpoint.responses[parseInt(rightPanelTab)]
-                                    .schema!,
-                                )
-                              }
+                              onClick={() => {
+                                let schemaText = endpoint.responses[parseInt(rightPanelTab)].schema!;
+                                try {
+                                    // Try to minify if it's a JSON string
+                                    const parsed = JSON.parse(schemaText);
+                                    schemaText = JSON.stringify(parsed);
+                                } catch (e) {
+                                    // If not valid JSON, use as is
+                                }
+                                handleCopy(schemaText);
+                              }}
                               className="text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1.5 text-[10px] font-medium"
                             >
                               {copied ? (

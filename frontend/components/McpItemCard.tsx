@@ -94,7 +94,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
     };
 
     const handleCopy = (text: string) => {
-        navigator.clipboard.writeText(text);
+        copyToClipboard(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };

@@ -12,6 +12,7 @@ import { McpConnection } from './components/McpConnection';
 import { McpItemCard } from './components/McpItemCard'; // We will use this directly
 import { useSocketIO } from './hooks/useSocketIO';
 import { useWebSocket } from './hooks/useWebSocket';
+import { copyToClipboard } from './utils/clipboard';
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -1196,8 +1197,16 @@ export default function App() {
                                             
                                             const handleCopyUrl = (e: React.MouseEvent) => {
                                                 e.stopPropagation();
-                                                const fullUrl = `${baseUrl.replace(/\/$/, "")}${ep.path}`;
-                                                navigator.clipboard.writeText(fullUrl);
+                                                let base = baseUrl.replace(/\/$/, "");
+                                                if (!base.match(/^https?:\/\//)) {
+                                                    if (base.startsWith('/')) {
+                                                        base = window.location.origin + base;
+                                                    } else {
+                                                        base = window.location.origin + '/' + base;
+                                                    }
+                                                }
+                                                const fullUrl = `${base}${ep.path}`;
+                                                copyToClipboard(fullUrl);
                                                 setCopiedEndpoints(prev => ({ ...prev, [ep.id]: true }));
                                                 setTimeout(() => {
                                                     setCopiedEndpoints(prev => ({ ...prev, [ep.id]: false }));

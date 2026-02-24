@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Activity, Radio, X, Send, AlertCircle, Check, Copy, AlertTriangle } from 'lucide-react';
 import { PathData, PathItem, WebSocketMessage } from '../hooks/useWebSocket';
 import { MessageRenderer } from './MessageRenderer';
+import { copyToClipboard } from '../utils/clipboard';
 
 interface WebSocketTesterProps {
   baseUrl: string;
@@ -164,7 +165,7 @@ const PathCard: React.FC<PathCardProps> = ({
       const allMessages = data.history.map(msg => 
         `[${msg.timestamp}] ${msg.type === 'sent' ? 'Sent' : msg.type === 'received' ? 'Received' : 'System'}: ${msg.content}`
       ).join('\n');
-      navigator.clipboard.writeText(allMessages);
+      copyToClipboard(allMessages);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

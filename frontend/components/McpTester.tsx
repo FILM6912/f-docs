@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Database, Play, StopCircle, Box, Wrench, MessageSquare, Terminal, ChevronRight, ChevronDown, Search, X, Server, Activity, Loader2, Code, AlertTriangle, Settings2, Zap, Check, Copy, ArrowRightLeft, Globe, Plus, Trash2 } from 'lucide-react';
 import { mcpSdkService } from '../services/mcpSdkService';
+import { copyToClipboard } from '../utils/clipboard';
 
 // --- Types for MCP Protocol ---
 
@@ -153,7 +154,7 @@ const McpItemCard: React.FC<{
     };
 
     const handleCopy = (text: string) => {
-        navigator.clipboard.writeText(text);
+        copyToClipboard(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
