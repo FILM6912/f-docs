@@ -342,6 +342,7 @@ export const McpTester: React.FC = () => {
   const [authUsername, setAuthUsername] = useState('admin');
   const [authPassword, setAuthPassword] = useState('admin');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [mcpSessionId, setMcpSessionId] = useState<string | null>(null);
   
   // Internal State
   const [isConnected, setIsConnected] = useState(false);

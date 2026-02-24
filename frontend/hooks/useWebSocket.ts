@@ -295,7 +295,7 @@ export const useWebSocket = () => {
       sentMessagesRef.current[path.name].add(message);
       
       // Auto-cleanup from set after 5 seconds to prevent memory leaks if no echo
-      setTimeout(() => {
+      window.setTimeout(() => {
           if (sentMessagesRef.current[path.name]) {
               sentMessagesRef.current[path.name].delete(message);
           }

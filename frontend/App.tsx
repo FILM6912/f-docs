@@ -13,6 +13,7 @@ import { McpItemCard } from './components/McpItemCard'; // We will use this dire
 import { useSocketIO } from './hooks/useSocketIO';
 import { useWebSocket } from './hooks/useWebSocket';
 import { copyToClipboard } from './utils/clipboard';
+import { CustomApiTester } from './components/CustomApiTester';
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -1141,7 +1142,13 @@ export default function App() {
             />
 
             <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-3">F-<span className="text-blue-500">Docs</span></h1>
+                <button 
+                    onClick={() => setActiveEndpointId('custom-test')}
+                    className="flex flex-col text-left group cursor-pointer"
+                >
+                    <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-0.5 group-hover:text-blue-600 transition-colors">F-<span className="text-blue-500">Docs</span></h1>
+                    <span className="text-[10px] text-zinc-400 group-hover:text-blue-500 mb-3 opacity-0 group-hover:opacity-100 transition-opacity">Custom Tester</span>
+                </button>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
                         <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">v{apiVersion}</span>
@@ -1193,7 +1200,6 @@ export default function App() {
                   }}
               />
             {viewMode === 'list' ? (
-                // List Mode Sidebar
                 <>
                     <div className="mb-4 px-1">
                         <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 px-2">Resources</h3>
@@ -1220,8 +1226,7 @@ export default function App() {
                     </div>
                 </>
             ) : (
-                // Focused Mode Sidebar
-                <div className="px-1 space-y-4">
+                <div className="px-1 space-y-4 pt-2">
                     {tags.map(tag => {
                         const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
                         if (tagEndpoints.length === 0) return null;
@@ -2008,7 +2013,9 @@ export default function App() {
                                         </div>
                                     ) : (
                                         <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col overflow-hidden min-h-0">
-                                            {activeEndpoint ? (
+                                            {activeEndpointId === 'custom-test' ? (
+                                                <CustomApiTester />
+                                            ) : activeEndpoint ? (
                                                 <EndpointCard 
                                                     key={activeEndpoint.id} 
                                                     endpoint={activeEndpoint} 
