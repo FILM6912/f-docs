@@ -1125,6 +1125,20 @@ export default function App() {
                 </div>
             </div>
 
+            {/* Search Bar */}
+            <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/30">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={12} />
+                    <input 
+                        type="text" 
+                        placeholder="Search endpoints..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full h-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded pl-8 pr-3 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    />
+                </div>
+            </div>
+
             <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0 relative" ref={apiListContainerRef}>
               {/* Sliding Active Indicator for API List */}
               <div 
@@ -1877,27 +1891,7 @@ export default function App() {
         
         {activeModule === 'api' ? (
             <div key="api" className="w-full h-full flex flex-col">
-                {/* REST API Header */}
-                <header className="sticky top-0 z-20 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-lg transition-colors">
-                    <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/30 transition-colors">
-                        <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
-                            <div className="flex flex-1 w-full gap-3 items-center min-w-0">
-                                    <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
-                                        <input 
-                                            type="text"
-                                            placeholder="Filter endpoints by path or summary..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md pl-10 pr-4 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
-                                        />
-                                    </div>
 
-                                    {/* Configure URL button removed - use Ctrl+Q */}
-                            </div>
-                        </div>
-                    </div>
-                </header>
 
                 {/* REST API Content */}
                 <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col overflow-hidden">
