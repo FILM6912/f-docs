@@ -24,6 +24,7 @@ interface TagSectionProps {
     baseUrl: string;
     securitySchemes?: Record<string, SecurityScheme>;
     authCredentials: Record<string, string>;
+    onAuthError?: () => void;
 }
 
 const TagSection: React.FC<TagSectionProps> = ({ 
@@ -31,7 +32,8 @@ const TagSection: React.FC<TagSectionProps> = ({
     endpoints, 
     baseUrl,
     securitySchemes,
-    authCredentials
+    authCredentials,
+    onAuthError
 }) => {
     const [isOpen, setIsOpen] = useState(true);
 
@@ -61,6 +63,7 @@ const TagSection: React.FC<TagSectionProps> = ({
                             baseUrl={baseUrl} 
                             securitySchemes={securitySchemes}
                             authCredentials={authCredentials}
+                            onAuthError={onAuthError}
                         />
                     ))}
                 </div>
@@ -1958,6 +1961,7 @@ export default function App() {
                                                         baseUrl={baseUrl}
                                                         securitySchemes={securitySchemes}
                                                         authCredentials={authCredentials}
+                                                        onAuthError={() => setIsAuthModalOpen(true)}
                                                     />
                                                 );
                                             })}
@@ -1981,6 +1985,7 @@ export default function App() {
                                                     securitySchemes={securitySchemes}
                                                     authCredentials={authCredentials}
                                                     forcedOpen={true}
+                                                    onAuthError={() => setIsAuthModalOpen(true)}
                                                 />
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center py-32 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900/20 border-dashed transition-colors h-full">
