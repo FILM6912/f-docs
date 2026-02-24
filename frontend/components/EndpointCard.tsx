@@ -416,6 +416,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       delete next[key];
       return next;
     });
+    // Don't clear error here as we are removing the value, so it might become invalid again
+    // But if we want to reset the state, we can keep the error until re-validation
   };
 
 
