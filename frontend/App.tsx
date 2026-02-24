@@ -87,11 +87,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
     const [oauthForms, setOauthForms] = useState<Record<string, Record<string, string>>>({});
     const [oauthLoading, setOauthLoading] = useState<Record<string, boolean>>({});
     const [oauthError, setOauthError] = useState<Record<string, string | null>>({});
+    const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
     if (!isOpen) return null;
 
     const handleInputChange = (key: string, value: string) => {
         setCredentials(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleCopyToken = (key: string, token: string) => {
+        copyToClipboard(token);
+        setCopiedToken(key);
+        setTimeout(() => setCopiedToken(null), 2000);
+    };
+
+    const maskToken = (token: string) => {
+        if (!token) return '';
+        if (token.length <= 8) return '*'.repeat(token.length);
+        return token.substring(0, 4) + '*************';
     };
 
     const handleOauthFormChange = (schemeName: string, field: string, value: string) => {
@@ -306,12 +319,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     <div className="flex gap-2 items-end">
                                                         <div className="flex-1 space-y-1">
                                                             <label className="text-[10px] font-bold uppercase text-zinc-500">Access Token</label>
-                                                            <input 
-                                                                type="text" 
-                                                                className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 font-mono truncate"
-                                                                value={credentials[key] || ''}
-                                                                disabled
-                                                            />
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 font-mono truncate pr-8"
+                                                                    value={maskToken(credentials[key] || '')}
+                                                                    disabled
+                                                                />
+                                                                <button 
+                                                                    onClick={() => handleCopyToken(key, credentials[key])}
+                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                                    title="Copy Token"
+                                                                >
+                                                                    {copiedToken === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
@@ -375,12 +397,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     <div className="flex gap-2 items-end">
                                                         <div className="flex-1 space-y-1">
                                                             <label className="text-[10px] font-bold uppercase text-zinc-500">Credentials (Base64)</label>
-                                                            <input 
-                                                                type="text" 
-                                                                className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 font-mono truncate transition-colors"
-                                                                value={credentials[key] || ''}
-                                                                disabled
-                                                            />
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 font-mono truncate transition-colors pr-8"
+                                                                    value={maskToken(credentials[key] || '')}
+                                                                    disabled
+                                                                />
+                                                                <button 
+                                                                    onClick={() => handleCopyToken(key, credentials[key])}
+                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                                    title="Copy Token"
+                                                                >
+                                                                    {copiedToken === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
