@@ -671,7 +671,17 @@ export default function App() {
   const sidebarRef = useRef<HTMLElement>(null);
 
   // API state (must be before updateApiIndicator)
-  const [activeEndpointId, setActiveEndpointId] = useState<string | null>(null);
+  const [activeEndpointId, setActiveEndpointId] = useState<string | null>(() => {
+    return localStorage.getItem('activeEndpointId') || null;
+  });
+
+  useEffect(() => {
+    if (activeEndpointId) {
+      localStorage.setItem('activeEndpointId', activeEndpointId);
+    } else {
+      localStorage.removeItem('activeEndpointId');
+    }
+  }, [activeEndpointId]);
   const [expandedSidebarTags, setExpandedSidebarTags] = useState<Record<string, boolean>>({});
 
   // API List Animation State (Must be before resize callback)
@@ -972,9 +982,12 @@ export default function App() {
       
       // Auto-select first endpoint for better focused view experience
       if (spec.endpoints.length > 0) {
-          setActiveEndpointId(spec.endpoints[0].id);
+          setActiveEndpointId(prev => {
+              if (prev === 'custom-test' || spec.endpoints.some(e => e.id === prev)) return prev;
+              return spec.endpoints[0].id;
+          });
       } else {
-          setActiveEndpointId(null);
+          setActiveEndpointId(prev => prev === 'custom-test' ? 'custom-test' : null);
       }
       
       // Default expand all tags in sidebar for focused mode
@@ -1151,7 +1164,7 @@ export default function App() {
                 </button>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
-                        <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">v{apiVersion}</span>
+                        <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">{import.meta.env.VITE_APP_VERSION || `v${apiVersion}`}</span>
                     </div>
                     
                     <div className="flex bg-zinc-200 dark:bg-zinc-800 rounded p-0.5 border border-zinc-300 dark:border-zinc-700">
