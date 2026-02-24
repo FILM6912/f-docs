@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Play, Loader2, Code, Activity, Check, Copy, 
 import { McpResource, McpTool, McpPrompt } from '../hooks/useMcp';
 import { JsonDisplay } from './JsonDisplay';
 import { MarkdownDisplay } from './MarkdownDisplay';
+import { copyToClipboard } from '../utils/clipboard';
 
 // Badge Component
 export const McpBadge: React.FC<{ type: 'RESOURCE' | 'TOOL' | 'PROMPT'; className?: string }> = ({ type, className = '' }) => {
@@ -94,7 +95,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
     };
 
     const handleCopy = (text: string) => {
-        navigator.clipboard.writeText(text);
+        copyToClipboard(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };

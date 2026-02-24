@@ -3,7 +3,9 @@ export enum Method {
   POST = 'POST',
   PUT = 'PUT',
   DELETE = 'DELETE',
-  PATCH = 'PATCH'
+  PATCH = 'PATCH',
+  OPTIONS = 'OPTIONS',
+  HEAD = 'HEAD'
 }
 
 export interface Parameter {

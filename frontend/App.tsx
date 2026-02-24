@@ -12,6 +12,8 @@ import { McpConnection } from './components/McpConnection';
 import { McpItemCard } from './components/McpItemCard'; // We will use this directly
 import { useSocketIO } from './hooks/useSocketIO';
 import { useWebSocket } from './hooks/useWebSocket';
+import { copyToClipboard } from './utils/clipboard';
+import { CustomApiTester } from './components/CustomApiTester';
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -23,6 +25,7 @@ interface TagSectionProps {
     baseUrl: string;
     securitySchemes?: Record<string, SecurityScheme>;
     authCredentials: Record<string, string>;
+    onAuthError?: () => void;
 }
 
 const TagSection: React.FC<TagSectionProps> = ({ 
@@ -30,7 +33,8 @@ const TagSection: React.FC<TagSectionProps> = ({
     endpoints, 
     baseUrl,
     securitySchemes,
-    authCredentials
+    authCredentials,
+    onAuthError
 }) => {
     const [isOpen, setIsOpen] = useState(true);
 
@@ -60,6 +64,7 @@ const TagSection: React.FC<TagSectionProps> = ({
                             baseUrl={baseUrl} 
                             securitySchemes={securitySchemes}
                             authCredentials={authCredentials}
+                            onAuthError={onAuthError}
                         />
                     ))}
                 </div>
@@ -83,11 +88,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
     const [oauthForms, setOauthForms] = useState<Record<string, Record<string, string>>>({});
     const [oauthLoading, setOauthLoading] = useState<Record<string, boolean>>({});
     const [oauthError, setOauthError] = useState<Record<string, string | null>>({});
+    const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
     if (!isOpen) return null;
 
     const handleInputChange = (key: string, value: string) => {
         setCredentials(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleCopyToken = (key: string, token: string) => {
+        copyToClipboard(token);
+        setCopiedToken(key);
+        setTimeout(() => setCopiedToken(null), 2000);
+    };
+
+    const maskToken = (token: string) => {
+        if (!token) return '';
+        if (token.length <= 8) return '*'.repeat(token.length);
+        return token.substring(0, 4) + '*************';
     };
 
     const handleOauthFormChange = (schemeName: string, field: string, value: string) => {
@@ -112,6 +130,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
             const token = btoa(`${formData.username}:${formData.password}`);
             setCredentials(prev => ({ ...prev, [schemeName]: token }));
             setOauthError(prev => ({ ...prev, [schemeName]: null }));
+            onClose(); // Auto-close modal on success
         } catch (e) {
             setOauthError(prev => ({ ...prev, [schemeName]: "Failed to encode credentials." }));
         }
@@ -164,6 +183,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
             if (token) {
                 setCredentials(prev => ({ ...prev, [schemeName]: token }));
                 setOauthError(prev => ({ ...prev, [schemeName]: null }));
+                onClose(); // Auto-close modal on success
             } else {
                  throw new Error("No access_token found in response.");
             }
@@ -300,12 +320,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     <div className="flex gap-2 items-end">
                                                         <div className="flex-1 space-y-1">
                                                             <label className="text-[10px] font-bold uppercase text-zinc-500">Access Token</label>
-                                                            <input 
-                                                                type="text" 
-                                                                className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 font-mono truncate"
-                                                                value={credentials[key] || ''}
-                                                                disabled
-                                                            />
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 font-mono truncate pr-8"
+                                                                    value={maskToken(credentials[key] || '')}
+                                                                    disabled
+                                                                />
+                                                                <button 
+                                                                    onClick={() => handleCopyToken(key, credentials[key])}
+                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                                    title="Copy Token"
+                                                                >
+                                                                    {copiedToken === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
@@ -369,12 +398,21 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                     <div className="flex gap-2 items-end">
                                                         <div className="flex-1 space-y-1">
                                                             <label className="text-[10px] font-bold uppercase text-zinc-500">Credentials (Base64)</label>
-                                                            <input 
-                                                                type="text" 
-                                                                className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 font-mono truncate transition-colors"
-                                                                value={credentials[key] || ''}
-                                                                disabled
-                                                            />
+                                                            <div className="relative">
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400 font-mono truncate transition-colors pr-8"
+                                                                    value={maskToken(credentials[key] || '')}
+                                                                    disabled
+                                                                />
+                                                                <button 
+                                                                    onClick={() => handleCopyToken(key, credentials[key])}
+                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                                                    title="Copy Token"
+                                                                >
+                                                                    {copiedToken === key ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                         <button 
                                                             onClick={() => handleInputChange(key, '')}
@@ -398,7 +436,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                         placeholder={scheme.type === 'http' && scheme.scheme === 'bearer' ? 'e.g. eyJhbGci...' : 'Required'}
                                                         value={credentials[key] || ''}
                                                         onChange={(e) => handleInputChange(key, e.target.value)}
-                                                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                e.currentTarget.blur();
+                                                                onClose();
+                                                            }
+                                                        }}
                                                     />
                                                     {credentials[key] && (
                                                         <button 
@@ -628,7 +671,17 @@ export default function App() {
   const sidebarRef = useRef<HTMLElement>(null);
 
   // API state (must be before updateApiIndicator)
-  const [activeEndpointId, setActiveEndpointId] = useState<string | null>(null);
+  const [activeEndpointId, setActiveEndpointId] = useState<string | null>(() => {
+    return localStorage.getItem('activeEndpointId') || null;
+  });
+
+  useEffect(() => {
+    if (activeEndpointId) {
+      localStorage.setItem('activeEndpointId', activeEndpointId);
+    } else {
+      localStorage.removeItem('activeEndpointId');
+    }
+  }, [activeEndpointId]);
   const [expandedSidebarTags, setExpandedSidebarTags] = useState<Record<string, boolean>>({});
 
   // API List Animation State (Must be before resize callback)
@@ -929,9 +982,12 @@ export default function App() {
       
       // Auto-select first endpoint for better focused view experience
       if (spec.endpoints.length > 0) {
-          setActiveEndpointId(spec.endpoints[0].id);
+          setActiveEndpointId(prev => {
+              if (prev === 'custom-test' || spec.endpoints.some(e => e.id === prev)) return prev;
+              return spec.endpoints[0].id;
+          });
       } else {
-          setActiveEndpointId(null);
+          setActiveEndpointId(prev => prev === 'custom-test' ? 'custom-test' : null);
       }
       
       // Default expand all tags in sidebar for focused mode
@@ -1000,7 +1056,7 @@ export default function App() {
           <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>
              {/* Shared Active Background */}
              <div 
-                className={`absolute rounded-xl transition-all duration-300 ease-out ${getIndicatorColor()}`}
+                className={`absolute rounded-xl !transition-all !duration-300 !ease-out ${getIndicatorColor()}`}
                 style={{
                     top: indicatorStyle.top,
                     left: indicatorStyle.left,
@@ -1013,7 +1069,7 @@ export default function App() {
              
              {/* Shared Active Bar (Left Indicator) */}
              <div 
-                className={`absolute w-1 h-8 rounded-r-full transition-all duration-300 ease-out ${getIndicatorBarColor()}`}
+                className={`absolute w-1 h-8 rounded-r-full !transition-all !duration-300 !ease-out ${getIndicatorBarColor()}`}
                 style={{
                     top: (indicatorStyle.top as number || 0) + ((indicatorStyle.height as number || 0) - 32) / 2,
                     left: 0, 
@@ -1099,10 +1155,16 @@ export default function App() {
             />
 
             <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-                <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-3">F-<span className="text-blue-500">Docs</span></h1>
+                <button 
+                    onClick={() => setActiveEndpointId('custom-test')}
+                    className="flex flex-col text-left group cursor-pointer"
+                >
+                    <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white truncate mb-0.5 group-hover:text-blue-600 transition-colors">F-<span className="text-blue-500">Docs</span></h1>
+                    <span className="text-[10px] text-zinc-400 group-hover:text-blue-500 mb-3 opacity-0 group-hover:opacity-100 transition-opacity">Custom Tester</span>
+                </button>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
-                        <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">v{apiVersion}</span>
+                        <span className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">{import.meta.env.VITE_APP_VERSION || `v${apiVersion}`}</span>
                     </div>
                     
                     <div className="flex bg-zinc-200 dark:bg-zinc-800 rounded p-0.5 border border-zinc-300 dark:border-zinc-700">
@@ -1124,10 +1186,24 @@ export default function App() {
                 </div>
             </div>
 
+            {/* Search Bar */}
+            <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/30">
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={12} />
+                    <input 
+                        type="text" 
+                        placeholder="Search endpoints..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full h-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded pl-8 pr-3 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
+                    />
+                </div>
+            </div>
+
             <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0 relative" ref={apiListContainerRef}>
               {/* Sliding Active Indicator for API List */}
               <div 
-                  className="absolute bg-blue-50 dark:bg-zinc-800 border-l-2 border-blue-500 transition-all duration-300 ease-out pointer-events-none z-0"
+                  className="absolute bg-blue-50 dark:bg-zinc-800 border-l-2 border-blue-500 !transition-all !duration-300 !ease-out pointer-events-none z-0"
                   style={{
                       top: apiIndicatorStyle.top,
                       height: apiIndicatorStyle.height,
@@ -1137,7 +1213,6 @@ export default function App() {
                   }}
               />
             {viewMode === 'list' ? (
-                // List Mode Sidebar
                 <>
                     <div className="mb-4 px-1">
                         <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 px-2">Resources</h3>
@@ -1164,8 +1239,7 @@ export default function App() {
                     </div>
                 </>
             ) : (
-                // Focused Mode Sidebar
-                <div className="px-1 space-y-4">
+                <div className="px-1 space-y-4 pt-2">
                     {tags.map(tag => {
                         const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
                         if (tagEndpoints.length === 0) return null;
@@ -1196,8 +1270,16 @@ export default function App() {
                                             
                                             const handleCopyUrl = (e: React.MouseEvent) => {
                                                 e.stopPropagation();
-                                                const fullUrl = `${baseUrl.replace(/\/$/, "")}${ep.path}`;
-                                                navigator.clipboard.writeText(fullUrl);
+                                                let base = baseUrl.replace(/\/$/, "");
+                                                if (!base.match(/^https?:\/\//)) {
+                                                    if (base.startsWith('/')) {
+                                                        base = window.location.origin + base;
+                                                    } else {
+                                                        base = window.location.origin + '/' + base;
+                                                    }
+                                                }
+                                                const fullUrl = `${base}${ep.path}`;
+                                                copyToClipboard(fullUrl);
                                                 setCopiedEndpoints(prev => ({ ...prev, [ep.id]: true }));
                                                 setTimeout(() => {
                                                     setCopiedEndpoints(prev => ({ ...prev, [ep.id]: false }));
@@ -1868,30 +1950,10 @@ export default function App() {
         
         {activeModule === 'api' ? (
             <div key="api" className="w-full h-full flex flex-col">
-                {/* REST API Header */}
-                <header className="sticky top-0 z-20 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-lg transition-colors">
-                    <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/30 transition-colors">
-                        <div className="flex flex-col lg:flex-row gap-4 w-full mx-auto items-center">
-                            <div className="flex flex-1 w-full gap-3 items-center min-w-0">
-                                    <div className="relative flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
-                                        <input 
-                                            type="text"
-                                            placeholder="Filter endpoints by path or summary..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-md pl-10 pr-4 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-sm"
-                                        />
-                                    </div>
 
-                                    {/* Configure URL button removed - use Ctrl+Q */}
-                            </div>
-                        </div>
-                    </div>
-                </header>
 
                 {/* REST API Content */}
-                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col overflow-hidden">
+                <div className={`p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col ${viewMode === 'list' ? 'overflow-y-auto custom-scrollbar' : 'overflow-hidden'}`}>
                     {error ? (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-start gap-4 text-red-400">
                             <AlertCircle size={24} className="shrink-0" />
@@ -1948,6 +2010,7 @@ export default function App() {
                                                         baseUrl={baseUrl}
                                                         securitySchemes={securitySchemes}
                                                         authCredentials={authCredentials}
+                                                        onAuthError={() => setIsAuthModalOpen(true)}
                                                     />
                                                 );
                                             })}
@@ -1963,7 +2026,9 @@ export default function App() {
                                         </div>
                                     ) : (
                                         <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col overflow-hidden min-h-0">
-                                            {activeEndpoint ? (
+                                            {activeEndpointId === 'custom-test' ? (
+                                                <CustomApiTester />
+                                            ) : activeEndpoint ? (
                                                 <EndpointCard 
                                                     key={activeEndpoint.id} 
                                                     endpoint={activeEndpoint} 
@@ -1971,6 +2036,7 @@ export default function App() {
                                                     securitySchemes={securitySchemes}
                                                     authCredentials={authCredentials}
                                                     forcedOpen={true}
+                                                    onAuthError={() => setIsAuthModalOpen(true)}
                                                 />
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center py-32 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900/20 border-dashed transition-colors h-full">

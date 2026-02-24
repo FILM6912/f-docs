@@ -90,3 +90,21 @@ html.dark body {
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #52525b; /* zinc-600 */
 }
+
+@keyframes errorPulse {
+  0%, 100% { background-color: rgba(254, 242, 242, 1); } /* red-50 */
+  50% { background-color: rgba(254, 202, 202, 1); } /* red-100 */
+}
+
+@keyframes errorPulseDark {
+  0%, 100% { background-color: rgba(69, 10, 10, 0.3); } /* red-950/30 */
+  50% { background-color: rgba(127, 29, 29, 0.4); } /* red-900/40 */
+}
+
+.animate-error-pulse {
+  animation: errorPulse 1s ease-in-out infinite;
+}
+
+.dark .animate-error-pulse {
+  animation: errorPulseDark 1s ease-in-out infinite;
+}

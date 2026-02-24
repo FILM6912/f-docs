@@ -84,13 +84,3 @@ Visit your docs at `http://localhost:8000/docs` (or your configured path).
 ## 📄 License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-<p align="center">Made with ❤️ by FILM6912</p>

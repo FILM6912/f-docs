@@ -38,7 +38,10 @@ interface EndpointCardProps {
   securitySchemes?: Record<string, SecurityScheme>;
   authCredentials: Record<string, string>;
   forcedOpen?: boolean;
+  onAuthError?: () => void;
 }
+
+import { copyToClipboard } from "../utils/clipboard";
 
 export const EndpointCard: React.FC<EndpointCardProps> = ({
   endpoint,
@@ -46,6 +49,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   securitySchemes = {},
   authCredentials,
   forcedOpen = false,
+  onAuthError,
 }) => {
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
@@ -85,6 +89,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Body Builder State
   const [bodyMode, setBodyMode] = useState<'json' | 'ui'>('json');
@@ -131,7 +136,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
 
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<string[] | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
 
 
 
@@ -255,12 +260,14 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
   const handleExecute = async () => {
     // Validation
-    const missingFields: string[] = [];
+    const errors: Record<string, boolean> = {};
+    let hasError = false;
 
     // Check parameters
     endpoint.parameters?.forEach((p) => {
       if (p.required && !paramValues[p.name]) {
-        missingFields.push(`Parameter: ${p.name}`);
+        errors[`param:${p.name}`] = true;
+        hasError = true;
       }
     });
 
@@ -268,15 +275,33 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     if (isMultipart && endpoint.requestBodyProperties) {
       endpoint.requestBodyProperties.forEach((p) => {
         if (p.required && !formValues[p.name]) {
-          missingFields.push(`Body Field: ${p.name}`);
+          errors[`body:${p.name}`] = true;
+          hasError = true;
         }
       });
     }
 
-    if (missingFields.length > 0) {
-      setValidationErrors(missingFields);
+    if (hasError) {
+      setValidationErrors(errors);
+      // Open the relevant tab if needed
+      const hasParamError = Object.keys(errors).some(k => k.startsWith('param:'));
+      if (hasParamError && activeTab !== 'params') setActiveTab('params');
+      
+      const hasBodyError = Object.keys(errors).some(k => k.startsWith('body:'));
+      if (hasBodyError && activeTab !== 'body') setActiveTab('body');
+      
+      // Scroll to the first error element
+      setTimeout(() => {
+        const firstError = cardRef.current?.querySelector('.animate-error-pulse');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
       return;
     }
+    
+    setValidationErrors({});
 
     setIsLoading(true);
     setResponse(null);
@@ -303,6 +328,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         finalHeaders,
       );
       setResponse(res);
+
+      if (res.status === 401 && onAuthError) {
+          onAuthError();
+      }
     } finally {
       setIsLoading(false);
     }
@@ -320,15 +349,24 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   };
 
   const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
+    copyToClipboard(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleCopyUrl = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const fullUrl = `${baseUrl.replace(/\/$/, "")}${endpoint.path}`;
-    navigator.clipboard.writeText(fullUrl);
+    let base = baseUrl.replace(/\/$/, "");
+    // Ensure absolute URL with protocol
+    if (!base.match(/^https?:\/\//)) {
+        if (base.startsWith('/')) {
+            base = window.location.origin + base;
+        } else {
+            base = window.location.origin + '/' + base;
+        }
+    }
+    const fullUrl = `${base}${endpoint.path}`;
+    copyToClipboard(fullUrl);
     setUrlCopied(true);
     setTimeout(() => setUrlCopied(false), 2000);
   };
@@ -378,6 +416,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       delete next[key];
       return next;
     });
+    // Don't clear error here as we are removing the value, so it might become invalid again
+    // But if we want to reset the state, we can keep the error until re-validation
   };
 
 
@@ -388,6 +428,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   return (
     // Added z-10 when menu is open to fix stacking context overlap with next card
     <div
+      ref={cardRef}
       className={`mb-4 rounded-lg border ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-zinc-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""} ${forcedOpen ? "h-full flex flex-col mb-0 border-0 rounded-none md:rounded-lg md:border" : ""}`}
     >
       {/* Header - Full colored bar like Swagger */}
@@ -612,8 +653,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         </thead>
                         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                           {endpoint.parameters.map((param) => (
-                            <tr key={param.name}>
-                              <td className="py-3 align-top pr-2">
+                            <tr key={param.name} className={validationErrors[`param:${param.name}`] ? "bg-red-50 dark:bg-red-900/20 animate-error-pulse" : ""}>
+                              <td className="py-3 align-top pr-2 pl-2">
                                 <div className="flex flex-col">
                                   <span className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">
                                     {param.name}
@@ -638,18 +679,27 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   )}
                                 </div>
                               </td>
-                              <td className="py-3 align-top">
+                              <td className="py-3 align-top pr-2">
                                 {param.enum ? (
+                                  <>
                                   <div className="relative">
                                     <select
                                       className="w-full appearance-none bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
                                       value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
-                                      onChange={(e) =>
+                                      onChange={(e) => {
                                         setParamValues((prev) => ({
                                           ...prev,
                                           [param.name]: e.target.value,
-                                        }))
-                                      }
+                                        }));
+                                        // Clear error on change
+                                        if (validationErrors[`param:${param.name}`]) {
+                                            setValidationErrors(prev => {
+                                                const next = { ...prev };
+                                                delete next[`param:${param.name}`];
+                                                return next;
+                                            });
+                                        }
+                                      }}
                                     >
                                       <option value="">Select...</option>
                                       {param.enum.map((opt) => (
@@ -660,19 +710,31 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     </select>
                                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                                   </div>
+                                  {validationErrors[`param:${param.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
+                                  </>
                                 ) : (
+                                  <>
                                   <input
                                     type="text"
                                     className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
                                     placeholder={param.default !== undefined ? String(param.default) : `Enter ${param.name}...`}
                                     value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                       setParamValues((prev) => ({
                                         ...prev,
                                         [param.name]: e.target.value,
-                                      }))
-                                    }
+                                      }));
+                                      if (validationErrors[`param:${param.name}`]) {
+                                          setValidationErrors(prev => {
+                                              const next = { ...prev };
+                                              delete next[`param:${param.name}`];
+                                              return next;
+                                          });
+                                      }
+                                    }}
                                   />
+                                  {validationErrors[`param:${param.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
+                                  </>
                                 )}
                               </td>
                             </tr>
@@ -735,7 +797,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             return (
                             <div
                               key={prop.name}
-                              className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-3"
+                              className={`border ${validationErrors[`body:${prop.name}`] ? 'bg-red-50 dark:bg-red-900/20 animate-error-pulse' : 'bg-zinc-50 dark:bg-zinc-900/50'} border-zinc-200 dark:border-zinc-800 rounded p-3`}
                             >
                               <div className="mb-2 flex items-center gap-2">
                                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
@@ -793,9 +855,16 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                       <input
                                         type="file"
                                         className="absolute inset-0 opacity-0 cursor-pointer w-full z-10"
-                                        onChange={(e) =>
-                                          handleFormFileChange(prop.name, e)
-                                        }
+                                        onChange={(e) => {
+                                          handleFormFileChange(prop.name, e);
+                                          if (validationErrors[`body:${prop.name}`]) {
+                                              setValidationErrors(prev => {
+                                                  const next = { ...prev };
+                                                  delete next[`body:${prop.name}`];
+                                                  return next;
+                                              });
+                                          }
+                                        }}
                                       />
                                       <div className="border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950/50 rounded p-4 text-center group-hover:border-blue-500/30 transition-colors">
                                         <Upload
@@ -813,16 +882,24 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 // Standard Text Input
                                 <input
                                   type="text"
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
                                   placeholder={`Enter ${prop.name}`}
-                                  onChange={(e) =>
+                                  onChange={(e) => {
                                     handleFormTextChange(
                                       prop.name,
                                       e.target.value,
-                                    )
-                                  }
+                                    );
+                                    if (validationErrors[`body:${prop.name}`]) {
+                                        setValidationErrors(prev => {
+                                            const next = { ...prev };
+                                            delete next[`body:${prop.name}`];
+                                            return next;
+                                        });
+                                    }
+                                  }}
                                 />
                               )}
+                              {validationErrors[`body:${prop.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
                               {prop.description && (
                                 <p className="text-[10px] text-zinc-500 mt-1.5">
                                   {prop.description}
@@ -1213,33 +1290,38 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 {/* 2. Example Response Tabs (Replaces the bottom table description) */}
                 {responseCodes.includes(rightPanelTab) &&
                   endpoint.responses[parseInt(rightPanelTab)] && (
-                    <div className="flex-1 flex flex-col overflow-hidden bg-zinc-950">
-                      <div className="flex flex-col border-b border-zinc-800 bg-zinc-900/30 shrink-0">
+                    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-zinc-950">
+                      <div className="flex flex-col border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 shrink-0">
                         {/* Description Section moved here */}
                         <div className="px-4 py-3">
                           <h5 className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider mb-1">
                             Description
                           </h5>
-                          <p className="text-sm text-zinc-300 leading-snug">
+                          <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-snug">
                             {
                               endpoint.responses[parseInt(rightPanelTab)]
                                 .description
                             }
                           </p>
                         </div>
-                        <div className="px-4 py-1.5 bg-zinc-900/50 flex justify-between items-center border-t border-zinc-800/50">
+                        <div className="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-900/50 flex justify-between items-center border-t border-zinc-200 dark:border-zinc-800/50">
                           <span className="text-[10px] font-mono text-zinc-500">
                             application/json
                           </span>
                           {endpoint.responses[parseInt(rightPanelTab)]
                             .schema && (
                             <button
-                              onClick={() =>
-                                handleCopy(
-                                  endpoint.responses[parseInt(rightPanelTab)]
-                                    .schema!,
-                                )
-                              }
+                              onClick={() => {
+                                let schemaText = endpoint.responses[parseInt(rightPanelTab)].schema!;
+                                try {
+                                    // Try to minify if it's a JSON string
+                                    const parsed = JSON.parse(schemaText);
+                                    schemaText = JSON.stringify(parsed);
+                                } catch (e) {
+                                    // If not valid JSON, use as is
+                                }
+                                handleCopy(schemaText);
+                              }}
                               className="text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1.5 text-[10px] font-medium"
                             >
                               {copied ? (
@@ -1283,41 +1365,6 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             </div>
             
             {/* Added Modal Portal for this card specifically or just fixed position overlay */}
-            {validationErrors && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}>
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-red-500/10 rounded-full shrink-0">
-                                    <AlertCircle size={24} className="text-red-500" />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200">Missing Required Fields</h3>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Please complete the following fields:</p>
-                                </div>
-                            </div>
-                            
-                            <div className="bg-zinc-50 dark:bg-zinc-950/50 rounded-md border border-zinc-200 dark:border-zinc-800/50 p-3 mb-5 max-h-[200px] overflow-y-auto custom-scrollbar">
-                                <ul className="space-y-2">
-                                    {validationErrors.map((err, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-300">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1 shrink-0" />
-                                            {err}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}
-                                className="w-full py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white text-zinc-600 dark:text-zinc-300 rounded font-bold text-xs transition-colors border border-zinc-200 dark:border-zinc-700 uppercase tracking-wide"
-                            >
-                                Dismiss
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
           </div>
         </div>
       )}
