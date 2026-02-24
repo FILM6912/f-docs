@@ -38,6 +38,7 @@ interface EndpointCardProps {
   securitySchemes?: Record<string, SecurityScheme>;
   authCredentials: Record<string, string>;
   forcedOpen?: boolean;
+  onAuthError?: () => void;
 }
 
 import { copyToClipboard } from "../utils/clipboard";
@@ -48,6 +49,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   securitySchemes = {},
   authCredentials,
   forcedOpen = false,
+  onAuthError,
 }) => {
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
@@ -305,6 +307,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         finalHeaders,
       );
       setResponse(res);
+
+      if (res.status === 401 && onAuthError) {
+          onAuthError();
+      }
     } finally {
       setIsLoading(false);
     }
