@@ -1042,7 +1042,7 @@ export default function App() {
           <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>
              {/* Shared Active Background */}
              <div 
-                className={`absolute rounded-xl transition-all duration-300 ease-out ${getIndicatorColor()}`}
+                className={`absolute rounded-xl !transition-all !duration-300 !ease-out ${getIndicatorColor()}`}
                 style={{
                     top: indicatorStyle.top,
                     left: indicatorStyle.left,
@@ -1055,7 +1055,7 @@ export default function App() {
              
              {/* Shared Active Bar (Left Indicator) */}
              <div 
-                className={`absolute w-1 h-8 rounded-r-full transition-all duration-300 ease-out ${getIndicatorBarColor()}`}
+                className={`absolute w-1 h-8 rounded-r-full !transition-all !duration-300 !ease-out ${getIndicatorBarColor()}`}
                 style={{
                     top: (indicatorStyle.top as number || 0) + ((indicatorStyle.height as number || 0) - 32) / 2,
                     left: 0, 
@@ -1183,7 +1183,7 @@ export default function App() {
             <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0 relative" ref={apiListContainerRef}>
               {/* Sliding Active Indicator for API List */}
               <div 
-                  className="absolute bg-blue-50 dark:bg-zinc-800 border-l-2 border-blue-500 transition-all duration-300 ease-out pointer-events-none z-0"
+                  className="absolute bg-blue-50 dark:bg-zinc-800 border-l-2 border-blue-500 !transition-all !duration-300 !ease-out pointer-events-none z-0"
                   style={{
                       top: apiIndicatorStyle.top,
                       height: apiIndicatorStyle.height,
