@@ -135,7 +135,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
 
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<string[] | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
 
 
 
@@ -259,12 +259,14 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
   const handleExecute = async () => {
     // Validation
-    const missingFields: string[] = [];
+    const errors: Record<string, boolean> = {};
+    let hasError = false;
 
     // Check parameters
     endpoint.parameters?.forEach((p) => {
       if (p.required && !paramValues[p.name]) {
-        missingFields.push(`Parameter: ${p.name}`);
+        errors[`param:${p.name}`] = true;
+        hasError = true;
       }
     });
 
@@ -272,15 +274,25 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     if (isMultipart && endpoint.requestBodyProperties) {
       endpoint.requestBodyProperties.forEach((p) => {
         if (p.required && !formValues[p.name]) {
-          missingFields.push(`Body Field: ${p.name}`);
+          errors[`body:${p.name}`] = true;
+          hasError = true;
         }
       });
     }
 
-    if (missingFields.length > 0) {
-      setValidationErrors(missingFields);
+    if (hasError) {
+      setValidationErrors(errors);
+      // Open the relevant tab if needed
+      const hasParamError = Object.keys(errors).some(k => k.startsWith('param:'));
+      if (hasParamError && activeTab !== 'params') setActiveTab('params');
+      
+      const hasBodyError = Object.keys(errors).some(k => k.startsWith('body:'));
+      if (hasBodyError && activeTab !== 'body') setActiveTab('body');
+      
       return;
     }
+    
+    setValidationErrors({});
 
     setIsLoading(true);
     setResponse(null);
@@ -629,8 +641,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         </thead>
                         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                           {endpoint.parameters.map((param) => (
-                            <tr key={param.name}>
-                              <td className="py-3 align-top pr-2">
+                            <tr key={param.name} className={validationErrors[`param:${param.name}`] ? "bg-red-50 dark:bg-red-900/20" : ""}>
+                              <td className="py-3 align-top pr-2 pl-2">
                                 <div className="flex flex-col">
                                   <span className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">
                                     {param.name}
@@ -655,8 +667,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   )}
                                 </div>
                               </td>
-                              <td className="py-3 align-top">
+                              <td className="py-3 align-top pr-2">
                                 {param.enum ? (
+                                  <>
                                   <div className="relative">
                                     <select
                                       className="w-full appearance-none bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
@@ -677,7 +690,10 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     </select>
                                     <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                                   </div>
+                                  {validationErrors[`param:${param.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
+                                  </>
                                 ) : (
+                                  <>
                                   <input
                                     type="text"
                                     className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
@@ -690,6 +706,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                       }))
                                     }
                                   />
+                                  {validationErrors[`param:${param.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
+                                  </>
                                 )}
                               </td>
                             </tr>
@@ -752,7 +770,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             return (
                             <div
                               key={prop.name}
-                              className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded p-3"
+                              className={`border ${validationErrors[`body:${prop.name}`] ? 'bg-red-50 dark:bg-red-900/20' : 'bg-zinc-50 dark:bg-zinc-900/50'} border-zinc-200 dark:border-zinc-800 rounded p-3`}
                             >
                               <div className="mb-2 flex items-center gap-2">
                                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
@@ -830,7 +848,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                 // Standard Text Input
                                 <input
                                   type="text"
-                                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
+                                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
                                   placeholder={`Enter ${prop.name}`}
                                   onChange={(e) =>
                                     handleFormTextChange(
@@ -840,6 +858,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   }
                                 />
                               )}
+                              {validationErrors[`body:${prop.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
                               {prop.description && (
                                 <p className="text-[10px] text-zinc-500 mt-1.5">
                                   {prop.description}
@@ -1305,41 +1324,6 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
             </div>
             
             {/* Added Modal Portal for this card specifically or just fixed position overlay */}
-            {validationErrors && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}>
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-sm overflow-hidden relative animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-red-500/10 rounded-full shrink-0">
-                                    <AlertCircle size={24} className="text-red-500" />
-                                </div>
-                                <div>
-                                    <h3 className="text-base font-bold text-zinc-800 dark:text-zinc-200">Missing Required Fields</h3>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Please complete the following fields:</p>
-                                </div>
-                            </div>
-                            
-                            <div className="bg-zinc-50 dark:bg-zinc-950/50 rounded-md border border-zinc-200 dark:border-zinc-800/50 p-3 mb-5 max-h-[200px] overflow-y-auto custom-scrollbar">
-                                <ul className="space-y-2">
-                                    {validationErrors.map((err, idx) => (
-                                        <li key={idx} className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-300">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1 shrink-0" />
-                                            {err}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setValidationErrors(null); }}
-                                className="w-full py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white text-zinc-600 dark:text-zinc-300 rounded font-bold text-xs transition-colors border border-zinc-200 dark:border-zinc-700 uppercase tracking-wide"
-                            >
-                                Dismiss
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
           </div>
         </div>
       )}
