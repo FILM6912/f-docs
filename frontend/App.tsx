@@ -1894,7 +1894,7 @@ export default function App() {
 
 
                 {/* REST API Content */}
-                <div className="p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col overflow-hidden">
+                <div className={`p-4 md:p-8 w-full mx-auto pb-4 min-w-0 flex-1 flex flex-col ${viewMode === 'list' ? 'overflow-y-auto custom-scrollbar' : 'overflow-hidden'}`}>
                     {error ? (
                         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-start gap-4 text-red-400">
                             <AlertCircle size={24} className="shrink-0" />
