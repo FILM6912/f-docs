@@ -113,6 +113,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
             const token = btoa(`${formData.username}:${formData.password}`);
             setCredentials(prev => ({ ...prev, [schemeName]: token }));
             setOauthError(prev => ({ ...prev, [schemeName]: null }));
+            onClose(); // Auto-close modal on success
         } catch (e) {
             setOauthError(prev => ({ ...prev, [schemeName]: "Failed to encode credentials." }));
         }
@@ -165,6 +166,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
             if (token) {
                 setCredentials(prev => ({ ...prev, [schemeName]: token }));
                 setOauthError(prev => ({ ...prev, [schemeName]: null }));
+                onClose(); // Auto-close modal on success
             } else {
                  throw new Error("No access_token found in response.");
             }
@@ -399,7 +401,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
                                                         placeholder={scheme.type === 'http' && scheme.scheme === 'bearer' ? 'e.g. eyJhbGci...' : 'Required'}
                                                         value={credentials[key] || ''}
                                                         onChange={(e) => handleInputChange(key, e.target.value)}
-                                                        onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                e.currentTarget.blur();
+                                                                onClose();
+                                                            }
+                                                        }}
                                                     />
                                                     {credentials[key] && (
                                                         <button 
