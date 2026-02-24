@@ -89,6 +89,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Body Builder State
   const [bodyMode, setBodyMode] = useState<'json' | 'ui'>('json');
@@ -289,6 +290,14 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       const hasBodyError = Object.keys(errors).some(k => k.startsWith('body:'));
       if (hasBodyError && activeTab !== 'body') setActiveTab('body');
       
+      // Scroll to the first error element
+      setTimeout(() => {
+        const firstError = cardRef.current?.querySelector('.animate-error-pulse');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+
       return;
     }
     
@@ -417,6 +426,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   return (
     // Added z-10 when menu is open to fix stacking context overlap with next card
     <div
+      ref={cardRef}
       className={`mb-4 rounded-lg border ${isOpen && !forcedOpen ? "ring-1 ring-opacity-50 shadow-lg" : ""} ${methodTheme.border} bg-white dark:bg-zinc-950 shadow-sm dark:shadow-none relative ${showExportMenu ? "z-10" : ""} ${forcedOpen ? "h-full flex flex-col mb-0 border-0 rounded-none md:rounded-lg md:border" : ""}`}
     >
       {/* Header - Full colored bar like Swagger */}
@@ -641,7 +651,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         </thead>
                         <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
                           {endpoint.parameters.map((param) => (
-                            <tr key={param.name} className={validationErrors[`param:${param.name}`] ? "bg-red-50 dark:bg-red-900/20" : ""}>
+                            <tr key={param.name} className={validationErrors[`param:${param.name}`] ? "bg-red-50 dark:bg-red-900/20 animate-error-pulse" : ""}>
                               <td className="py-3 align-top pr-2 pl-2">
                                 <div className="flex flex-col">
                                   <span className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">
@@ -674,12 +684,20 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     <select
                                       className="w-full appearance-none bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all cursor-pointer"
                                       value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
-                                      onChange={(e) =>
+                                      onChange={(e) => {
                                         setParamValues((prev) => ({
                                           ...prev,
                                           [param.name]: e.target.value,
-                                        }))
-                                      }
+                                        }));
+                                        // Clear error on change
+                                        if (validationErrors[`param:${param.name}`]) {
+                                            setValidationErrors(prev => {
+                                                const next = { ...prev };
+                                                delete next[`param:${param.name}`];
+                                                return next;
+                                            });
+                                        }
+                                      }}
                                     >
                                       <option value="">Select...</option>
                                       {param.enum.map((opt) => (
@@ -699,12 +717,19 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                     className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-700"
                                     placeholder={param.default !== undefined ? String(param.default) : `Enter ${param.name}...`}
                                     value={paramValues[param.name] !== undefined ? paramValues[param.name] : (param.default !== undefined ? String(param.default) : '')}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                       setParamValues((prev) => ({
                                         ...prev,
                                         [param.name]: e.target.value,
-                                      }))
-                                    }
+                                      }));
+                                      if (validationErrors[`param:${param.name}`]) {
+                                          setValidationErrors(prev => {
+                                              const next = { ...prev };
+                                              delete next[`param:${param.name}`];
+                                              return next;
+                                          });
+                                      }
+                                    }}
                                   />
                                   {validationErrors[`param:${param.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
                                   </>
@@ -770,7 +795,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                             return (
                             <div
                               key={prop.name}
-                              className={`border ${validationErrors[`body:${prop.name}`] ? 'bg-red-50 dark:bg-red-900/20' : 'bg-zinc-50 dark:bg-zinc-900/50'} border-zinc-200 dark:border-zinc-800 rounded p-3`}
+                              className={`border ${validationErrors[`body:${prop.name}`] ? 'bg-red-50 dark:bg-red-900/20 animate-error-pulse' : 'bg-zinc-50 dark:bg-zinc-900/50'} border-zinc-200 dark:border-zinc-800 rounded p-3`}
                             >
                               <div className="mb-2 flex items-center gap-2">
                                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
@@ -828,9 +853,16 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                       <input
                                         type="file"
                                         className="absolute inset-0 opacity-0 cursor-pointer w-full z-10"
-                                        onChange={(e) =>
-                                          handleFormFileChange(prop.name, e)
-                                        }
+                                        onChange={(e) => {
+                                          handleFormFileChange(prop.name, e);
+                                          if (validationErrors[`body:${prop.name}`]) {
+                                              setValidationErrors(prev => {
+                                                  const next = { ...prev };
+                                                  delete next[`body:${prop.name}`];
+                                                  return next;
+                                              });
+                                          }
+                                        }}
                                       />
                                       <div className="border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950/50 rounded p-4 text-center group-hover:border-blue-500/30 transition-colors">
                                         <Upload
@@ -850,12 +882,19 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                                   type="text"
                                   className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
                                   placeholder={`Enter ${prop.name}`}
-                                  onChange={(e) =>
+                                  onChange={(e) => {
                                     handleFormTextChange(
                                       prop.name,
                                       e.target.value,
-                                    )
-                                  }
+                                    );
+                                    if (validationErrors[`body:${prop.name}`]) {
+                                        setValidationErrors(prev => {
+                                            const next = { ...prev };
+                                            delete next[`body:${prop.name}`];
+                                            return next;
+                                        });
+                                    }
+                                  }}
                                 />
                               )}
                               {validationErrors[`body:${prop.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
