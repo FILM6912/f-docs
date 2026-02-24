@@ -1290,21 +1290,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                 {/* 2. Example Response Tabs (Replaces the bottom table description) */}
                 {responseCodes.includes(rightPanelTab) &&
                   endpoint.responses[parseInt(rightPanelTab)] && (
-                    <div className="flex-1 flex flex-col overflow-hidden bg-zinc-950">
-                      <div className="flex flex-col border-b border-zinc-800 bg-zinc-900/30 shrink-0">
+                    <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-zinc-950">
+                      <div className="flex flex-col border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/30 shrink-0">
                         {/* Description Section moved here */}
                         <div className="px-4 py-3">
                           <h5 className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider mb-1">
                             Description
                           </h5>
-                          <p className="text-sm text-zinc-300 leading-snug">
+                          <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-snug">
                             {
                               endpoint.responses[parseInt(rightPanelTab)]
                                 .description
                             }
                           </p>
                         </div>
-                        <div className="px-4 py-1.5 bg-zinc-900/50 flex justify-between items-center border-t border-zinc-800/50">
+                        <div className="px-4 py-1.5 bg-zinc-100 dark:bg-zinc-900/50 flex justify-between items-center border-t border-zinc-200 dark:border-zinc-800/50">
                           <span className="text-[10px] font-mono text-zinc-500">
                             application/json
                           </span>
