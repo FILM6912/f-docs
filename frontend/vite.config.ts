@@ -7,7 +7,8 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
-      base: process.env.VITE_BASE_PATH || '/',
+      // Use env from loadEnv so `.env` values are respected at build time.
+      base: env.VITE_BASE_PATH || './',
       server: {
         port: 3000,
         host: '0.0.0.0',

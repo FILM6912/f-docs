@@ -30,7 +30,7 @@ import { FileViewer } from "./FileViewer";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
-import { generateMockPayload } from "../services/geminiService";
+import { generateMockPayload } from "../services/aiGenerateService";
 
 interface EndpointCardProps {
   endpoint: Endpoint;
@@ -1371,3 +1371,4 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     </div>
   );
 };
+
