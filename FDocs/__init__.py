@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -9,6 +8,24 @@ from fastapi.responses import FileResponse
 # Get the path to the current file (package root)
 PACKAGE_ROOT = Path(__file__).parent
 DEFAULT_JS_PATH = PACKAGE_ROOT / "dist" / "f_docs.js"
+
+
+def _resolve_js_path(js_path: str = None) -> Path:
+    if js_path:
+        candidate = Path(js_path)
+        if candidate.exists():
+            return candidate
+
+    candidates = [
+        DEFAULT_JS_PATH,
+        Path.cwd() / "FDocs" / "dist" / "f_docs.js",
+        Path.cwd() / "build" / "lib" / "FDocs" / "dist" / "f_docs.js",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    return Path(js_path) if js_path else DEFAULT_JS_PATH
 
 def f_docs(
     app: FastAPI,
@@ -30,16 +47,22 @@ def f_docs(
     
     # Use defaults if not provided
     app.docs_url = None
-    actual_js_path = Path(js_path) if js_path else DEFAULT_JS_PATH
+    actual_js_path = _resolve_js_path(js_path)
 
     # 1. Mount Static Assets (the folder containing f_docs.js) if it exists
     if actual_js_path.exists():
         app.mount(assets_url, StaticFiles(directory=str(actual_js_path.parent)), name="f_docs_assets")
-        
-        # Backward compatibility: some integrations still request /f_docs.js directly.
-        @app.get("/f_docs.js", include_in_schema=False)
-        async def f_docs_legacy_js():
-            return FileResponse(actual_js_path)
+
+    # Backward compatibility and stable default script endpoint.
+    @app.get("/f_docs.js", include_in_schema=False)
+    async def f_docs_legacy_js():
+        resolved_path = _resolve_js_path(js_path)
+        if not resolved_path.exists():
+            return HTMLResponse(
+                content="<h1>F-Docs asset not found</h1><p>Run frontend build to generate f_docs.js.</p>",
+                status_code=500,
+            )
+        return FileResponse(resolved_path)
 
     # 2. Define the Documentation Route
     @app.get(docs_url, include_in_schema=False, response_class=HTMLResponse)
@@ -63,7 +86,7 @@ def f_docs(
         </head>
         <body>
             <div id="root"></div>
-            <script type="module" src="{assets_url}/{actual_js_path.name}"></script>
+            <script type="module" src="/f_docs.js"></script>
         </body>
         </html>
         """
