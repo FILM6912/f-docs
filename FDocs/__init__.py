@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # Get the path to the current file (package root)
 PACKAGE_ROOT = Path(__file__).parent
@@ -34,6 +35,11 @@ def f_docs(
     # 1. Mount Static Assets (the folder containing f_docs.js) if it exists
     if actual_js_path.exists():
         app.mount(assets_url, StaticFiles(directory=str(actual_js_path.parent)), name="f_docs_assets")
+        
+        # Backward compatibility: some integrations still request /f_docs.js directly.
+        @app.get("/f_docs.js", include_in_schema=False)
+        async def f_docs_legacy_js():
+            return FileResponse(actual_js_path)
 
     # 2. Define the Documentation Route
     @app.get(docs_url, include_in_schema=False, response_class=HTMLResponse)
