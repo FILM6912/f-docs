@@ -74,6 +74,27 @@ def f_docs(
         }
         
         script_tag = f"<script>window.NEXUS_CONFIG = {json.dumps(config_data)};</script>"
+        theme_bootstrap_tag = """
+        <style>
+            html, body, #root { height: 100%; margin: 0; }
+            html { background: #ffffff; color: #18181b; }
+            html.dark { background: #09090b; color: #fafafa; }
+            html.dark body, html.dark #root { background: #09090b; color: #fafafa; }
+        </style>
+        <script>
+            (function () {
+                try {
+                    var saved = localStorage.getItem('theme');
+                    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    var isDark = saved === 'dark' || (!saved && prefersDark);
+                    if (isDark) {
+                        document.documentElement.classList.add('dark');
+                        document.documentElement.style.backgroundColor = '#09090b';
+                    }
+                } catch (e) {}
+            })();
+        </script>
+        """
         
         html_content = f"""
         <!DOCTYPE html>
@@ -83,6 +104,7 @@ def f_docs(
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>{title}</title>
             {script_tag}
+            {theme_bootstrap_tag}
         </head>
         <body>
             <div id="root"></div>
