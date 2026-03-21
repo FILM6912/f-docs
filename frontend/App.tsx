@@ -939,7 +939,7 @@ export default function App() {
   }, [activeEndpointId]);
 
   const startResizing = useCallback((e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent text selection
+    e.preventDefault();
     setIsResizing(true);
   }, []);
 
@@ -949,37 +949,50 @@ export default function App() {
 
   const resize = useCallback(
     (mouseMoveEvent: MouseEvent) => {
-      if (isResizing) {
-        const newWidth = mouseMoveEvent.clientX - 64; // Adjust for Activity Bar width
+      if (!isResizing) return;
+      
+      // Use requestAnimationFrame for smooth updates
+      requestAnimationFrame(() => {
+        const newWidth = mouseMoveEvent.clientX - 64;
         if (newWidth >= 200 && newWidth <= 600) {
-            setSidebarWidth(newWidth);
-            // Update API indicator during resize
-            requestAnimationFrame(() => {
-              updateApiIndicator();
-            });
+          setSidebarWidth(newWidth);
         }
-      }
+      });
     },
-    [isResizing, updateApiIndicator]
+    [isResizing]
   );
+
+  // Update API indicator when sidebar width changes (debounced)
+  useEffect(() => {
+    if (isResizing) return;
+    const timer = setTimeout(() => {
+      updateApiIndicator();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [sidebarWidth, isResizing, updateApiIndicator]);
 
   useEffect(() => {
     if (isResizing) {
-        window.addEventListener("mousemove", resize);
-        window.addEventListener("mouseup", stopResizing);
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-    } else {
+      const handleMouseMove = (e: MouseEvent) => resize(e);
+      const handleMouseUp = () => {
+        setIsResizing(false);
+        // Update indicator one final time after resize ends
+        requestAnimationFrame(() => updateApiIndicator());
+      };
+      
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
+      };
     }
-    return () => {
-      window.removeEventListener("mousemove", resize);
-      window.removeEventListener("mouseup", stopResizing);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-  }, [isResizing, resize, stopResizing]);
+  }, [isResizing, resize, updateApiIndicator]);
   
   // Loaded Data
   const [apiTitle, setApiTitle] = useState("F-Docs");
