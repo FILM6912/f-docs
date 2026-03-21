@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
-import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send, Copy } from 'lucide-react';
+import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send, Copy, Menu } from 'lucide-react';
 import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
 import { EndpointCard } from './components/EndpointCard';
@@ -793,6 +793,9 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
   const { theme, toggleTheme } = useTheme();
 
+  // Mobile Sidebar State
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   // Copied state for sidebar endpoints
   const [copiedEndpoints, setCopiedEndpoints] = useState<Record<string, boolean>>({});
 
@@ -1047,10 +1050,207 @@ export default function App() {
   const activeEndpoint = activeEndpointId ? endpoints.find(e => e.id === activeEndpointId) : null;
 
   return (
-    <div className="h-screen bg-inherit text-zinc-900 dark:text-zinc-200 flex flex-row font-sans overflow-hidden">
+    <div className="h-screen bg-inherit text-zinc-900 dark:text-zinc-200 flex flex-col md:flex-row font-sans overflow-hidden">
       
-      {/* 1. Activity Bar (Module Switcher) */}
-      <nav className="w-16 bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
+      {/* Mobile Top Bar */}
+      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 shrink-0 safe-top">
+        <button
+          onClick={() => setIsMobileSidebarOpen(true)}
+          className="p-2 -ml-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
+          aria-label="Open menu"
+        >
+          <Menu size={24} />
+        </button>
+        <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white">
+          F-<span className="text-blue-500">Docs</span>
+        </h1>
+        <button
+          onClick={toggleTheme}
+          className="p-2 -mr-2 text-zinc-500 dark:text-zinc-400 hover:text-amber-500 dark:hover:text-amber-300"
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      </header>
+
+      {/* Mobile Sidebar Drawer */}
+      {isMobileSidebarOpen && (
+        <>
+          <div 
+            className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <aside 
+            className="md:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex flex-col animate-slide-in-left safe-top safe-bottom"
+          >
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+              <h1 className="font-bold text-lg tracking-tight text-zinc-900 dark:text-white">
+                F-<span className="text-blue-500">Docs</span>
+              </h1>
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="p-2 -mr-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Module Switcher for Mobile */}
+            <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="grid grid-cols-4 gap-2">
+                {ENABLE_API && (
+                  <button
+                    onClick={() => { setActiveModule('api'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'api' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Layers size={20} />
+                    <span className="text-[10px] font-medium">API</span>
+                  </button>
+                )}
+                {ENABLE_WS && (
+                  <button
+                    onClick={() => { setActiveModule('ws'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'ws' ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Activity size={20} />
+                    <span className="text-[10px] font-medium">WS</span>
+                  </button>
+                )}
+                {ENABLE_IO && (
+                  <button
+                    onClick={() => { setActiveModule('io'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'io' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Radio size={20} />
+                    <span className="text-[10px] font-medium">IO</span>
+                  </button>
+                )}
+                {ENABLE_MCP && (
+                  <button
+                    onClick={() => { setActiveModule('mcp'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'mcp' ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Database size={20} />
+                    <span className="text-[10px] font-medium">MCP</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Module-specific sidebar content for mobile */}
+            {activeModule === 'api' && (
+              <>
+                <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex bg-zinc-200 dark:bg-zinc-800 rounded p-0.5">
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'}`}
+                      >
+                        <LayoutList size={14} />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('focused')}
+                        className={`p-1.5 rounded ${viewMode === 'focused' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'}`}
+                      >
+                        <Sidebar size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
+                    <input
+                      type="text"
+                      placeholder="Search endpoints..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full h-9 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg pl-9 pr-3 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3">
+                  {tags.map(tag => {
+                    const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
+                    if (tagEndpoints.length === 0) return null;
+                    const isExpanded = expandedSidebarTags[tag.name] !== false;
+                    return (
+                      <div key={tag.name} className="mb-2">
+                        <button
+                          onClick={() => toggleSidebarTag(tag.name)}
+                          className="w-full flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-300 py-2 px-2"
+                        >
+                          <span>{tag.name}</span>
+                          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        </button>
+                        {isExpanded && (
+                          <div className="space-y-1 pl-2 border-l-2 border-zinc-300 dark:border-zinc-700">
+                            {tagEndpoints.map(ep => (
+                              <button
+                                key={ep.id}
+                                onClick={() => { setActiveEndpointId(ep.id); setIsMobileSidebarOpen(false); }}
+                                className={`w-full text-left px-3 py-2 rounded text-xs flex items-center gap-2 ${activeEndpointId === ep.id ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300' : 'text-zinc-600 dark:text-zinc-400'}`}
+                              >
+                                <div className="w-12 shrink-0">
+                                  <MethodBadge method={ep.method} className="w-full text-center scale-90" />
+                                </div>
+                                <span className="truncate font-mono">{ep.path}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </aside>
+        </>
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden flex items-center justify-around py-2 px-2 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 shrink-0 safe-bottom">
+        {ENABLE_API && (
+          <button
+            onClick={() => setActiveModule('api')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'api' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Layers size={22} />
+            <span className="text-[10px] font-medium">API</span>
+          </button>
+        )}
+        {ENABLE_WS && (
+          <button
+            onClick={() => setActiveModule('ws')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'ws' ? 'text-zinc-700 dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Activity size={22} />
+            <span className="text-[10px] font-medium">WS</span>
+          </button>
+        )}
+        {ENABLE_IO && (
+          <button
+            onClick={() => setActiveModule('io')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'io' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Radio size={22} />
+            <span className="text-[10px] font-medium">IO</span>
+          </button>
+        )}
+        {ENABLE_MCP && (
+          <button
+            onClick={() => setActiveModule('mcp')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'mcp' ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Database size={22} />
+            <span className="text-[10px] font-medium">MCP</span>
+          </button>
+        )}
+      </nav>
+      
+      {/* 1. Activity Bar (Module Switcher) - Desktop Only */}
+      <nav className="hidden md:flex w-16 bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex-col items-center py-6 z-40 relative">
 
           
           <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>

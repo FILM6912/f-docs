@@ -585,11 +585,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           </div>
 
           {/* Controls Container */}
-          <div className={`grid lg:grid-cols-2 gap-6 ${forcedOpen ? "flex-1 min-h-0 overflow-hidden" : "overflow-hidden"}`}>
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 ${forcedOpen ? "flex-1 min-h-0 overflow-hidden" : "overflow-hidden"}`}>
             {/* Left Col: Request Parameters & Body */}
-            <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : "max-h-[calc(100vh-400px)]"}`}>
+            <div className={`space-y-3 lg:space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : "max-h-[calc(100vh-400px)]"}`}>
               {/* Tab Navigation for Request */}
-              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
                     Request
@@ -606,7 +606,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     <X size={14} />
                   </button>
                 </div>
-                <div className="flex gap-1 flex-wrap">
+                <div className="flex gap-1 flex-wrap -mr-1">
                   {(["params", "body", "headers", "auth"] as const).map((tab) => {
                     return (
                       <button
@@ -615,7 +615,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           e.stopPropagation();
                           setActiveTab(tab);
                         }}
-                        className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
+                        className={`px-2.5 sm:px-3 py-1 text-xs font-medium rounded-full transition-all touch-manipulation ${
                           activeTab === tab
                             ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600"
                             : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
