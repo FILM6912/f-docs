@@ -15,6 +15,7 @@ import { useWebSocket } from './hooks/useWebSocket';
 import { copyToClipboard } from './utils/clipboard';
 import { CustomApiTester } from './components/CustomApiTester';
 import { useAiSettings, AiProvider as AiProviderType } from './hooks/useAiSettings';
+import { API_VERSION } from './constants';
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -996,7 +997,7 @@ export default function App() {
   
   // Loaded Data
   const [apiTitle, setApiTitle] = useState("F-Docs");
-  const [apiVersion, setApiVersion] = useState("1.0.0");
+  const [apiVersion, setApiVersion] = useState(API_VERSION);
   const [baseUrl, setBaseUrl] = useState("");
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [tags, setTags] = useState<ApiTag[]>([]);
