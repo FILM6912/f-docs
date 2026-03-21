@@ -87,6 +87,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [showDescModal, setShowDescModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingParams, setIsGeneratingParams] = useState(false);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -342,9 +343,48 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     setIsGenerating(true);
     try {
       const json = await generateMockPayload(endpoint.requestBodySchema);
-      setBodyValue(json);
+      // Parse and format JSON with proper indentation
+      try {
+        const parsed = JSON.parse(json);
+        setBodyValue(JSON.stringify(parsed, null, 2));
+      } catch {
+        // If not valid JSON, set as-is
+        setBodyValue(json);
+      }
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleAiGenerateParams = async () => {
+    if (!endpoint.parameters || endpoint.parameters.length === 0) return;
+    setIsGeneratingParams(true);
+    try {
+      const paramsDescription = endpoint.parameters
+        .filter(p => p.in === 'query' || p.in === 'path')
+        .map(p => `${p.name} (${p.type}${p.required ? ', required' : ', optional'}): ${p.description || 'No description'}`)
+        .join('\n');
+      
+      const prompt = `Generate example values for these API parameters. Return ONLY a valid JSON object with parameter names as keys and example values. No markdown, no explanation.
+
+Parameters:
+${paramsDescription}`;
+
+      const jsonStr = await generateMockPayload(prompt);
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const newValues: Record<string, string> = {};
+        endpoint.parameters?.forEach(p => {
+          if (parsed[p.name] !== undefined) {
+            newValues[p.name] = String(parsed[p.name]);
+          }
+        });
+        setParamValues(prev => ({ ...prev, ...newValues }));
+      } catch {
+        // If not valid JSON, ignore
+      }
+    } finally {
+      setIsGeneratingParams(false);
     }
   };
 
@@ -644,6 +684,24 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         <span>No parameters required</span>
                       </div>
                     ) : (
+                      <>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleAiGenerateParams}
+                          disabled={isGeneratingParams}
+                          className="group flex items-center gap-1.5 text-[10px] font-medium bg-blue-500/5 text-blue-400 px-2.5 py-1 rounded-full border border-blue-500/20 hover:bg-blue-500/20 transition-all disabled:opacity-50"
+                        >
+                          {isGeneratingParams ? (
+                            <Loader2 size={10} className="animate-spin" />
+                          ) : (
+                            <Sparkles
+                              size={10}
+                              className="group-hover:text-blue-300"
+                            />
+                          )}
+                          Generate Example
+                        </button>
+                      </div>
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
@@ -741,6 +799,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           ))}
                         </tbody>
                       </table>
+                      </>
                     )}
                   </div>
                 )}

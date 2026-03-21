@@ -2,6 +2,20 @@ import { GoogleGenAI } from "@google/genai";
 
 type AiProvider = "gemini" | "openai" | "anthropic";
 
+interface AiConfig {
+  provider: AiProvider;
+  geminiApiKey: string;
+  geminiModel: string;
+  openaiApiKey: string;
+  openaiModel: string;
+  openaiBaseUrl: string;
+  anthropicApiKey: string;
+  anthropicModel: string;
+  anthropicBaseUrl: string;
+}
+
+const STORAGE_KEY = "ai-settings";
+
 const getEnv = (key: string): string => {
   try {
     const viteValue = (import.meta as any)?.env?.[key];
@@ -25,7 +39,23 @@ const getEnv = (key: string): string => {
   return "";
 };
 
+const getStoredSettings = (): Partial<AiConfig> => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch {
+    // ignore
+  }
+  return {};
+};
+
 const getProvider = (): AiProvider => {
+  const stored = getStoredSettings();
+  if (stored.provider) {
+    return stored.provider as AiProvider;
+  }
   const raw = (getEnv("VITE_AI_PROVIDER") || getEnv("AI_PROVIDER") || "gemini").toLowerCase();
   if (raw === "openai" || raw === "anthropic" || raw === "gemini") {
     return raw;
@@ -47,12 +77,13 @@ const cleanJsonText = (text: string): string =>
   text.replace(/```json/g, "").replace(/```/g, "").trim();
 
 const generateWithGemini = async (prompt: string): Promise<string> => {
-  const apiKey = getEnv("VITE_GEMINI_API_KEY") || getEnv("GEMINI_API_KEY") || getEnv("API_KEY");
+  const stored = getStoredSettings();
+  const apiKey = stored.geminiApiKey || getEnv("VITE_GEMINI_API_KEY") || getEnv("GEMINI_API_KEY") || getEnv("API_KEY");
   if (!apiKey) {
-    throw new Error("Gemini API key is missing");
+    throw new Error("Gemini API key is missing. Please configure it in Settings.");
   }
 
-  const model = getEnv("VITE_GEMINI_MODEL") || getEnv("GEMINI_MODEL") || "gemini-2.5-flash";
+  const model = stored.geminiModel || getEnv("VITE_GEMINI_MODEL") || getEnv("GEMINI_MODEL") || "gemini-2.5-flash";
   const ai = new GoogleGenAI({ apiKey });
   const response = await ai.models.generateContent({
     model,
@@ -63,13 +94,19 @@ const generateWithGemini = async (prompt: string): Promise<string> => {
 };
 
 const generateWithOpenAI = async (prompt: string): Promise<string> => {
-  const apiKey = getEnv("VITE_OPENAI_API_KEY") || getEnv("OPENAI_API_KEY");
+  const stored = getStoredSettings();
+  const apiKey = stored.openaiApiKey || getEnv("VITE_OPENAI_API_KEY") || getEnv("OPENAI_API_KEY");
   if (!apiKey) {
-    throw new Error("OpenAI API key is missing");
+    throw new Error("OpenAI API key is missing. Please configure it in Settings.");
   }
 
-  const model = getEnv("VITE_OPENAI_MODEL") || getEnv("OPENAI_MODEL") || "gpt-4o-mini";
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const model = stored.openaiModel || getEnv("VITE_OPENAI_MODEL") || getEnv("OPENAI_MODEL") || "gpt-4o-mini";
+  const baseUrl = stored.openaiBaseUrl || getEnv("VITE_OPENAI_BASE_URL") || getEnv("OPENAI_BASE_URL") || "https://api.openai.com/v1";
+  const endpoint = baseUrl.endsWith("/chat/completions") 
+    ? baseUrl 
+    : `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+  
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -96,13 +133,19 @@ const generateWithOpenAI = async (prompt: string): Promise<string> => {
 };
 
 const generateWithAnthropic = async (prompt: string): Promise<string> => {
-  const apiKey = getEnv("VITE_ANTHROPIC_API_KEY") || getEnv("ANTHROPIC_API_KEY");
+  const stored = getStoredSettings();
+  const apiKey = stored.anthropicApiKey || getEnv("VITE_ANTHROPIC_API_KEY") || getEnv("ANTHROPIC_API_KEY");
   if (!apiKey) {
-    throw new Error("Anthropic API key is missing");
+    throw new Error("Anthropic API key is missing. Please configure it in Settings.");
   }
 
-  const model = getEnv("VITE_ANTHROPIC_MODEL") || getEnv("ANTHROPIC_MODEL") || "claude-3-5-sonnet-latest";
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+  const model = stored.anthropicModel || getEnv("VITE_ANTHROPIC_MODEL") || getEnv("ANTHROPIC_MODEL") || "claude-3-5-sonnet-latest";
+  const baseUrl = stored.anthropicBaseUrl || getEnv("VITE_ANTHROPIC_BASE_URL") || getEnv("ANTHROPIC_BASE_URL") || "https://api.anthropic.com";
+  const endpoint = baseUrl.endsWith("/v1/messages") 
+    ? baseUrl 
+    : `${baseUrl.replace(/\/$/, "")}/v1/messages`;
+
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -145,7 +188,24 @@ export const generateMockPayload = async (schemaDescription: string): Promise<st
   } catch (error) {
     console.error(`AI payload generation failed (provider: ${provider}):`, error);
     return `{
-  "error": "Failed to generate payload via ${provider}."
+  "error": "Failed to generate payload via ${provider}: ${error instanceof Error ? error.message : 'Unknown error'}"
 }`;
+  }
+};
+
+export const getCurrentProvider = (): AiProvider => getProvider();
+
+export const hasApiKey = (): boolean => {
+  const provider = getProvider();
+  const stored = getStoredSettings();
+  
+  switch (provider) {
+    case "openai":
+      return !!(stored.openaiApiKey || getEnv("VITE_OPENAI_API_KEY") || getEnv("OPENAI_API_KEY"));
+    case "anthropic":
+      return !!(stored.anthropicApiKey || getEnv("VITE_ANTHROPIC_API_KEY") || getEnv("ANTHROPIC_API_KEY"));
+    case "gemini":
+    default:
+      return !!(stored.geminiApiKey || getEnv("VITE_GEMINI_API_KEY") || getEnv("GEMINI_API_KEY") || getEnv("API_KEY"));
   }
 };
