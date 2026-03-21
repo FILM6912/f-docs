@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
-import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send, Copy } from 'lucide-react';
+import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send, Copy, Menu, Sparkles } from 'lucide-react';
 import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
 import { EndpointCard } from './components/EndpointCard';
@@ -14,6 +14,8 @@ import { useSocketIO } from './hooks/useSocketIO';
 import { useWebSocket } from './hooks/useWebSocket';
 import { copyToClipboard } from './utils/clipboard';
 import { CustomApiTester } from './components/CustomApiTester';
+import { useAiSettings, AiProvider as AiProviderType } from './hooks/useAiSettings';
+import { API_VERSION } from './constants';
 
 // ... (TagSection, AuthModal, SettingsModal components remain exactly the same as before, skipping them to save space in the diff, but in reality they are here)
 // However, since I must return the FULL file content in strict XML mode, I will paste the entire file including the parts that didn't change, 
@@ -474,7 +476,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
     );
 }
 
-// Settings Modal Component for URL Input
+// Settings Modal Component for URL Input and AI Settings
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -484,6 +486,8 @@ interface SettingsModalProps {
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentUrl, onLoad }) => {
     const [inputValue, setInputValue] = useState(currentUrl);
+    const [activeTab, setActiveTab] = useState<'api' | 'ai'>('api');
+    const { settings, updateSettings, resetSettings } = useAiSettings();
 
     useEffect(() => {
         setInputValue(currentUrl);
@@ -497,52 +501,251 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
         onClose();
     };
 
+    const handleAiSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onClose();
+    };
+
+    const maskApiKey = (key: string) => {
+        if (!key) return '';
+        if (key.length <= 8) return '*'.repeat(key.length);
+        return key.substring(0, 4) + '*************';
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden">
                  <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
                     <h2 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2">
-                        <Settings size={18} /> API Configuration
+                        <Settings size={18} /> Settings
                     </h2>
                     <button onClick={onClose} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-white transition-colors">
                         <X size={20} />
                     </button>
                 </div>
                 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                     <div>
-                        <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">OpenAPI Specification URL</label>
-                        <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
-                            <input 
-                                type="text" 
-                                placeholder="http://localhost:8000/openapi.json" 
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
-                                className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md pl-10 pr-4 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
-                            />
-                        </div>
-                        <p className="text-xs text-zinc-500 mt-2">
-                            Enter the URL to a JSON format OpenAPI (Swagger) v2 or v3 definition.
-                        </p>
-                    </div>
+                {/* Tabs */}
+                <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+                    <button
+                        onClick={() => setActiveTab('api')}
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                            activeTab === 'api'
+                                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                        }`}
+                    >
+                        <Globe size={16} />
+                        API Configuration
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('ai')}
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                            activeTab === 'ai'
+                                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                        }`}
+                    >
+                        <Sparkles size={16} />
+                        AI Settings
+                    </button>
+                </div>
 
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button 
-                            type="button"
-                            onClick={() => { setInputValue(''); onLoad(''); onClose(); }}
-                            className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded text-sm font-medium transition-colors border border-zinc-200 dark:border-zinc-700"
-                        >
-                            Reset to Demo
-                        </button>
-                        <button 
-                            type="submit"
-                            className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors shadow-lg shadow-blue-900/20"
-                        >
-                            Load Spec
-                        </button>
-                    </div>
-                </form>
+                {activeTab === 'api' && (
+                    <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                         <div>
+                            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">OpenAPI Specification URL</label>
+                            <div className="relative">
+                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" size={16} />
+                                <input 
+                                    type="text" 
+                                    placeholder="http://localhost:8000/openapi.json" 
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    className="w-full h-11 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md pl-10 pr-4 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                                />
+                            </div>
+                            <p className="text-xs text-zinc-500 mt-2">
+                                Enter the URL to a JSON format OpenAPI (Swagger) v2 or v3 definition.
+                            </p>
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button 
+                                type="button"
+                                onClick={() => { setInputValue(''); onLoad(''); onClose(); }}
+                                className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded text-sm font-medium transition-colors border border-zinc-200 dark:border-zinc-700"
+                            >
+                                Reset to Demo
+                            </button>
+                            <button 
+                                type="submit"
+                                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors shadow-lg shadow-blue-900/20"
+                            >
+                                Load Spec
+                            </button>
+                        </div>
+                    </form>
+                )}
+
+                {activeTab === 'ai' && (
+                    <form onSubmit={handleAiSubmit} className="p-6 space-y-6">
+                        {/* Provider Selection */}
+                        <div>
+                            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">AI Provider</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {(['gemini', 'openai', 'anthropic'] as AiProviderType[]).map((provider) => (
+                                    <button
+                                        key={provider}
+                                        type="button"
+                                        onClick={() => updateSettings({ provider })}
+                                        className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                                            settings.provider === provider
+                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
+                                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700'
+                                        }`}
+                                    >
+                                        {provider.charAt(0).toUpperCase() + provider.slice(1)}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-xs text-zinc-500 mt-2">
+                                Select the AI provider for generating example payloads.
+                            </p>
+                        </div>
+
+                        {/* Gemini Settings */}
+                        {settings.provider === 'gemini' && (
+                            <div className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                    Gemini Configuration
+                                </h3>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">API Key</label>
+                                    <input
+                                        type="password"
+                                        placeholder="AIza..."
+                                        value={settings.geminiApiKey}
+                                        onChange={(e) => updateSettings({ geminiApiKey: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Model</label>
+                                    <input
+                                        type="text"
+                                        placeholder="gemini-2.5-flash"
+                                        value={settings.geminiModel}
+                                        onChange={(e) => updateSettings({ geminiModel: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* OpenAI Settings */}
+                        {settings.provider === 'openai' && (
+                            <div className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                    OpenAI Configuration
+                                </h3>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">API Key</label>
+                                    <input
+                                        type="password"
+                                        placeholder="sk-..."
+                                        value={settings.openaiApiKey}
+                                        onChange={(e) => updateSettings({ openaiApiKey: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Model</label>
+                                    <input
+                                        type="text"
+                                        placeholder="gpt-4o-mini"
+                                        value={settings.openaiModel}
+                                        onChange={(e) => updateSettings({ openaiModel: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Base URL</label>
+                                    <input
+                                        type="text"
+                                        placeholder="https://api.openai.com/v1"
+                                        value={settings.openaiBaseUrl}
+                                        onChange={(e) => updateSettings({ openaiBaseUrl: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                    <p className="text-xs text-zinc-500 mt-1">
+                                        Use custom base URL for OpenAI-compatible APIs (Ollama, LM Studio, Groq, etc.)
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Anthropic Settings */}
+                        {settings.provider === 'anthropic' && (
+                            <div className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                                    Anthropic Configuration
+                                </h3>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">API Key</label>
+                                    <input
+                                        type="password"
+                                        placeholder="sk-ant-..."
+                                        value={settings.anthropicApiKey}
+                                        onChange={(e) => updateSettings({ anthropicApiKey: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Model</label>
+                                    <input
+                                        type="text"
+                                        placeholder="claude-3-5-sonnet-latest"
+                                        value={settings.anthropicModel}
+                                        onChange={(e) => updateSettings({ anthropicModel: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Base URL</label>
+                                    <input
+                                        type="text"
+                                        placeholder="https://api.anthropic.com"
+                                        value={settings.anthropicBaseUrl}
+                                        onChange={(e) => updateSettings({ anthropicBaseUrl: e.target.value })}
+                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
+                                    />
+                                    <p className="text-xs text-zinc-500 mt-1">
+                                        Use custom base URL for Anthropic-compatible APIs
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button 
+                                type="button"
+                                onClick={() => resetSettings()}
+                                className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded text-sm font-medium transition-colors border border-zinc-200 dark:border-zinc-700"
+                            >
+                                Reset to Defaults
+                            </button>
+                            <button 
+                                type="submit"
+                                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium transition-colors shadow-lg shadow-blue-900/20"
+                            >
+                                Save Settings
+                            </button>
+                        </div>
+                    </form>
+                )}
             </div>
         </div>
     );
@@ -737,7 +940,7 @@ export default function App() {
   }, [activeEndpointId]);
 
   const startResizing = useCallback((e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent text selection
+    e.preventDefault();
     setIsResizing(true);
   }, []);
 
@@ -747,41 +950,54 @@ export default function App() {
 
   const resize = useCallback(
     (mouseMoveEvent: MouseEvent) => {
-      if (isResizing) {
-        const newWidth = mouseMoveEvent.clientX - 64; // Adjust for Activity Bar width
+      if (!isResizing) return;
+      
+      // Use requestAnimationFrame for smooth updates
+      requestAnimationFrame(() => {
+        const newWidth = mouseMoveEvent.clientX - 64;
         if (newWidth >= 200 && newWidth <= 600) {
-            setSidebarWidth(newWidth);
-            // Update API indicator during resize
-            requestAnimationFrame(() => {
-              updateApiIndicator();
-            });
+          setSidebarWidth(newWidth);
         }
-      }
+      });
     },
-    [isResizing, updateApiIndicator]
+    [isResizing]
   );
+
+  // Update API indicator when sidebar width changes (debounced)
+  useEffect(() => {
+    if (isResizing) return;
+    const timer = setTimeout(() => {
+      updateApiIndicator();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [sidebarWidth, isResizing, updateApiIndicator]);
 
   useEffect(() => {
     if (isResizing) {
-        window.addEventListener("mousemove", resize);
-        window.addEventListener("mouseup", stopResizing);
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-    } else {
+      const handleMouseMove = (e: MouseEvent) => resize(e);
+      const handleMouseUp = () => {
+        setIsResizing(false);
+        // Update indicator one final time after resize ends
+        requestAnimationFrame(() => updateApiIndicator());
+      };
+      
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
+      };
     }
-    return () => {
-      window.removeEventListener("mousemove", resize);
-      window.removeEventListener("mouseup", stopResizing);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-  }, [isResizing, resize, stopResizing]);
+  }, [isResizing, resize, updateApiIndicator]);
   
   // Loaded Data
   const [apiTitle, setApiTitle] = useState("F-Docs");
-  const [apiVersion, setApiVersion] = useState("1.0.0");
+  const [apiVersion, setApiVersion] = useState(API_VERSION);
   const [baseUrl, setBaseUrl] = useState("");
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [tags, setTags] = useState<ApiTag[]>([]);
@@ -792,6 +1008,9 @@ export default function App() {
   const [selectedTag, setSelectedTag] = useState<string>('All');
   const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
   const { theme, toggleTheme } = useTheme();
+
+  // Mobile Sidebar State
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Copied state for sidebar endpoints
   const [copiedEndpoints, setCopiedEndpoints] = useState<Record<string, boolean>>({});
@@ -1047,10 +1266,207 @@ export default function App() {
   const activeEndpoint = activeEndpointId ? endpoints.find(e => e.id === activeEndpointId) : null;
 
   return (
-    <div className="h-screen bg-inherit text-zinc-900 dark:text-zinc-200 flex flex-row font-sans overflow-hidden">
+    <div className="h-screen bg-inherit text-zinc-900 dark:text-zinc-200 flex flex-col md:flex-row font-sans overflow-hidden">
       
-      {/* 1. Activity Bar (Module Switcher) */}
-      <nav className="w-16 bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex flex-col items-center py-6 z-40 relative">
+      {/* Mobile Top Bar */}
+      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 shrink-0 safe-top">
+        <button
+          onClick={() => setIsMobileSidebarOpen(true)}
+          className="p-2 -ml-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white"
+          aria-label="Open menu"
+        >
+          <Menu size={24} />
+        </button>
+        <h1 className="font-bold text-base tracking-tight text-zinc-900 dark:text-white">
+          F-<span className="text-blue-500">Docs</span>
+        </h1>
+        <button
+          onClick={toggleTheme}
+          className="p-2 -mr-2 text-zinc-500 dark:text-zinc-400 hover:text-amber-500 dark:hover:text-amber-300"
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      </header>
+
+      {/* Mobile Sidebar Drawer */}
+      {isMobileSidebarOpen && (
+        <>
+          <div 
+            className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <aside 
+            className="md:hidden fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex flex-col animate-slide-in-left safe-top safe-bottom"
+          >
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+              <h1 className="font-bold text-lg tracking-tight text-zinc-900 dark:text-white">
+                F-<span className="text-blue-500">Docs</span>
+              </h1>
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="p-2 -mr-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Module Switcher for Mobile */}
+            <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="grid grid-cols-4 gap-2">
+                {ENABLE_API && (
+                  <button
+                    onClick={() => { setActiveModule('api'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'api' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Layers size={20} />
+                    <span className="text-[10px] font-medium">API</span>
+                  </button>
+                )}
+                {ENABLE_WS && (
+                  <button
+                    onClick={() => { setActiveModule('ws'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'ws' ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Activity size={20} />
+                    <span className="text-[10px] font-medium">WS</span>
+                  </button>
+                )}
+                {ENABLE_IO && (
+                  <button
+                    onClick={() => { setActiveModule('io'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'io' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Radio size={20} />
+                    <span className="text-[10px] font-medium">IO</span>
+                  </button>
+                )}
+                {ENABLE_MCP && (
+                  <button
+                    onClick={() => { setActiveModule('mcp'); setIsMobileSidebarOpen(false); }}
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all ${activeModule === 'mcp' ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  >
+                    <Database size={20} />
+                    <span className="text-[10px] font-medium">MCP</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Module-specific sidebar content for mobile */}
+            {activeModule === 'api' && (
+              <>
+                <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex bg-zinc-200 dark:bg-zinc-800 rounded p-0.5">
+                      <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'}`}
+                      >
+                        <LayoutList size={14} />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('focused')}
+                        className={`p-1.5 rounded ${viewMode === 'focused' ? 'bg-white dark:bg-zinc-600 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-500'}`}
+                      >
+                        <Sidebar size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
+                    <input
+                      type="text"
+                      placeholder="Search endpoints..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full h-9 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg pl-9 pr-3 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3">
+                  {tags.map(tag => {
+                    const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
+                    if (tagEndpoints.length === 0) return null;
+                    const isExpanded = expandedSidebarTags[tag.name] !== false;
+                    return (
+                      <div key={tag.name} className="mb-2">
+                        <button
+                          onClick={() => toggleSidebarTag(tag.name)}
+                          className="w-full flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-300 py-2 px-2"
+                        >
+                          <span>{tag.name}</span>
+                          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        </button>
+                        {isExpanded && (
+                          <div className="space-y-1 pl-2 border-l-2 border-zinc-300 dark:border-zinc-700">
+                            {tagEndpoints.map(ep => (
+                              <button
+                                key={ep.id}
+                                onClick={() => { setActiveEndpointId(ep.id); setIsMobileSidebarOpen(false); }}
+                                className={`w-full text-left px-3 py-2 rounded text-xs flex items-center gap-2 ${activeEndpointId === ep.id ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300' : 'text-zinc-600 dark:text-zinc-400'}`}
+                              >
+                                <div className="w-12 shrink-0">
+                                  <MethodBadge method={ep.method} className="w-full text-center scale-90" />
+                                </div>
+                                <span className="truncate font-mono">{ep.path}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </aside>
+        </>
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden flex items-center justify-around py-2 px-2 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 shrink-0 safe-bottom">
+        {ENABLE_API && (
+          <button
+            onClick={() => setActiveModule('api')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'api' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Layers size={22} />
+            <span className="text-[10px] font-medium">API</span>
+          </button>
+        )}
+        {ENABLE_WS && (
+          <button
+            onClick={() => setActiveModule('ws')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'ws' ? 'text-zinc-700 dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Activity size={22} />
+            <span className="text-[10px] font-medium">WS</span>
+          </button>
+        )}
+        {ENABLE_IO && (
+          <button
+            onClick={() => setActiveModule('io')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'io' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Radio size={22} />
+            <span className="text-[10px] font-medium">IO</span>
+          </button>
+        )}
+        {ENABLE_MCP && (
+          <button
+            onClick={() => setActiveModule('mcp')}
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl min-w-[60px] ${activeModule === 'mcp' ? 'text-orange-600 dark:text-orange-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            <Database size={22} />
+            <span className="text-[10px] font-medium">MCP</span>
+          </button>
+        )}
+      </nav>
+      
+      {/* 1. Activity Bar (Module Switcher) - Desktop Only */}
+      <nav className="hidden md:flex w-16 bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0 flex-col items-center py-6 z-40 relative">
 
           
           <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>
@@ -1136,7 +1552,18 @@ export default function App() {
               >
                   {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
               </button>
-
+              
+              <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsSettingsModalOpen(true);
+                  }}
+                  className="p-3 rounded-xl flex justify-center transition-all text-zinc-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-zinc-200 dark:hover:bg-zinc-900"
+                  title="Settings"
+              >
+                  <Settings size={22} />
+              </button>
 
           </div>
       </nav>

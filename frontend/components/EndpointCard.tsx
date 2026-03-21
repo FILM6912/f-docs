@@ -30,7 +30,7 @@ import { FileViewer } from "./FileViewer";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
-import { generateMockPayload } from "../services/geminiService";
+import { generateMockPayload } from "../services/aiGenerateService";
 
 interface EndpointCardProps {
   endpoint: Endpoint;
@@ -87,6 +87,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [showDescModal, setShowDescModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingParams, setIsGeneratingParams] = useState(false);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -342,9 +343,48 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     setIsGenerating(true);
     try {
       const json = await generateMockPayload(endpoint.requestBodySchema);
-      setBodyValue(json);
+      // Parse and format JSON with proper indentation
+      try {
+        const parsed = JSON.parse(json);
+        setBodyValue(JSON.stringify(parsed, null, 2));
+      } catch {
+        // If not valid JSON, set as-is
+        setBodyValue(json);
+      }
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleAiGenerateParams = async () => {
+    if (!endpoint.parameters || endpoint.parameters.length === 0) return;
+    setIsGeneratingParams(true);
+    try {
+      const paramsDescription = endpoint.parameters
+        .filter(p => p.in === 'query' || p.in === 'path')
+        .map(p => `${p.name} (${p.type}${p.required ? ', required' : ', optional'}): ${p.description || 'No description'}`)
+        .join('\n');
+      
+      const prompt = `Generate example values for these API parameters. Return ONLY a valid JSON object with parameter names as keys and example values. No markdown, no explanation.
+
+Parameters:
+${paramsDescription}`;
+
+      const jsonStr = await generateMockPayload(prompt);
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const newValues: Record<string, string> = {};
+        endpoint.parameters?.forEach(p => {
+          if (parsed[p.name] !== undefined) {
+            newValues[p.name] = String(parsed[p.name]);
+          }
+        });
+        setParamValues(prev => ({ ...prev, ...newValues }));
+      } catch {
+        // If not valid JSON, ignore
+      }
+    } finally {
+      setIsGeneratingParams(false);
     }
   };
 
@@ -585,11 +625,11 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           </div>
 
           {/* Controls Container */}
-          <div className={`grid lg:grid-cols-2 gap-6 ${forcedOpen ? "flex-1 min-h-0 overflow-hidden" : "overflow-hidden"}`}>
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 ${forcedOpen ? "flex-1 min-h-0 overflow-hidden" : "overflow-hidden"}`}>
             {/* Left Col: Request Parameters & Body */}
-            <div className={`space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : "max-h-[calc(100vh-400px)]"}`}>
+            <div className={`space-y-3 lg:space-y-4 min-w-0 flex flex-col ${forcedOpen ? "h-full min-h-0" : "max-h-[calc(100vh-400px)]"}`}>
               {/* Tab Navigation for Request */}
-              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
                     Request
@@ -606,7 +646,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                     <X size={14} />
                   </button>
                 </div>
-                <div className="flex gap-1 flex-wrap">
+                <div className="flex gap-1 flex-wrap -mr-1">
                   {(["params", "body", "headers", "auth"] as const).map((tab) => {
                     return (
                       <button
@@ -615,7 +655,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           e.stopPropagation();
                           setActiveTab(tab);
                         }}
-                        className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
+                        className={`px-2.5 sm:px-3 py-1 text-xs font-medium rounded-full transition-all touch-manipulation ${
                           activeTab === tab
                             ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600"
                             : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
@@ -644,6 +684,24 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                         <span>No parameters required</span>
                       </div>
                     ) : (
+                      <>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleAiGenerateParams}
+                          disabled={isGeneratingParams}
+                          className="group flex items-center gap-1.5 text-[10px] font-medium bg-blue-500/5 text-blue-400 px-2.5 py-1 rounded-full border border-blue-500/20 hover:bg-blue-500/20 transition-all disabled:opacity-50"
+                        >
+                          {isGeneratingParams ? (
+                            <Loader2 size={10} className="animate-spin" />
+                          ) : (
+                            <Sparkles
+                              size={10}
+                              className="group-hover:text-blue-300"
+                            />
+                          )}
+                          Generate Example
+                        </button>
+                      </div>
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase text-zinc-500 font-bold tracking-wider">
@@ -741,6 +799,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
                           ))}
                         </tbody>
                       </table>
+                      </>
                     )}
                   </div>
                 )}
@@ -1371,3 +1430,4 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     </div>
   );
 };
+
