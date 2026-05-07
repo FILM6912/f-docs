@@ -17,6 +17,9 @@ const methodThemeBase = {
     [Method.HEAD]: { bg: "bg-purple-50 dark:bg-purple-500/10", border: "border-purple-200 dark:border-purple-500/20", text: "text-purple-700 dark:text-purple-400", button: "bg-purple-600 hover:bg-purple-500 shadow-purple-900/20" },
 };
 
+const formatLatency = (latency: number) =>
+    latency >= 100 ? `${(latency / 1000).toFixed(1)}s` : `${Math.round(latency)}ms`;
+
 export const CustomApiTester: React.FC = () => {
     const [method, setMethod] = useState<Method>(Method.GET);
     const [url, setUrl] = useState('');
@@ -29,11 +32,21 @@ export const CustomApiTester: React.FC = () => {
     const [newParamKey, setNewParamKey] = useState("");
     
     const [isLoading, setIsLoading] = useState(false);
+    const [requestStartMs, setRequestStartMs] = useState<number | null>(null);
+    const [liveElapsedMs, setLiveElapsedMs] = useState(0);
     const [response, setResponse] = useState<any>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     
     const theme = methodThemeBase[method] || methodThemeBase[Method.GET];
+
+    useEffect(() => {
+        if (!isLoading || requestStartMs === null) return;
+        const updateElapsed = () => setLiveElapsedMs(performance.now() - requestStartMs);
+        updateElapsed();
+        const intervalId = window.setInterval(updateElapsed, 100);
+        return () => window.clearInterval(intervalId);
+    }, [isLoading, requestStartMs]);
 
     const handleCopy = (text: string) => {
         copyToClipboard(text);
@@ -71,6 +84,8 @@ export const CustomApiTester: React.FC = () => {
         const fetchUrl = finalUrl.includes('://') ? finalUrl : `http://${finalUrl}`;
         
         setErrorMsg(null);
+        setRequestStartMs(performance.now());
+        setLiveElapsedMs(0);
         setIsLoading(true);
         setResponse(null);
         
@@ -134,6 +149,7 @@ export const CustomApiTester: React.FC = () => {
              });
         } finally {
             setIsLoading(false);
+            setRequestStartMs(null);
         }
     };
 
@@ -402,7 +418,7 @@ export const CustomApiTester: React.FC = () => {
                                 {isLoading && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm z-20">
                                         <Loader2 size={32} className="text-blue-500 animate-spin mb-3"/>
-                                        <p className="text-zinc-400 text-xs font-medium animate-pulse">Sending Request...</p>
+                                        <p className="text-zinc-400 text-xs font-medium animate-pulse">Sending Request... {formatLatency(liveElapsedMs)}</p>
                                     </div>
                                 )}
 
@@ -414,7 +430,7 @@ export const CustomApiTester: React.FC = () => {
                                                     <span>{response.status}</span>
                                                     <span className={`w-1 h-1 rounded-full ${response.status >= 400 ? "bg-red-400" : "bg-emerald-400"}`}></span>
                                                 </div>
-                                                <span className="text-[10px] font-mono text-zinc-500">{response.latency}ms</span>
+                                                <span className="text-[10px] font-mono text-zinc-500">{formatLatency(response.latency)}</span>
                                                 {response.contentType && (
                                                     <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
                                                         {response.contentType.split(';')[0]}

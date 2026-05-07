@@ -43,6 +43,9 @@ interface EndpointCardProps {
 
 import { copyToClipboard } from "../utils/clipboard";
 
+const formatLatency = (latency: number) =>
+  latency >= 100 ? `${(latency / 1000).toFixed(1)}s` : `${Math.round(latency)}ms`;
+
 export const EndpointCard: React.FC<EndpointCardProps> = ({
   endpoint,
   baseUrl,
@@ -86,6 +89,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
   const [showDescModal, setShowDescModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [requestStartMs, setRequestStartMs] = useState<number | null>(null);
+  const [liveElapsedMs, setLiveElapsedMs] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingParams, setIsGeneratingParams] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -138,6 +143,33 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
+  
+  // Determine request type
+  const isMultipart =
+    endpoint.requestBodyType?.includes("multipart") ||
+    endpoint.requestBodyType?.includes("form-urlencoded");
+
+  useEffect(() => {
+    if (!isMultipart || !endpoint.requestBodyProperties?.length) return;
+
+    setFormValues((prev) => {
+      const next = { ...prev };
+      endpoint.requestBodyProperties?.forEach((prop) => {
+        if (next[prop.name] === undefined && prop.default !== undefined) {
+          next[prop.name] = prop.default;
+        }
+      });
+      return next;
+    });
+  }, [isMultipart, endpoint.requestBodyProperties, setFormValues]);
+
+  useEffect(() => {
+    if (!isLoading || requestStartMs === null) return;
+    const updateElapsed = () => setLiveElapsedMs(performance.now() - requestStartMs);
+    updateElapsed();
+    const intervalId = window.setInterval(updateElapsed, 100);
+    return () => window.clearInterval(intervalId);
+  }, [isLoading, requestStartMs]);
 
 
 
@@ -150,11 +182,6 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         (schemeName) => !!authCredentials[schemeName],
       );
     });
-
-  // Determine request type
-  const isMultipart =
-    endpoint.requestBodyType?.includes("multipart") ||
-    endpoint.requestBodyType?.includes("form-urlencoded");
 
   // Swagger UI-like Theme based on Method
   const methodTheme = {
@@ -275,7 +302,9 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     // Check multipart body
     if (isMultipart && endpoint.requestBodyProperties) {
       endpoint.requestBodyProperties.forEach((p) => {
-        if (p.required && !formValues[p.name]) {
+        const value = formValues[p.name];
+        const isEmptyArray = Array.isArray(value) && value.length === 0;
+        if (p.required && (value === undefined || value === null || value === "" || isEmptyArray)) {
           errors[`body:${p.name}`] = true;
           hasError = true;
         }
@@ -304,6 +333,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
     
     setValidationErrors({});
 
+    setRequestStartMs(performance.now());
+    setLiveElapsedMs(0);
     setIsLoading(true);
     setResponse(null);
     setRightPanelTab("live"); // Switch to live view on execute
@@ -313,7 +344,21 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       if (isMultipart) {
         const formData = new FormData();
         Object.entries(formValues).forEach(([key, value]) => {
-          formData.append(key, value as string | Blob);
+          if (Array.isArray(value)) {
+            value.forEach((item) => {
+              if (item instanceof Blob) {
+                formData.append(key, item);
+              } else if (item !== undefined && item !== null) {
+                formData.append(key, String(item));
+              }
+            });
+          } else {
+            if (value instanceof Blob) {
+              formData.append(key, value);
+            } else if (value !== undefined && value !== null) {
+              formData.append(key, String(value));
+            }
+          }
         });
         finalBody = formData;
       }
@@ -335,6 +380,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
       }
     } finally {
       setIsLoading(false);
+      setRequestStartMs(null);
     }
   };
 
@@ -439,14 +485,24 @@ ${paramsDescription}`;
 
   const handleFormFileChange = (
     key: string,
+    isMulti: boolean,
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFormValues((prev) => ({ ...prev, [key]: e.target.files![0] }));
+      const files = Array.from(e.target.files);
+      setFormValues((prev) => {
+        if (!isMulti) {
+          return { ...prev, [key]: files[0] };
+        }
+
+        const existing = Array.isArray(prev[key]) ? prev[key] : [];
+        return { ...prev, [key]: [...existing, ...files] };
+      });
+      e.target.value = "";
     }
   };
 
-  const handleFormTextChange = (key: string, val: string) => {
+  const handleFormTextChange = (key: string, val: any) => {
     setFormValues((prev) => ({ ...prev, [key]: val }));
   };
 
@@ -458,6 +514,27 @@ ${paramsDescription}`;
     });
     // Don't clear error here as we are removing the value, so it might become invalid again
     // But if we want to reset the state, we can keep the error until re-validation
+  };
+
+  const removeFileAtIndex = (key: string, indexToRemove: number) => {
+    setFormValues((prev) => {
+      const currentValue = prev[key];
+      if (Array.isArray(currentValue)) {
+        const nextFiles = currentValue.filter((_, index) => index !== indexToRemove);
+        if (nextFiles.length === 0) {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        }
+        return { ...prev, [key]: nextFiles };
+      }
+      if (indexToRemove === 0) {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      }
+      return prev;
+    });
   };
 
 
@@ -851,8 +928,24 @@ ${paramsDescription}`;
                       <div className={`space-y-3 overflow-y-auto custom-scrollbar p-1 pb-4 max-h-[500px] ${forcedOpen ? "flex-1 min-h-0" : ""}`}>
                         {Object.entries(endpoint.requestBodyProperties).map(
                           ([name, prop]: [string, any]) => {
+                            const isFileArray =
+                              prop.type === "array" &&
+                              (
+                                prop.itemsFormat === "binary" ||
+                                prop.itemsContentMediaType === "application/octet-stream"
+                              );
+                            const isNonFileArray = prop.type === "array" && !isFileArray;
                             const isFile =
-                              prop.format === "binary" || prop.type === "file";
+                              prop.format === "binary" ||
+                              prop.type === "file" ||
+                              prop.contentMediaType === "application/octet-stream" ||
+                              isFileArray;
+                            const currentValue = formValues[prop.name];
+                            const selectedFiles = Array.isArray(currentValue)
+                              ? currentValue.filter((file): file is File => file instanceof File)
+                              : currentValue instanceof File
+                                ? [currentValue]
+                                : [];
                             return (
                             <div
                               key={prop.name}
@@ -876,46 +969,71 @@ ${paramsDescription}`;
                               {isFile ? (
                                 // File Input
                                 <div className="relative">
-                                  {formValues[prop.name] &&
-                                  formValues[prop.name] instanceof File ? (
-                                                                    <div className="flex items-center justify-between p-2 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded">
-                                      <div className="flex items-center gap-2 overflow-hidden">
-                                        <div className="w-8 h-8 bg-blue-500/10 rounded flex items-center justify-center shrink-0">
-                                          <FileIcon
-                                            size={14}
-                                            className="text-blue-500 dark:text-blue-400"
-                                          />
+                                  {selectedFiles.length > 0 ? (
+                                                                    <div className="p-2 bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded">
+                                      <div className="space-y-1.5 overflow-hidden min-w-0">
+                                        {selectedFiles.map((file, index) => (
+                                          <div key={`${file.name}-${index}`} className="flex items-center justify-between gap-2 overflow-hidden">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <div className="w-8 h-8 bg-blue-500/10 rounded flex items-center justify-center shrink-0">
+                                                <FileIcon
+                                                  size={14}
+                                                  className="text-blue-500 dark:text-blue-400"
+                                                />
+                                              </div>
+                                              <div className="min-w-0">
+                                                <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
+                                                  {file.name}
+                                                </p>
+                                                <p className="text-[10px] text-zinc-500">
+                                                  {(file.size / 1024).toFixed(1)} KB
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <button
+                                              onClick={() => removeFileAtIndex(prop.name, index)}
+                                              className="p-1 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded transition-colors cursor-pointer shrink-0"
+                                              title="Remove this file"
+                                            >
+                                              <X size={12} />
+                                            </button>
+                                          </div>
+                                        ))}
+                                        <div className="text-[10px] text-zinc-500">
+                                          {selectedFiles.length} file{selectedFiles.length > 1 ? "s" : ""} selected
                                         </div>
-                                        <div className="min-w-0">
-                                          <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
-                                            {
-                                              (formValues[prop.name] as File)
-                                                .name
-                                            }
-                                          </p>
-                                          <p className="text-[10px] text-zinc-500">
-                                            {(
-                                              (formValues[prop.name] as File)
-                                                .size / 1024
-                                            ).toFixed(1)}{" "}
-                                            KB
-                                          </p>
-                                        </div>
+                                        {isFileArray && (
+                                          <div className="pt-1 grid grid-cols-2 gap-2 w-full">
+                                            <label className="inline-flex items-center justify-center gap-1.5 text-[10px] font-medium bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-2 py-1 rounded border border-blue-500/20 cursor-pointer transition-colors w-full">
+                                              <Upload size={10} />
+                                              Upload เพิ่ม
+                                              <input
+                                                type="file"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(e) => handleFormFileChange(prop.name, true, e)}
+                                              />
+                                            </label>
+                                            <button
+                                              onClick={() => removeFile(prop.name)}
+                                              className="inline-flex items-center justify-center gap-1.5 text-[10px] font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 px-2 py-1 rounded border border-red-500/20 cursor-pointer transition-colors w-full"
+                                              title="Remove all files"
+                                            >
+                                              <X size={10} />
+                                              ล้างทั้งหมด
+                                            </button>
+                                          </div>
+                                        )}
                                       </div>
-                                      <button
-                                        onClick={() => removeFile(prop.name)}
-                                        className="p-1 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded transition-colors"
-                                      >
-                                        <X size={14} />
-                                      </button>
                                     </div>
                                   ) : (
                                     <div className="relative group">
                                       <input
                                         type="file"
+                                        multiple={isFileArray}
                                         className="absolute inset-0 opacity-0 cursor-pointer w-full z-10"
                                         onChange={(e) => {
-                                          handleFormFileChange(prop.name, e);
+                                          handleFormFileChange(prop.name, isFileArray, e);
                                           if (validationErrors[`body:${prop.name}`]) {
                                               setValidationErrors(prev => {
                                                   const next = { ...prev };
@@ -937,26 +1055,107 @@ ${paramsDescription}`;
                                     </div>
                                   )}
                                 </div>
-                              ) : (
-                                // Standard Text Input
-                                <input
-                                  type="text"
-                                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
-                                  placeholder={`Enter ${prop.name}`}
-                                  onChange={(e) => {
-                                    handleFormTextChange(
-                                      prop.name,
-                                      e.target.value,
-                                    );
-                                    if (validationErrors[`body:${prop.name}`]) {
-                                        setValidationErrors(prev => {
+                              ) : isNonFileArray ? (
+                                // Array Input (non-file)
+                                <div className="space-y-2">
+                                  {Array.isArray(prop.enum) ? (
+                                    <select
+                                      multiple
+                                      className="w-full min-h-[100px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
+                                      value={Array.isArray(formValues[prop.name]) ? formValues[prop.name].map(String) : []}
+                                      onChange={(e) => {
+                                        const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+                                        handleFormTextChange(prop.name, selected);
+                                        if (validationErrors[`body:${prop.name}`]) {
+                                          setValidationErrors(prev => {
                                             const next = { ...prev };
                                             delete next[`body:${prop.name}`];
                                             return next;
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      {prop.enum.map((option: string) => (
+                                        <option key={option} value={option}>{option}</option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
+                                      placeholder={`Enter ${prop.name} (comma-separated)`}
+                                      value={Array.isArray(formValues[prop.name]) ? formValues[prop.name].join(", ") : ""}
+                                      onChange={(e) => {
+                                        const rawItems = e.target.value
+                                          .split(",")
+                                          .map((v) => v.trim())
+                                          .filter(Boolean);
+                                        const typedItems = rawItems.map((item) => {
+                                          if (prop.itemsType === "integer" || prop.itemsType === "number") {
+                                            const parsed = Number(item);
+                                            return Number.isNaN(parsed) ? item : parsed;
+                                          }
+                                          if (prop.itemsType === "boolean") {
+                                            return item.toLowerCase() === "true";
+                                          }
+                                          return item;
                                         });
-                                    }
-                                  }}
-                                />
+                                        handleFormTextChange(prop.name, typedItems);
+                                        if (validationErrors[`body:${prop.name}`]) {
+                                          setValidationErrors(prev => {
+                                            const next = { ...prev };
+                                            delete next[`body:${prop.name}`];
+                                            return next;
+                                          });
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                  <p className="text-[10px] text-zinc-500">
+                                    Array field: use comma to add multiple values
+                                  </p>
+                                </div>
+                              ) : (
+                                // Standard Text Input
+                                prop.type === "boolean" ? (
+                                  <select
+                                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
+                                    value={String(formValues[prop.name] ?? prop.default ?? false)}
+                                    onChange={(e) => {
+                                      handleFormTextChange(prop.name, e.target.value === "true");
+                                      if (validationErrors[`body:${prop.name}`]) {
+                                        setValidationErrors(prev => {
+                                          const next = { ...prev };
+                                          delete next[`body:${prop.name}`];
+                                          return next;
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <option value="true">true</option>
+                                    <option value="false">false</option>
+                                  </select>
+                                ) : (
+                                  <input
+                                    type={prop.type === "integer" || prop.type === "number" ? "number" : "text"}
+                                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded px-3 py-2 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-blue-500/50"
+                                    placeholder={`Enter ${prop.name}`}
+                                    value={formValues[prop.name] ?? prop.default ?? ""}
+                                    onChange={(e) => {
+                                      const nextValue = prop.type === "integer" || prop.type === "number"
+                                        ? (e.target.value === "" ? "" : Number(e.target.value))
+                                        : e.target.value;
+                                      handleFormTextChange(prop.name, nextValue);
+                                      if (validationErrors[`body:${prop.name}`]) {
+                                          setValidationErrors(prev => {
+                                              const next = { ...prev };
+                                              delete next[`body:${prop.name}`];
+                                              return next;
+                                          });
+                                      }
+                                    }}
+                                  />
+                                )
                               )}
                               {validationErrors[`body:${prop.name}`] && <p className="text-[10px] text-red-500 mt-1">This field is required</p>}
                               {prop.description && (
@@ -1279,7 +1478,7 @@ ${paramsDescription}`;
                           className="text-blue-500 animate-spin mb-3"
                         />
                         <p className="text-zinc-400 text-xs font-medium animate-pulse">
-                          Sending Request...
+                          Sending Request... {formatLatency(liveElapsedMs)}
                         </p>
                       </div>
                     )}
@@ -1299,7 +1498,7 @@ ${paramsDescription}`;
                               ></span>
                             </div>
                             <span className="text-[10px] font-mono text-zinc-500">
-                              {response.latency}ms
+                              {formatLatency(response.latency)}
                             </span>
                             {response.contentType && (
                               <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">

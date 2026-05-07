@@ -148,6 +148,11 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                                      name: key,
                                      type: resolvedProp.type || 'string',
                                      format: resolvedProp.format,
+                                     itemsType: resolvedProp.items?.type,
+                                     itemsFormat: resolvedProp.items?.format,
+                                     contentMediaType: resolvedProp.contentMediaType,
+                                     itemsContentMediaType: resolvedProp.items?.contentMediaType,
+                                     default: resolvedProp.default,
                                      description: resolvedProp.description,
                                      required: resolvedSchema.required?.includes(key)
                                  };
@@ -187,6 +192,11 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                               name: paramDef.name,
                               type: paramDef.type || 'string',
                               format: paramDef.format, // 'binary' or 'file' indicates file upload
+                             itemsType: paramDef.items?.type,
+                             itemsFormat: paramDef.items?.format,
+                             contentMediaType: paramDef.contentMediaType,
+                             itemsContentMediaType: paramDef.items?.contentMediaType,
+                             default: paramDef.default,
                               description: paramDef.description,
                               required: paramDef.required
                           };

@@ -31,6 +31,11 @@ export interface RequestBodyProperty {
   name: string;
   type: string;
   format?: string;
+  itemsType?: string;
+  itemsFormat?: string;
+  contentMediaType?: string;
+  itemsContentMediaType?: string;
+  default?: any;
   required?: boolean;
   description?: string;
 }
