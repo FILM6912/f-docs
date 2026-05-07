@@ -29,54 +29,14 @@ from FDocs import f_docs
 app = FastAPI(
     title="Test API - Full CRUD Operations with OAuth2",
     # (Optional) You can leave docs_url as default if using f_docs() wrapper
+    docs_url=None,
+    redoc_url=None,
 )
 
 # Apply F-Docs wrapper
 app = f_docs(app, title="F-Docs - Test API")
 
 
-# --- Method 2: Standalone JS Drop-in (Zero dependencies) ---
-'''
-# Setup paths for F-Docs standalone JS
-PACKAGE_ROOT = Path(__file__).parent.parent
-FDOCS_DIST = PACKAGE_ROOT / "FDocs" / "dist"
-
-# Initialize FastAPI
-app = FastAPI(
-    title="Test API - Full CRUD Operations with OAuth2",
-    docs_url=None, # Disable default swagger
-    redoc_url=None
-)
-
-# Mount the FDocs dist folder to serve f_docs.js
-app.mount("/docs-static", StaticFiles(directory=str(FDOCS_DIST)), name="docs-static")
-
-@app.get("/docs", include_in_schema=False)
-def custom_docs():
-    config_data = {
-        "openApiUrl": "/openapi.json",
-        "title": "F-Docs - Test API",
-    }
-    script_tag = f"<script>window.NEXUS_CONFIG = {json.dumps(config_data)};</script>"
-    
-    html_content = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>F-Docs - Test API</title>
-        {script_tag}
-    </head>
-    <body>
-        <div id="root"></div>
-        <script type="module" src="/docs-static/f_docs.js"></script>
-    </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
-'''
-# ==========================================
 
 # Socket.IO setup
 sio = socketio.AsyncServer(
