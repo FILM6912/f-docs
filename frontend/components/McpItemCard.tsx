@@ -38,11 +38,17 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
     const [copied, setCopied] = useState(false);
     const [activeTab, setActiveTab] = useState<'params' | 'auth'>('params');
 
+    const getDefaultValue = (prop: any) => {
+        if (prop?.type === 'boolean') return false;
+        if (prop?.type === 'array') return [];
+        return '';
+    };
+
     useEffect(() => {
         if (type === 'TOOL' && data.inputSchema?.properties) {
             const defaults: Record<string, any> = {};
             Object.keys(data.inputSchema.properties).forEach(key => {
-                defaults[key] = '';
+                defaults[key] = getDefaultValue(data.inputSchema.properties[key]);
             });
             setToolArgs(defaults);
         }
@@ -90,7 +96,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
     const handleInputChange = (key: string, value: any, type: string) => {
         setToolArgs(prev => ({
             ...prev,
-            [key]: type === 'integer' || type === 'number' ? Number(value) : value
+            [key]: type === 'integer' || type === 'number' ? (value === '' ? '' : Number(value)) : value
         }));
     };
 
@@ -243,15 +249,58 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                                                                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">{prop.type}</span>
                                                             </div>
                                                             
-                                                            {prop.type === 'boolean' ? (
+                                                            {prop.enum ? (
                                                                 <select
                                                                     className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors"
-                                                                    value={String(toolArgs[key])}
+                                                                    value={String(toolArgs[key] ?? '')}
+                                                                    onChange={(e) => handleInputChange(key, e.target.value, prop.type)}
+                                                                >
+                                                                    <option value="">Select {key}</option>
+                                                                    {prop.enum.map((option: any) => (
+                                                                        <option key={String(option)} value={String(option)}>
+                                                                            {String(option)}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            ) : prop.type === 'array' && Array.isArray(prop.items?.enum) ? (
+                                                                <select
+                                                                    multiple
+                                                                    className="w-full min-h-[100px] bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors"
+                                                                    value={Array.isArray(toolArgs[key]) ? toolArgs[key].map(String) : []}
+                                                                    onChange={(e) => {
+                                                                        const selected = Array.from(e.target.selectedOptions).map(option => option.value);
+                                                                        handleInputChange(key, selected, 'array');
+                                                                    }}
+                                                                >
+                                                                    {prop.items.enum.map((option: any) => (
+                                                                        <option key={String(option)} value={String(option)}>
+                                                                            {String(option)}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            ) : prop.type === 'boolean' ? (
+                                                                <select
+                                                                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 transition-colors"
+                                                                    value={String(toolArgs[key] ?? false)}
                                                                     onChange={(e) => handleInputChange(key, e.target.value === 'true', 'boolean')}
                                                                 >
                                                                     <option value="true">True</option>
                                                                     <option value="false">False</option>
                                                                 </select>
+                                                            ) : prop.type === 'array' ? (
+                                                                <input
+                                                                    type="text"
+                                                                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-3 py-2 text-sm text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 transition-colors"
+                                                                    placeholder={prop.description || `Enter ${key} (comma-separated)...`}
+                                                                    value={Array.isArray(toolArgs[key]) ? toolArgs[key].join(', ') : ''}
+                                                                    onChange={(e) => {
+                                                                        const items = e.target.value
+                                                                            .split(',')
+                                                                            .map(v => v.trim())
+                                                                            .filter(Boolean);
+                                                                        handleInputChange(key, items, 'array');
+                                                                    }}
+                                                                />
                                                             ) : (
                                                                 <input 
                                                                     type={prop.type === 'integer' || prop.type === 'number' ? 'number' : 'text'}
