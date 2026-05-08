@@ -92,6 +92,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [requestStartMs, setRequestStartMs] = useState<number | null>(null);
   const [liveElapsedMs, setLiveElapsedMs] = useState(0);
+  /** กำลังอ่าน body แบบ stream (เลื่อนปิด overlay แล้วแต่ยังต้องให้ตัวจับเวลารันเรื่อยๆ) */
+  const [streamReceiving, setStreamReceiving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingParams, setIsGeneratingParams] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -165,12 +167,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   }, [isMultipart, endpoint.requestBodyProperties, setFormValues]);
 
   useEffect(() => {
-    if (!isLoading || requestStartMs === null) return;
-    const updateElapsed = () => setLiveElapsedMs(performance.now() - requestStartMs);
+    const timingActive =
+      requestStartMs !== null && (isLoading || streamReceiving);
+    if (!timingActive) return;
+    const updateElapsed = () =>
+      setLiveElapsedMs(performance.now() - (requestStartMs as number));
     updateElapsed();
-    const intervalId = window.setInterval(updateElapsed, 100);
+    const intervalId = window.setInterval(updateElapsed, 50);
     return () => window.clearInterval(intervalId);
-  }, [isLoading, requestStartMs]);
+  }, [isLoading, streamReceiving, requestStartMs]);
 
 
 
@@ -336,6 +341,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
     setRequestStartMs(performance.now());
     setLiveElapsedMs(0);
+    setStreamReceiving(false);
     setIsLoading(true);
     setResponse(null);
     setRightPanelTab("live"); // Switch to live view on execute
@@ -377,6 +383,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           onStreamUpdate: (partial) => {
             setResponse(partial);
             setIsLoading(false);
+            setStreamReceiving(true);
           },
         },
       );
@@ -386,6 +393,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           onAuthError();
       }
     } finally {
+      setStreamReceiving(false);
       setIsLoading(false);
       setRequestStartMs(null);
     }
@@ -1505,7 +1513,12 @@ ${paramsDescription}`;
                               ></span>
                             </div>
                             <span className="text-[10px] font-mono text-zinc-500">
-                              {formatLatency(response.latency)}
+                              {formatLatency(
+                                requestStartMs !== null &&
+                                  (isLoading || streamReceiving)
+                                  ? liveElapsedMs
+                                  : response.latency,
+                              )}
                             </span>
                             {response.contentType && (
                               <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">

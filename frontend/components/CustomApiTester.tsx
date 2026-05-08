@@ -36,6 +36,7 @@ export const CustomApiTester: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [requestStartMs, setRequestStartMs] = useState<number | null>(null);
     const [liveElapsedMs, setLiveElapsedMs] = useState(0);
+    const [streamReceiving, setStreamReceiving] = useState(false);
     const [response, setResponse] = useState<any>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -43,12 +44,15 @@ export const CustomApiTester: React.FC = () => {
     const theme = methodThemeBase[method] || methodThemeBase[Method.GET];
 
     useEffect(() => {
-        if (!isLoading || requestStartMs === null) return;
-        const updateElapsed = () => setLiveElapsedMs(performance.now() - requestStartMs);
+        const timingActive =
+            requestStartMs !== null && (isLoading || streamReceiving);
+        if (!timingActive) return;
+        const updateElapsed = () =>
+            setLiveElapsedMs(performance.now() - (requestStartMs as number));
         updateElapsed();
-        const intervalId = window.setInterval(updateElapsed, 100);
+        const intervalId = window.setInterval(updateElapsed, 50);
         return () => window.clearInterval(intervalId);
-    }, [isLoading, requestStartMs]);
+    }, [isLoading, streamReceiving, requestStartMs]);
 
     const handleCopy = (text: string) => {
         copyToClipboard(text);
@@ -88,6 +92,7 @@ export const CustomApiTester: React.FC = () => {
         setErrorMsg(null);
         setRequestStartMs(performance.now());
         setLiveElapsedMs(0);
+        setStreamReceiving(false);
         setIsLoading(true);
         setResponse(null);
         
@@ -126,6 +131,7 @@ export const CustomApiTester: React.FC = () => {
                     headers: headerRecord,
                 });
                 setIsLoading(false);
+                setStreamReceiving(true);
             });
 
             setResponse({
@@ -144,6 +150,7 @@ export const CustomApiTester: React.FC = () => {
                  contentType: "text/plain"
              });
         } finally {
+            setStreamReceiving(false);
             setIsLoading(false);
             setRequestStartMs(null);
         }
@@ -426,7 +433,11 @@ export const CustomApiTester: React.FC = () => {
                                                     <span>{response.status}</span>
                                                     <span className={`w-1 h-1 rounded-full ${response.status >= 400 ? "bg-red-400" : "bg-emerald-400"}`}></span>
                                                 </div>
-                                                <span className="text-[10px] font-mono text-zinc-500">{formatLatency(response.latency)}</span>
+                                                <span className="text-[10px] font-mono text-zinc-500">{formatLatency(
+                                                    requestStartMs !== null && (isLoading || streamReceiving)
+                                                        ? liveElapsedMs
+                                                        : response.latency,
+                                                )}</span>
                                                 {response.contentType && (
                                                     <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
                                                         {response.contentType.split(';')[0]}
