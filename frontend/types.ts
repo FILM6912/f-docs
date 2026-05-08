@@ -66,6 +66,10 @@ export interface SimulationResponse {
   data: any;
   latency: number;
   contentType?: string; // Add content-type for file detection
+  /** Response body was read incrementally (SSE, NDJSON, chunked binary, etc.) */
+  streamed?: boolean;
+  /** Bytes received while streaming (text or binary) */
+  streamBytesReceived?: number;
 }
 
 export interface OAuthFlows {

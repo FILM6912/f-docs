@@ -27,6 +27,7 @@ import { JsonDisplay } from "./JsonDisplay";
 import { JsonEditor } from "./JsonEditor";
 import { MarkdownDisplay } from "./MarkdownDisplay";
 import { FileViewer } from "./FileViewer";
+import { StreamTextViewer } from "./StreamTextViewer";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
@@ -372,6 +373,12 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         finalPath,
         finalBody,
         finalHeaders,
+        {
+          onStreamUpdate: (partial) => {
+            setResponse(partial);
+            setIsLoading(false);
+          },
+        },
       );
       setResponse(res);
 
@@ -1505,6 +1512,14 @@ ${paramsDescription}`;
                                 {response.contentType.split(';')[0]}
                               </span>
                             )}
+                            {response.streamed && (
+                              <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded">
+                                stream
+                                {typeof response.streamBytesReceived === "number"
+                                  ? ` · ${response.streamBytesReceived} B`
+                                  : ""}
+                              </span>
+                            )}
                           </div>
                           <button
                             onClick={() => {
@@ -1524,16 +1539,25 @@ ${paramsDescription}`;
                             )}
                           </button>
                         </div>
-                        <div className="flex-1 overflow-hidden min-h-0">
-                          {/* Check if response is a file (Blob, image, pdf, etc.) */}
-                          {(response.data instanceof Blob || 
-                            response.contentType?.includes('image/') ||
-                            response.contentType?.includes('pdf') ||
-                            response.contentType?.includes('csv') ||
-                            response.contentType?.includes('spreadsheet') ||
-                            response.contentType?.includes('excel') ||
-                            response.contentType?.includes('octet-stream')) ? (
-                            <FileViewer data={response.data} contentType={response.contentType} />
+                        <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
+                          {response.streamed &&
+                          typeof response.data === "string" ? (
+                            <StreamTextViewer
+                              text={response.data}
+                              contentType={response.contentType}
+                              className="h-full min-h-0"
+                            />
+                          ) : response.data instanceof Blob ||
+                            response.contentType?.includes("image/") ||
+                            response.contentType?.includes("pdf") ||
+                            response.contentType?.includes("csv") ||
+                            response.contentType?.includes("spreadsheet") ||
+                            response.contentType?.includes("excel") ||
+                            response.contentType?.includes("octet-stream") ? (
+                            <FileViewer
+                              data={response.data}
+                              contentType={response.contentType}
+                            />
                           ) : (
                             <div className="p-4 overflow-y-auto custom-scrollbar h-full">
                               <JsonDisplay data={response.data} />

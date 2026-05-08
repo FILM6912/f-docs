@@ -929,3 +929,4 @@ if __name__ == "__main__":
     import uvicorn
     # ใช้ socket_app แทน app เพื่อรองรับ Socket.IO
     uvicorn.run(socket_app, host="0.0.0.0", port=8000)
+
