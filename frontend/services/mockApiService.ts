@@ -1,4 +1,5 @@
 import { Method, SimulationResponse } from '../types';
+import { toProxyUrl } from './devProxy';
 
 export type ExecuteRequestOptions = {
   /** Called with partial response while reading SSE, NDJSON, or chunked binary */
@@ -191,7 +192,7 @@ const executeRealRequest = async (
   options?: ExecuteRequestOptions
 ): Promise<SimulationResponse> => {
   const start = performance.now();
-  const url = `${baseUrl.replace(/\/$/, '')}${path}`;
+  const url = toProxyUrl(`${baseUrl.replace(/\/$/, '')}${path}`);
 
   try {
     const fetchOptions: RequestInit = {
