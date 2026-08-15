@@ -20,13 +20,15 @@ import {
   AlertCircle,
   MoreVertical,
   MessageSquare,
-  Plus
+  Plus,
+  ExternalLink
 } from "lucide-react";
 import { useEndpointPersistence } from '../hooks/useEndpointPersistence';
 import { JsonDisplay } from "./JsonDisplay";
 import { JsonEditor } from "./JsonEditor";
 import { MarkdownDisplay } from "./MarkdownDisplay";
 import { FileViewer } from "./FileViewer";
+import { StreamTextViewer } from "./StreamTextViewer";
 import { Endpoint, Method, SimulationResponse, SecurityScheme } from "../types";
 import { MethodBadge } from "./MethodBadge";
 import { executeRequest } from "../services/mockApiService";
@@ -39,6 +41,7 @@ interface EndpointCardProps {
   authCredentials: Record<string, string>;
   forcedOpen?: boolean;
   onAuthError?: () => void;
+  specUrl?: string;
 }
 
 import { copyToClipboard } from "../utils/clipboard";
@@ -53,6 +56,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   authCredentials,
   forcedOpen = false,
   onAuthError,
+  specUrl,
 }) => {
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
@@ -91,6 +95,8 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [requestStartMs, setRequestStartMs] = useState<number | null>(null);
   const [liveElapsedMs, setLiveElapsedMs] = useState(0);
+  /** กำลังอ่าน body แบบ stream (เลื่อนปิด overlay แล้วแต่ยังต้องให้ตัวจับเวลารันเรื่อยๆ) */
+  const [streamReceiving, setStreamReceiving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingParams, setIsGeneratingParams] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -164,12 +170,15 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   }, [isMultipart, endpoint.requestBodyProperties, setFormValues]);
 
   useEffect(() => {
-    if (!isLoading || requestStartMs === null) return;
-    const updateElapsed = () => setLiveElapsedMs(performance.now() - requestStartMs);
+    const timingActive =
+      requestStartMs !== null && (isLoading || streamReceiving);
+    if (!timingActive) return;
+    const updateElapsed = () =>
+      setLiveElapsedMs(performance.now() - (requestStartMs as number));
     updateElapsed();
-    const intervalId = window.setInterval(updateElapsed, 100);
+    const intervalId = window.setInterval(updateElapsed, 50);
     return () => window.clearInterval(intervalId);
-  }, [isLoading, requestStartMs]);
+  }, [isLoading, streamReceiving, requestStartMs]);
 
 
 
@@ -335,6 +344,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
 
     setRequestStartMs(performance.now());
     setLiveElapsedMs(0);
+    setStreamReceiving(false);
     setIsLoading(true);
     setResponse(null);
     setRightPanelTab("live"); // Switch to live view on execute
@@ -372,6 +382,13 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
         finalPath,
         finalBody,
         finalHeaders,
+        {
+          onStreamUpdate: (partial) => {
+            setResponse(partial);
+            setIsLoading(false);
+            setStreamReceiving(true);
+          },
+        },
       );
       setResponse(res);
 
@@ -379,6 +396,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
           onAuthError();
       }
     } finally {
+      setStreamReceiving(false);
       setIsLoading(false);
       setRequestStartMs(null);
     }
@@ -569,6 +587,20 @@ ${paramsDescription}`;
           </span>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">
+          {/* Open OpenAPI spec link */}
+          {specUrl && (
+            <a
+              href={specUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-xs font-mono text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all font-bold"
+              title="View OpenAPI JSON"
+            >
+              <span>openapi.json</span>
+              <ExternalLink size={12} />
+            </a>
+          )}
           {/* Copy URL Button */}
           <button
             onClick={handleCopyUrl}
@@ -1498,11 +1530,24 @@ ${paramsDescription}`;
                               ></span>
                             </div>
                             <span className="text-[10px] font-mono text-zinc-500">
-                              {formatLatency(response.latency)}
+                              {formatLatency(
+                                requestStartMs !== null &&
+                                  (isLoading || streamReceiving)
+                                  ? liveElapsedMs
+                                  : response.latency,
+                              )}
                             </span>
                             {response.contentType && (
                               <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
                                 {response.contentType.split(';')[0]}
+                              </span>
+                            )}
+                            {response.streamed && (
+                              <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded">
+                                stream
+                                {typeof response.streamBytesReceived === "number"
+                                  ? ` · ${response.streamBytesReceived} B`
+                                  : ""}
                               </span>
                             )}
                           </div>
@@ -1524,16 +1569,27 @@ ${paramsDescription}`;
                             )}
                           </button>
                         </div>
-                        <div className="flex-1 overflow-hidden min-h-0">
-                          {/* Check if response is a file (Blob, image, pdf, etc.) */}
-                          {(response.data instanceof Blob || 
-                            response.contentType?.includes('image/') ||
-                            response.contentType?.includes('pdf') ||
-                            response.contentType?.includes('csv') ||
-                            response.contentType?.includes('spreadsheet') ||
-                            response.contentType?.includes('excel') ||
-                            response.contentType?.includes('octet-stream')) ? (
-                            <FileViewer data={response.data} contentType={response.contentType} />
+                        <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
+                          {response.streamed &&
+                          typeof response.data === "string" ? (
+                            <StreamTextViewer
+                              text={response.data}
+                              contentType={response.contentType}
+                              className="h-full min-h-0"
+                            />
+                          ) : response.data instanceof Blob ||
+                            response.contentType?.includes("image/") ||
+                            response.contentType?.includes("pdf") ||
+                            response.contentType?.includes("csv") ||
+                            response.contentType?.includes("spreadsheet") ||
+                            response.contentType?.includes("excel") ||
+                            response.contentType?.includes("audio/") ||
+                            response.contentType?.includes("video/") ||
+                            response.contentType?.includes("octet-stream") ? (
+                            <FileViewer
+                              data={response.data}
+                              contentType={response.contentType}
+                            />
                           ) : (
                             <div className="p-4 overflow-y-auto custom-scrollbar h-full">
                               <JsonDisplay data={response.data} />

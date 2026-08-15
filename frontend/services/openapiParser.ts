@@ -1,5 +1,6 @@
 import { Endpoint, ApiTag, Method, ApiSpec, SecurityRequirement, ResponseDefinition, RequestBodyProperty } from '../types';
 import { DEFAULT_SPEC, BASE_URL } from '../constants';
+import { toProxyUrl } from './devProxy';
 
 export const parseOpenApi = async (url: string): Promise<ApiSpec> => {
   if (!url) {
@@ -8,7 +9,7 @@ export const parseOpenApi = async (url: string): Promise<ApiSpec> => {
   }
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(toProxyUrl(url));
 
     if (!response.ok) throw new Error(`Failed to fetch OpenAPI spec: ${response.status} ${response.statusText}`);
     const spec = await response.json();
