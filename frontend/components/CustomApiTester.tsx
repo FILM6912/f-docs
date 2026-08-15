@@ -4,8 +4,10 @@ import { MethodBadge } from './MethodBadge';
 import { JsonEditor } from './JsonEditor';
 import { JsonDisplay } from './JsonDisplay';
 import { FileViewer } from './FileViewer';
+import { StreamTextViewer } from './StreamTextViewer';
 import { Method } from '../types';
 import { copyToClipboard } from '../utils/clipboard';
+import { readResponseAsSimulation } from '../services/mockApiService';
 
 const methodThemeBase = {
     [Method.GET]: { bg: "bg-blue-50 dark:bg-blue-500/10", border: "border-blue-200 dark:border-blue-500/20", text: "text-blue-700 dark:text-blue-400", button: "bg-blue-600 hover:bg-blue-500 shadow-blue-900/20" },
@@ -72,6 +74,7 @@ export const CustomApiTester: React.FC<CustomApiTesterProps> = ({ specUrl }) => 
     const [isLoading, setIsLoading] = useState(false);
     const [requestStartMs, setRequestStartMs] = useState<number | null>(null);
     const [liveElapsedMs, setLiveElapsedMs] = useState(0);
+    const [streamReceiving, setStreamReceiving] = useState(false);
     const [response, setResponse] = useState<any>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -79,12 +82,15 @@ export const CustomApiTester: React.FC<CustomApiTesterProps> = ({ specUrl }) => 
     const theme = methodThemeBase[method] || methodThemeBase[Method.GET];
 
     useEffect(() => {
-        if (!isLoading || requestStartMs === null) return;
-        const updateElapsed = () => setLiveElapsedMs(performance.now() - requestStartMs);
+        const timingActive =
+            requestStartMs !== null && (isLoading || streamReceiving);
+        if (!timingActive) return;
+        const updateElapsed = () =>
+            setLiveElapsedMs(performance.now() - (requestStartMs as number));
         updateElapsed();
-        const intervalId = window.setInterval(updateElapsed, 100);
+        const intervalId = window.setInterval(updateElapsed, 50);
         return () => window.clearInterval(intervalId);
-    }, [isLoading, requestStartMs]);
+    }, [isLoading, streamReceiving, requestStartMs]);
 
     const handleCopy = (text: string) => {
         copyToClipboard(text);
@@ -124,6 +130,7 @@ export const CustomApiTester: React.FC<CustomApiTesterProps> = ({ specUrl }) => 
         setErrorMsg(null);
         setRequestStartMs(performance.now());
         setLiveElapsedMs(0);
+        setStreamReceiving(false);
         setIsLoading(true);
         setResponse(null);
         
@@ -153,27 +160,22 @@ export const CustomApiTester: React.FC<CustomApiTesterProps> = ({ specUrl }) => 
 
             const startTime = performance.now();
             const res = await fetch(fetchUrl, fetchOptions);
-            const duration = Math.round(performance.now() - startTime);
-            
-            const contentType = res.headers.get("content-type") || "";
-            let data: any;
-            
-            // Handle binary/file downloads similarly to EndpointCard
-            if (contentType.includes("application/json")) {
-                data = await res.json();
-            } else if (contentType.includes("text/") || contentType.includes("application/xml")) {
-                data = await res.text();
-            } else {
-                data = await res.blob();
-            }
-            
+
+            const headerRecord = Object.fromEntries(res.headers.entries());
+            const sim = await readResponseAsSimulation(res, startTime, (partial) => {
+                setResponse({
+                    ...partial,
+                    statusText: res.statusText,
+                    headers: headerRecord,
+                });
+                setIsLoading(false);
+                setStreamReceiving(true);
+            });
+
             setResponse({
-                status: res.status,
+                ...sim,
                 statusText: res.statusText,
-                headers: Object.fromEntries(res.headers.entries()),
-                contentType,
-                data,
-                latency: duration
+                headers: headerRecord,
             });
             
         } catch (e: any) {
@@ -186,6 +188,7 @@ export const CustomApiTester: React.FC<CustomApiTesterProps> = ({ specUrl }) => 
                  contentType: "text/plain"
              });
         } finally {
+            setStreamReceiving(false);
             setIsLoading(false);
             setRequestStartMs(null);
         }
@@ -480,10 +483,22 @@ export const CustomApiTester: React.FC<CustomApiTesterProps> = ({ specUrl }) => 
                                                     <span>{response.status}</span>
                                                     <span className={`w-1 h-1 rounded-full ${response.status >= 400 ? "bg-red-400" : "bg-emerald-400"}`}></span>
                                                 </div>
-                                                <span className="text-[10px] font-mono text-zinc-500">{formatLatency(response.latency)}</span>
+                                                <span className="text-[10px] font-mono text-zinc-500">{formatLatency(
+                                                    requestStartMs !== null && (isLoading || streamReceiving)
+                                                        ? liveElapsedMs
+                                                        : response.latency,
+                                                )}</span>
                                                 {response.contentType && (
                                                     <span className="text-[10px] font-mono text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">
                                                         {response.contentType.split(';')[0]}
+                                                    </span>
+                                                )}
+                                                {response.streamed && (
+                                                    <span className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded">
+                                                        stream
+                                                        {typeof response.streamBytesReceived === "number"
+                                                            ? ` · ${response.streamBytesReceived} B`
+                                                            : ""}
                                                     </span>
                                                 )}
                                             </div>
@@ -497,8 +512,33 @@ export const CustomApiTester: React.FC<CustomApiTesterProps> = ({ specUrl }) => 
                                                 {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                                             </button>
                                         </div>
-                                        <div className="flex-1 overflow-hidden min-h-0">
-                                            {(response.data instanceof Blob || response.contentType?.includes('image/') || response.contentType?.includes('pdf') || response.contentType?.includes('audio/') || response.contentType?.includes('video/') || response.contentType?.includes('octet-stream')) ? (
+                                        <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
+                                            {response.streamed && typeof response.data === "string" ? (
+                                                <>
+                                                    <StreamTextViewer
+                                                        text={response.data}
+                                                        contentType={response.contentType}
+                                                        className="flex-1 min-h-0"
+                                                    />
+                                                    {response.headers && Object.keys(response.headers).length > 0 && (
+                                                        <div className="shrink-0 border-t border-zinc-200 dark:border-zinc-800 p-4 max-h-[40%] overflow-y-auto custom-scrollbar bg-zinc-50/50 dark:bg-zinc-950/30">
+                                                            <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Response Headers</h4>
+                                                            <div className="border border-zinc-200 dark:border-zinc-800 rounded bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
+                                                                <table className="w-full text-left text-xs">
+                                                                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                                                                        {Object.entries(response.headers).map(([k, v]) => (
+                                                                            <tr key={k}>
+                                                                                <td className="py-2 px-3 align-top font-bold text-zinc-600 dark:text-zinc-400 w-1/3 break-all">{k}</td>
+                                                                                <td className="py-2 px-3 font-mono text-zinc-800 dark:text-zinc-300 break-all">{v as any}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (response.data instanceof Blob || response.contentType?.includes('image/') || response.contentType?.includes('pdf') || response.contentType?.includes('csv') || response.contentType?.includes('spreadsheet') || response.contentType?.includes('excel') || response.contentType?.includes('audio/') || response.contentType?.includes('video/') || response.contentType?.includes('octet-stream')) ? (
                                                 <FileViewer data={response.data} contentType={response.contentType} />
                                             ) : (
                                                 <div className="p-4 overflow-y-auto custom-scrollbar h-full">
