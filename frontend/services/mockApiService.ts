@@ -1,4 +1,5 @@
 import { Method, SimulationResponse } from '../types';
+import { toProxyUrl } from './devProxy';
 
 /**
  * Executes a request. 
@@ -29,7 +30,7 @@ const executeRealRequest = async (
   customHeaders: Record<string, string> = {}
 ): Promise<SimulationResponse> => {
   const start = performance.now();
-  const url = `${baseUrl.replace(/\/$/, '')}${path}`;
+  const url = toProxyUrl(`${baseUrl.replace(/\/$/, '')}${path}`);
   
   try {
     const options: RequestInit = {
@@ -75,8 +76,9 @@ const executeRealRequest = async (
           // Empty response body
           data = res.status === 204 || res.status === 205 ? null : { message: "Empty response" };
         }
-    } else if (contentType.includes("image/") || contentType.includes("application/pdf") || 
-               contentType.includes("application/octet-stream")) {
+    } else if (contentType.includes("image/") || contentType.includes("application/pdf") ||
+               contentType.includes("application/octet-stream") ||
+               contentType.includes("audio/") || contentType.includes("video/")) {
         // Binary data - convert to blob
         data = await res.blob();
     } else if (contentType.includes("text/csv") || contentType.includes("spreadsheet") || 

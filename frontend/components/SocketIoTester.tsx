@@ -163,7 +163,7 @@ const ListenerCard: React.FC<ListenerCardProps> = ({
 
   const handleCopy = () => {
     if (data?.lastEvent) {
-      copyToClipboard(JSON.stringify(data.lastEvent));
+      copyToClipboard(data.lastEvent);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

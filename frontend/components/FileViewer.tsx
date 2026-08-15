@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileImage, FileText, FileSpreadsheet, File as FileIcon, Download, ExternalLink, AlertCircle } from 'lucide-react';
+import { FileImage, FileText, FileSpreadsheet, File as FileIcon, Download, ExternalLink, AlertCircle, Music } from 'lucide-react';
 
 interface FileViewerProps {
   data: any;
@@ -8,7 +8,7 @@ interface FileViewerProps {
 
 export const FileViewer: React.FC<FileViewerProps> = ({ data, contentType }) => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const [fileType, setFileType] = useState<'image' | 'pdf' | 'csv' | 'excel' | 'text' | 'unknown'>('unknown');
+  const [fileType, setFileType] = useState<'image' | 'pdf' | 'csv' | 'excel' | 'text' | 'audio' | 'unknown'>('unknown');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,6 +20,8 @@ export const FileViewer: React.FC<FileViewerProps> = ({ data, contentType }) => 
       if (contentType) {
         if (contentType.includes('image/')) {
           detectedType = 'image';
+        } else if (contentType.includes('audio/')) {
+          detectedType = 'audio';
         } else if (contentType.includes('pdf')) {
           detectedType = 'pdf';
         } else if (contentType.includes('csv')) {
@@ -107,6 +109,7 @@ export const FileViewer: React.FC<FileViewerProps> = ({ data, contentType }) => 
       <div className="flex items-center justify-between px-4 py-2 bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
         <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           {fileType === 'image' && <FileImage size={14} />}
+          {fileType === 'audio' && <Music size={14} />}
           {fileType === 'pdf' && <FileText size={14} />}
           {fileType === 'csv' && <FileSpreadsheet size={14} />}
           {fileType === 'excel' && <FileSpreadsheet size={14} />}
@@ -114,6 +117,7 @@ export const FileViewer: React.FC<FileViewerProps> = ({ data, contentType }) => 
           {fileType === 'unknown' && <FileIcon size={14} />}
           <span className="font-medium">
             {fileType === 'image' && 'Image'}
+            {fileType === 'audio' && 'Audio'}
             {fileType === 'pdf' && 'PDF Document'}
             {fileType === 'csv' && 'CSV File'}
             {fileType === 'excel' && 'Excel Spreadsheet'}
@@ -152,6 +156,19 @@ export const FileViewer: React.FC<FileViewerProps> = ({ data, contentType }) => 
               alt="Response"
               className="max-w-full max-h-full object-contain rounded shadow-lg"
             />
+          </div>
+        )}
+
+        {fileType === 'audio' && (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-zinc-900 rounded-xl shadow-lg w-full max-w-md">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/20">
+                <Music size={28} className="text-blue-500" />
+              </div>
+              <audio controls src={fileUrl} className="w-full">
+                Your browser does not support the audio element.
+              </audio>
+            </div>
           </div>
         )}
 

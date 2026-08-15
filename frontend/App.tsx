@@ -4,6 +4,7 @@ import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
 import { EndpointCard } from './components/EndpointCard';
 import { parseOpenApi } from './services/openapiParser';
+import { saveLastSpecUrl, getLastSpecUrl } from './services/devProxy';
 import { MethodBadge } from './components/MethodBadge';
 import { WebSocketTester } from './components/WebSocketTester';
 import { SocketIoTester } from './components/SocketIoTester';
@@ -28,6 +29,7 @@ interface TagSectionProps {
     securitySchemes?: Record<string, SecurityScheme>;
     authCredentials: Record<string, string>;
     onAuthError?: () => void;
+    specUrl?: string;
 }
 
 const TagSection: React.FC<TagSectionProps> = ({ 
@@ -36,7 +38,8 @@ const TagSection: React.FC<TagSectionProps> = ({
     baseUrl,
     securitySchemes,
     authCredentials,
-    onAuthError
+    onAuthError,
+    specUrl
 }) => {
     const [isOpen, setIsOpen] = useState(true);
 
@@ -67,6 +70,7 @@ const TagSection: React.FC<TagSectionProps> = ({
                             securitySchemes={securitySchemes}
                             authCredentials={authCredentials}
                             onAuthError={onAuthError}
+                            specUrl={specUrl}
                         />
                     ))}
                 </div>
@@ -1176,8 +1180,8 @@ export default function App() {
   useEffect(() => {
     // Check for global config injected by Python backend (behaves like get_swagger_ui_html)
     const globalConfig = (window as any).NEXUS_CONFIG || {};
-    // Priority: Injected Config -> Production Default -> Dev Default
-    const urlToLoad = globalConfig.openApiUrl || (import.meta.env.PROD ? '/openapi.json' : defaultUrl);
+    // Priority: Injected Config -> Last used (localStorage) -> Production Default -> Dev Default
+    const urlToLoad = globalConfig.openApiUrl || getLastSpecUrl() || (import.meta.env.PROD ? '/openapi.json' : defaultUrl);
     loadSpec(urlToLoad); 
   }, []);
 
@@ -1194,6 +1198,7 @@ export default function App() {
       setTags(spec.tags);
       setSecuritySchemes(spec.securitySchemes || {});
       setCurrentSpecUrl(url);
+      saveLastSpecUrl(url);
       
       // Reset states
       setSelectedTag('All');
@@ -2438,6 +2443,7 @@ export default function App() {
                                                         securitySchemes={securitySchemes}
                                                         authCredentials={authCredentials}
                                                         onAuthError={() => setIsAuthModalOpen(true)}
+                                                        specUrl={currentSpecUrl || undefined}
                                                     />
                                                 );
                                             })}
@@ -2454,7 +2460,7 @@ export default function App() {
                                     ) : (
                                         <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full flex flex-col overflow-hidden min-h-0">
                                             {activeEndpointId === 'custom-test' ? (
-                                                <CustomApiTester />
+                                                <CustomApiTester specUrl={currentSpecUrl || undefined} />
                                             ) : activeEndpoint ? (
                                                 <EndpointCard 
                                                     key={activeEndpoint.id} 
@@ -2464,6 +2470,7 @@ export default function App() {
                                                     authCredentials={authCredentials}
                                                     forcedOpen={true}
                                                     onAuthError={() => setIsAuthModalOpen(true)}
+                                                    specUrl={currentSpecUrl || undefined}
                                                 />
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center py-32 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900/20 border-dashed transition-colors h-full">

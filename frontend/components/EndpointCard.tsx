@@ -20,7 +20,8 @@ import {
   AlertCircle,
   MoreVertical,
   MessageSquare,
-  Plus
+  Plus,
+  ExternalLink
 } from "lucide-react";
 import { useEndpointPersistence } from '../hooks/useEndpointPersistence';
 import { JsonDisplay } from "./JsonDisplay";
@@ -39,6 +40,7 @@ interface EndpointCardProps {
   authCredentials: Record<string, string>;
   forcedOpen?: boolean;
   onAuthError?: () => void;
+  specUrl?: string;
 }
 
 import { copyToClipboard } from "../utils/clipboard";
@@ -53,6 +55,7 @@ export const EndpointCard: React.FC<EndpointCardProps> = ({
   authCredentials,
   forcedOpen = false,
   onAuthError,
+  specUrl,
 }) => {
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = forcedOpen || isOpenState;
@@ -569,6 +572,20 @@ ${paramsDescription}`;
           </span>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">
+          {/* Open OpenAPI spec link */}
+          {specUrl && (
+            <a
+              href={specUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-xs font-mono text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/40 transition-all font-bold"
+              title="View OpenAPI JSON"
+            >
+              <span>openapi.json</span>
+              <ExternalLink size={12} />
+            </a>
+          )}
           {/* Copy URL Button */}
           <button
             onClick={handleCopyUrl}
@@ -1532,6 +1549,8 @@ ${paramsDescription}`;
                             response.contentType?.includes('csv') ||
                             response.contentType?.includes('spreadsheet') ||
                             response.contentType?.includes('excel') ||
+                            response.contentType?.includes('audio/') ||
+                            response.contentType?.includes('video/') ||
                             response.contentType?.includes('octet-stream')) ? (
                             <FileViewer data={response.data} contentType={response.contentType} />
                           ) : (
