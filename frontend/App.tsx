@@ -1180,8 +1180,13 @@ export default function App() {
   useEffect(() => {
     // Check for global config injected by Python backend (behaves like get_swagger_ui_html)
     const globalConfig = (window as any).NEXUS_CONFIG || {};
+    // Static hosting (e.g. GitHub Pages) has no backend to serve /openapi.json
+    const isStaticHosting = window.location.hostname.endsWith('.github.io');
+    const lastUrl = getLastSpecUrl();
+    // Skip stale same-origin URLs (like "/openapi.json") that cannot exist on static hosting
+    const usableLastUrl = isStaticHosting && lastUrl?.startsWith('/') ? null : lastUrl;
     // Priority: Injected Config -> Last used (localStorage) -> Production Default -> Dev Default
-    const urlToLoad = globalConfig.openApiUrl || getLastSpecUrl() || (import.meta.env.PROD ? '/openapi.json' : defaultUrl);
+    const urlToLoad = globalConfig.openApiUrl || usableLastUrl || (import.meta.env.PROD && !isStaticHosting ? '/openapi.json' : defaultUrl);
     loadSpec(urlToLoad); 
   }, []);
 
