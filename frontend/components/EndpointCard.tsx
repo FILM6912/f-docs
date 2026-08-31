@@ -1201,7 +1201,7 @@ ${paramsDescription}`;
                       </div>
                     ) : (
                       // JSON Editor UI
-                      <div className={`w-full flex-1 border border-zinc-200 dark:border-zinc-800 rounded overflow-hidden min-h-[160px] max-h-[500px] transition-colors ${forcedOpen ? "h-full" : ""}`}>
+                      <div className={`w-full flex-1 border border-zinc-200 dark:border-zinc-800 rounded overflow-hidden min-h-[160px] max-h-[500px] transition-colors ${forcedOpen ? "h-full min-h-0" : ""}`}>
                           {bodyMode === 'json' ? (
                             <JsonEditor
                                 value={bodyValue}

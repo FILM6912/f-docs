@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Editor from 'react-simple-code-editor';
 import { highlightJson } from './JsonDisplay';
+import { jsonEditorShellClass } from '../utils/layoutClasses';
 
 interface JsonEditorProps {
   value: string;
@@ -16,7 +17,7 @@ export const JsonEditor: React.FC<JsonEditorProps> = ({
   placeholder
 }) => {
   return (
-    <div className={`relative w-full h-full flex flex-col font-mono text-xs bg-zinc-50 dark:bg-zinc-900 overflow-hidden ${className}`}>
+    <div className={`${jsonEditorShellClass} bg-zinc-50 dark:bg-zinc-900 ${className}`}>
       <Editor
         value={value}
         onValueChange={onChange}
