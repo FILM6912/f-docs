@@ -1,12 +1,12 @@
 export const API_TITLE = "Test API - Full CRUD Operations";
-export const API_VERSION = "0.2.3";
+export const API_VERSION = "0.2.4";
 export const BASE_URL = "https://api.cosmos-store.io/v1";
 
 export const DEFAULT_SPEC = {
   "openapi": "3.1.0",
   "info": {
     "title": "Test API - Full CRUD Operations",
-    "version": "0.2.3"
+    "version": "0.2.4"
   },
   "paths": {
     "/": {

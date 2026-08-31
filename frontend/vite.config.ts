@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import path from 'path';
 import http from 'http';
 import fs from 'fs';
@@ -110,6 +111,10 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      test: {
+        environment: 'node',
+        include: ['**/*.test.ts'],
       }
     };
 });
