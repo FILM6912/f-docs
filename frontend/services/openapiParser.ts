@@ -1,6 +1,7 @@
 import { Endpoint, ApiTag, Method, ApiSpec, SecurityRequirement, ResponseDefinition, RequestBodyProperty } from '../types';
 import { DEFAULT_SPEC, BASE_URL } from '../constants';
 import { toProxyUrl } from './devProxy';
+import { pickContentMedia, resolveMediaExample, resolveResponseExample } from './exampleExtractor';
 
 export const parseOpenApi = async (url: string): Promise<ApiSpec> => {
   if (!url) {
@@ -24,7 +25,7 @@ export const parseOpenApi = async (url: string): Promise<ApiSpec> => {
   }
 };
 
-const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
+export const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
     const title = spec.info?.title || "Unknown API";
     const version = spec.info?.version || "1.0.0";
     
@@ -137,7 +138,7 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                  if (contentType) {
                      requestBodyType = contentType;
                      const schema = content[contentType].schema;
-                     const resolvedSchema = schema.$ref ? resolveRef(schema.$ref, spec) : schema;
+                     const resolvedSchema = schema?.$ref ? resolveRef(schema.$ref, spec) : schema;
                      
                      // If multipart or form-urlencoded, extract properties for the form builder
                      if (contentType.includes('multipart') || contentType.includes('form-urlencoded')) {
@@ -161,8 +162,14 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                          }
                      }
                      
-                     // Generate JSON example
-                     requestBodySchema = JSON.stringify(generateExampleFromSchema(schema, spec), null, 2);
+                     const explicitExample = resolveMediaExample(content[contentType]);
+                     requestBodySchema = JSON.stringify(
+                       explicitExample !== undefined
+                         ? explicitExample
+                         : generateExampleFromSchema(schema, spec),
+                       null,
+                       2
+                     );
                  }
              }
              // Strategy 2: Swagger 2.0 formData/body
@@ -211,15 +218,20 @@ const parseSpec = (spec: any, sourceUrl: string): ApiSpec => {
                Object.entries(op.responses).forEach(([code, res]: [string, any]) => {
                  const resDef = res.$ref ? resolveRef(res.$ref, spec) : res;
                  let schemaExample = undefined;
-                 
-                 // Strategy 1: OpenAPI 3.0 content.application/json.schema
-                 if (resDef.content?.['application/json']?.schema) {
-                    const schema = resDef.content['application/json'].schema;
-                    schemaExample = JSON.stringify(generateExampleFromSchema(schema, spec), null, 2);
-                 }
-                 // Strategy 2: Swagger 2.0 schema property directly on response
-                 else if (resDef.schema) {
-                    schemaExample = JSON.stringify(generateExampleFromSchema(resDef.schema, spec), null, 2);
+                 const explicitExample = resolveResponseExample(resDef);
+
+                 if (explicitExample !== undefined) {
+                    schemaExample = JSON.stringify(explicitExample, null, 2);
+                 } else {
+                    const media = pickContentMedia(resDef.content);
+                    // Strategy 1: OpenAPI 3.0 content.*.schema
+                    if (media?.schema) {
+                       schemaExample = JSON.stringify(generateExampleFromSchema(media.schema, spec), null, 2);
+                    }
+                    // Strategy 2: Swagger 2.0 schema property directly on response
+                    else if (resDef.schema) {
+                       schemaExample = JSON.stringify(generateExampleFromSchema(resDef.schema, spec), null, 2);
+                    }
                  }
 
                  responses[parseInt(code) || 200] = {
