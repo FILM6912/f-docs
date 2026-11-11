@@ -887,15 +887,15 @@ export default function App() {
     const container = apiListContainerRef.current;
     
     if (!id) {
-        setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { ...prev, opacity: 0 });
+        setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { opacity: 0 });
         return;
     }
 
     const el = apiEndpointRefs.current[id];
     
-    if (container && el) {
+    if (container && el && container.contains(el)) {
         if (el.offsetParent === null) {
-             setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { ...prev, opacity: 0 });
+             setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { opacity: 0 });
              return;
         }
         const containerRect = container.getBoundingClientRect();
@@ -927,7 +927,7 @@ export default function App() {
         };
         setApiIndicatorStyle(prev => Object.keys(next).every(key => prev[key] === next[key]) ? prev : next);
     } else {
-        setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { ...prev, opacity: 0 });
+        setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { opacity: 0 });
     }
   }, [activeEndpointId]);
 
@@ -1039,9 +1039,6 @@ export default function App() {
   // Copied state for sidebar endpoints
   const [copiedEndpoints, setCopiedEndpoints] = useState<Record<string, boolean>>({});
 
-  useLayoutEffect(() => {
-     updateApiIndicator();
-  }, [activeModule, activeEndpointId, expandedSidebarTags, viewMode, sidebarWidth, endpoints, searchTerm, updateApiIndicator]);
 
   // Stable refs avoid layout reads and nested state updates during every commit.
   const setEndpointRef = useCallback((el: HTMLButtonElement | null) => {
@@ -1284,6 +1281,11 @@ export default function App() {
     }
     return grouped;
   }, [filteredEndpoints]);
+
+  // Measure only after the deferred results have committed to the DOM.
+  useLayoutEffect(() => {
+    updateApiIndicator();
+  }, [activeModule, activeEndpointId, expandedSidebarTags, viewMode, sidebarWidth, filteredEndpoints, updateApiIndicator]);
 
   // Check if any credentials are set
   const isAuthorized = Object.values(authCredentials).some((v: string) => v.length > 0);
@@ -1695,6 +1697,9 @@ export default function App() {
                 </>
             ) : (
                 <div className="px-1 space-y-4 pt-2">
+                    {filteredEndpoints.length === 0 && (
+                        <p role="status" className="px-2 py-6 text-center text-xs text-zinc-500">No matching endpoints</p>
+                    )}
                     {tags.map(tag => {
                         const tagEndpoints = (endpointsByTag.get(tag.name) || []);
                         if (tagEndpoints.length === 0) return null;
