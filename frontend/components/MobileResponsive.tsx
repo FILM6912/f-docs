@@ -8,7 +8,7 @@ interface MobileResponsiveProps {
   activeModule: string;
   setActiveModule: (module: string) => void;
   theme: string;
-  toggleTheme: () => void;
+  toggleTheme: (event?: React.MouseEvent<HTMLButtonElement>) => void;
   viewMode: 'list' | 'focused';
   setViewMode: (mode: 'list' | 'focused') => void;
   searchTerm: string;

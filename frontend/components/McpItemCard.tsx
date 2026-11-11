@@ -161,7 +161,7 @@ export const McpItemCard: React.FC<McpItemCardProps> = ({ type, data, onRunTool,
                                      
                                      {/* Popup Modal */}
                                      {showDescModal && (
-                                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
+                                         <div className="popup-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={(e) => {e.stopPropagation(); setShowDescModal(false);}}>
                                              <div 
                                                 className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 w-full max-w-2xl max-h-[80vh] rounded-xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200"
                                                 onClick={e => e.stopPropagation()}

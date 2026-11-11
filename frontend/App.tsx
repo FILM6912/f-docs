@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect, useMemo, useDeferredValue } from 'react';
 import { Layers, Search, Box, Terminal, Zap, Globe, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Lock, Unlock, X, ExternalLink, Loader2, Check, LayoutList, Sidebar, Settings, Activity, Radio, Database, Wrench, MessageSquare, Sun, Moon, Plus, Trash2, Send, Copy, Menu, Sparkles } from 'lucide-react';
+import { AiModelSelect } from './components/AiModelSelect';
 import { useTheme } from './components/ThemeContext';
 import { Endpoint, ApiTag, SecurityScheme, Method } from './types';
 import { EndpointCard } from './components/EndpointCard';
@@ -205,7 +206,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, baseUrl, securit
     const schemeKeys = Object.keys(securitySchemes);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="popup-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
                 <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
                     <h2 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2">
@@ -492,6 +493,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
     const [inputValue, setInputValue] = useState(currentUrl);
     const [activeTab, setActiveTab] = useState<'api' | 'ai'>('api');
     const { settings, updateSettings, resetSettings } = useAiSettings();
+    const settingsContentRef = useRef<HTMLFormElement>(null);
+    const providerContentRef = useRef<HTMLDivElement>(null);
+    const previousSelection = useRef({ isOpen, tab: activeTab, provider: settings.provider });
+
+    useLayoutEffect(() => {
+        const previous = previousSelection.current;
+        previousSelection.current = { isOpen, tab: activeTab, provider: settings.provider };
+        if (!isOpen || !previous.isOpen || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const tabChanged = previous.tab !== activeTab;
+        const providerChanged = previous.provider !== settings.provider;
+        if (!tabChanged && !providerChanged) return;
+        const providers = ['gemini', 'openai', 'anthropic'];
+        const direction = tabChanged ? (activeTab === 'ai' ? 1 : -1)
+            : Math.sign(providers.indexOf(settings.provider) - providers.indexOf(previous.provider));
+        const panel = tabChanged ? settingsContentRef.current : providerContentRef.current;
+        // Animate content only; keep the modal and configuration backgrounds fixed.
+        const animations = Array.from(panel?.children || []).map(child => child.animate([
+            { transform: `translateX(${direction * 12}px)` },
+            { transform: 'translateX(0)' },
+        ], { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }));
+        return () => animations.forEach(animation => animation.cancel());
+    }, [isOpen, activeTab, settings.provider]);
 
     useEffect(() => {
         setInputValue(currentUrl);
@@ -517,7 +540,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="popup-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-2xl overflow-hidden">
                  <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
                     <h2 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2">
@@ -555,7 +578,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                 </div>
 
                 {activeTab === 'api' && (
-                    <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <form ref={settingsContentRef} onSubmit={handleSubmit} className="p-6 space-y-4">
                          <div>
                             <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">OpenAPI Specification URL</label>
                             <div className="relative">
@@ -592,7 +615,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                 )}
 
                 {activeTab === 'ai' && (
-                    <form onSubmit={handleAiSubmit} className="p-6 space-y-6">
+                    <form ref={settingsContentRef} onSubmit={handleAiSubmit} className="p-6 space-y-6">
                         {/* Provider Selection */}
                         <div>
                             <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2">AI Provider</label>
@@ -619,7 +642,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
 
                         {/* Gemini Settings */}
                         {settings.provider === 'gemini' && (
-                            <div className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                            <div ref={providerContentRef} className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                                 <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
                                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                                     Gemini Configuration
@@ -634,22 +657,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                                         className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Model</label>
-                                    <input
-                                        type="text"
-                                        placeholder="gemini-2.5-flash"
-                                        value={settings.geminiModel}
-                                        onChange={(e) => updateSettings({ geminiModel: e.target.value })}
-                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
-                                    />
-                                </div>
+                                <AiModelSelect provider="gemini" apiKey={settings.geminiApiKey} value={settings.geminiModel} onChange={model => updateSettings({ geminiModel: model })} />
                             </div>
                         )}
 
                         {/* OpenAI Settings */}
                         {settings.provider === 'openai' && (
-                            <div className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                            <div ref={providerContentRef} className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                                 <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
                                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                                     OpenAI Configuration
@@ -664,16 +678,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                                         className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Model</label>
-                                    <input
-                                        type="text"
-                                        placeholder="gpt-4o-mini"
-                                        value={settings.openaiModel}
-                                        onChange={(e) => updateSettings({ openaiModel: e.target.value })}
-                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
-                                    />
-                                </div>
+                                <AiModelSelect provider="openai" apiKey={settings.openaiApiKey} baseUrl={settings.openaiBaseUrl} value={settings.openaiModel} onChange={model => updateSettings({ openaiModel: model })} />
                                 <div>
                                     <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Base URL</label>
                                     <input
@@ -692,7 +697,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
 
                         {/* Anthropic Settings */}
                         {settings.provider === 'anthropic' && (
-                            <div className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                            <div ref={providerContentRef} className="space-y-4 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                                 <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
                                     <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
                                     Anthropic Configuration
@@ -707,16 +712,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentU
                                         className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Model</label>
-                                    <input
-                                        type="text"
-                                        placeholder="claude-3-5-sonnet-latest"
-                                        value={settings.anthropicModel}
-                                        onChange={(e) => updateSettings({ anthropicModel: e.target.value })}
-                                        className="w-full h-10 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-md px-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-zinc-400"
-                                    />
-                                </div>
+                                <AiModelSelect provider="anthropic" apiKey={settings.anthropicApiKey} baseUrl={settings.anthropicBaseUrl} value={settings.anthropicModel} onChange={model => updateSettings({ anthropicModel: model })} />
                                 <div>
                                     <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">Base URL</label>
                                     <input
@@ -799,13 +795,14 @@ export default function App() {
             const containerRect = container.getBoundingClientRect();
             const elRect = el.getBoundingClientRect();
             
-            setIndicatorStyle({
+            const next = {
                 top: elRect.top - containerRect.top,
                 left: elRect.left - containerRect.left,
                 width: elRect.width,
                 height: elRect.height,
                 opacity: 1,
-            });
+            };
+            setIndicatorStyle(prev => Object.keys(next).every(key => prev[key] === next[key]) ? prev : next);
         }
   }, [activeModule]);
 
@@ -813,17 +810,11 @@ export default function App() {
     // Immediate
     updatePosition();
     
-    // Delayed fallbacks
-    const t1 = setTimeout(() => updatePosition(), 100);
-    const t2 = setTimeout(() => updatePosition(), 300);
-
     // Resize listener
     const handleResize = () => updatePosition();
     window.addEventListener('resize', handleResize);
 
     return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
         window.removeEventListener('resize', handleResize);
     };
   }, [activeModule, updatePosition]);
@@ -831,23 +822,19 @@ export default function App() {
   // Stable Ref Callbacks
   const setApiRef = useCallback((el: HTMLButtonElement | null) => {
       navRefs.current['api'] = el;
-      if (el && activeModule === 'api') updatePosition('api');
-  }, [activeModule, updatePosition]);
+  }, []);
 
   const setWsRef = useCallback((el: HTMLButtonElement | null) => {
       navRefs.current['ws'] = el;
-      if (el && activeModule === 'ws') updatePosition('ws');
-  }, [activeModule, updatePosition]);
+  }, []);
 
   const setIoRef = useCallback((el: HTMLButtonElement | null) => {
       navRefs.current['io'] = el;
-      if (el && activeModule === 'io') updatePosition('io');
-  }, [activeModule, updatePosition]);
+  }, []);
 
   const setMcpRef = useCallback((el: HTMLButtonElement | null) => {
       navRefs.current['mcp'] = el;
-      if (el && activeModule === 'mcp') updatePosition('mcp');
-  }, [activeModule, updatePosition]);
+  }, []);
 
   const getIndicatorColor = () => {
       switch(activeModule) {
@@ -900,7 +887,7 @@ export default function App() {
     const container = apiListContainerRef.current;
     
     if (!id) {
-        setApiIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+        setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { ...prev, opacity: 0 });
         return;
     }
 
@@ -908,7 +895,7 @@ export default function App() {
     
     if (container && el) {
         if (el.offsetParent === null) {
-             setApiIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+             setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { ...prev, opacity: 0 });
              return;
         }
         const containerRect = container.getBoundingClientRect();
@@ -931,15 +918,16 @@ export default function App() {
              current = current.parentElement;
         }
 
-        setApiIndicatorStyle({
+        const next = {
             top: elRect.top - containerRect.top + container.scrollTop,
             left: targetLeft - containerRect.left,
             width: targetWidth,
             height: elRect.height,
             opacity: 1,
-        });
+        };
+        setApiIndicatorStyle(prev => Object.keys(next).every(key => prev[key] === next[key]) ? prev : next);
     } else {
-        setApiIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+        setApiIndicatorStyle(prev => prev.opacity === 0 ? prev : { ...prev, opacity: 0 });
     }
   }, [activeEndpointId]);
 
@@ -952,29 +940,22 @@ export default function App() {
     setIsResizing(false);
   }, []);
 
+  const resizeFrame = useRef<number | null>(null);
+  const pendingSidebarWidth = useRef(sidebarWidth);
+
   const resize = useCallback(
     (mouseMoveEvent: MouseEvent) => {
       if (!isResizing) return;
       
-      // Use requestAnimationFrame for smooth updates
-      requestAnimationFrame(() => {
-        const newWidth = mouseMoveEvent.clientX - 64;
-        if (newWidth >= 200 && newWidth <= 600) {
-          setSidebarWidth(newWidth);
-        }
+      pendingSidebarWidth.current = Math.max(200, Math.min(600, mouseMoveEvent.clientX - 64));
+      if (resizeFrame.current !== null) return;
+      resizeFrame.current = requestAnimationFrame(() => {
+        resizeFrame.current = null;
+        setSidebarWidth(pendingSidebarWidth.current);
       });
     },
     [isResizing]
   );
-
-  // Update API indicator when sidebar width changes (debounced)
-  useEffect(() => {
-    if (isResizing) return;
-    const timer = setTimeout(() => {
-      updateApiIndicator();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [sidebarWidth, isResizing, updateApiIndicator]);
 
   useEffect(() => {
     if (isResizing) {
@@ -991,6 +972,10 @@ export default function App() {
       document.body.style.userSelect = 'none';
       
       return () => {
+        if (resizeFrame.current !== null) {
+          cancelAnimationFrame(resizeFrame.current);
+          resizeFrame.current = null;
+        }
         window.removeEventListener("mousemove", handleMouseMove);
         window.removeEventListener("mouseup", handleMouseUp);
         document.body.style.cursor = '';
@@ -1013,6 +998,41 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'list' | 'focused'>('focused');
   const { theme, toggleTheme } = useTheme();
 
+  const pageContentRef = useRef<HTMLElement>(null);
+  const previousPage = useRef({ module: activeModule, endpoint: activeEndpointId, viewMode });
+
+  useLayoutEffect(() => {
+    const previous = previousPage.current;
+    previousPage.current = { module: activeModule, endpoint: activeEndpointId, viewMode };
+    const moduleChanged = previous.module !== activeModule;
+    const endpointChanged = activeModule === 'api' && viewMode === 'focused'
+      && previous.endpoint !== activeEndpointId;
+    if ((!moduleChanged && !endpointChanged)
+      || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const moduleOrder = ['api', 'ws', 'io', 'mcp'];
+    const endpointOrder = ['custom-test', ...endpoints.map(endpoint => endpoint.id)];
+    const direction = moduleChanged
+      ? Math.sign(moduleOrder.indexOf(activeModule) - moduleOrder.indexOf(previous.module))
+      : Math.sign(endpointOrder.indexOf(activeEndpointId ?? '') - endpointOrder.indexOf(previous.endpoint ?? ''));
+    const panels = [pageContentRef.current];
+    if (moduleChanged) panels.push(sidebarRef.current);
+    // Keep each panel's background and border stationary so movement never
+    // exposes the page underneath. Resize handles and overlays stay fixed too.
+    const content = panels.flatMap(panel => panel ? Array.from(panel.children).filter(
+      (child): child is HTMLElement => child instanceof HTMLElement
+        && !child.classList.contains('absolute') && !child.classList.contains('fixed'),
+    ) : []);
+    const animations = content.map(element => element.animate([
+      { transform: `translateY(${(direction || 1) * 24}px)` },
+      { transform: 'translateY(0)' },
+    ], {
+      duration: 380,
+      easing: 'cubic-bezier(0.25, 0.8, 0.25, 1)',
+    }));
+    return () => animations.forEach(animation => animation.cancel());
+  }, [activeModule, activeEndpointId, viewMode, endpoints]);
+
   // Mobile Sidebar State
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -1021,29 +1041,12 @@ export default function App() {
 
   useLayoutEffect(() => {
      updateApiIndicator();
-     const t1 = setTimeout(() => updateApiIndicator(), 150);
-     const t2 = setTimeout(() => updateApiIndicator(), 300);
-     return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [activeEndpointId, expandedSidebarTags, viewMode, sidebarWidth, updateApiIndicator]);
+  }, [activeModule, activeEndpointId, expandedSidebarTags, viewMode, sidebarWidth, endpoints, searchTerm, updateApiIndicator]);
 
-  // Track active ID in ref for stable callbacks
-  const activeEndpointIdRef = useRef(activeEndpointId);
-  useLayoutEffect(() => {
-      activeEndpointIdRef.current = activeEndpointId;
-  }, [activeEndpointId]);
-
+  // Stable refs avoid layout reads and nested state updates during every commit.
   const setEndpointRef = useCallback((el: HTMLButtonElement | null) => {
-      if (el) {
-          const id = el.dataset.id;
-          if (id) {
-              apiEndpointRefs.current[id] = el;
-              // Realtime jump if this is the active element
-              if (id === activeEndpointIdRef.current) {
-                   updateApiIndicator(id);
-              }
-          }
-      }
-  }, [updateApiIndicator]);
+      if (el?.dataset.id) apiEndpointRefs.current[el.dataset.id] = el;
+  }, []);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1242,8 +1245,9 @@ export default function App() {
   };
 
   // Filter logic
-  const filteredEndpoints = endpoints.filter(ep => {
-    if (!searchTerm.trim()) {
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const filteredEndpoints = useMemo(() => endpoints.filter(ep => {
+    if (!deferredSearchTerm.trim()) {
       // No search term, show based on tag only
       if (viewMode === 'list') {
         const matchesTag = selectedTag === 'All' || ep.tags.includes(selectedTag);
@@ -1253,7 +1257,7 @@ export default function App() {
     }
 
     // Search in multiple fields for better matching
-    const search = searchTerm.toLowerCase();
+    const search = deferredSearchTerm.toLowerCase();
     const matchesSearch = 
       ep.path.toLowerCase().includes(search) || 
       ep.summary.toLowerCase().includes(search) ||
@@ -1267,7 +1271,19 @@ export default function App() {
     }
     
     return matchesSearch;
-  });
+  }), [endpoints, deferredSearchTerm, selectedTag, viewMode]);
+
+  const endpointsByTag = useMemo(() => {
+    const grouped = new Map<string, Endpoint[]>();
+    for (const endpoint of filteredEndpoints) {
+      for (const tag of endpoint.tags) {
+        const group = grouped.get(tag);
+        if (group) group.push(endpoint);
+        else grouped.set(tag, [endpoint]);
+      }
+    }
+    return grouped;
+  }, [filteredEndpoints]);
 
   // Check if any credentials are set
   const isAuthorized = Object.values(authCredentials).some((v: string) => v.length > 0);
@@ -1397,7 +1413,7 @@ export default function App() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-3">
                   {tags.map(tag => {
-                    const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
+                    const tagEndpoints = (endpointsByTag.get(tag.name) || []);
                     if (tagEndpoints.length === 0) return null;
                     const isExpanded = expandedSidebarTags[tag.name] !== false;
                     return (
@@ -1482,10 +1498,11 @@ export default function App() {
           <div className="flex flex-col gap-4 w-full px-2 relative" ref={navContainerRef}>
              {/* Shared Active Background */}
              <div 
-                className={`absolute rounded-xl !transition-all !duration-300 !ease-out ${getIndicatorColor()}`}
+                className={`absolute rounded-xl transition-[transform,opacity,background-color] duration-300 ease-out ${getIndicatorColor()}`}
                 style={{
-                    top: indicatorStyle.top,
-                    left: indicatorStyle.left,
+                    top: 0,
+                    left: 0,
+                    transform: `translate3d(${indicatorStyle.left || 0}px, ${indicatorStyle.top || 0}px, 0)`,
                     width: indicatorStyle.width,
                     height: indicatorStyle.height,
                     opacity: indicatorStyle.opacity,
@@ -1495,9 +1512,10 @@ export default function App() {
              
              {/* Shared Active Bar (Left Indicator) */}
              <div 
-                className={`absolute w-1 h-8 rounded-r-full !transition-all !duration-300 !ease-out ${getIndicatorBarColor()}`}
+                className={`absolute w-1 h-8 rounded-r-full transition-[transform,opacity,background-color] duration-300 ease-out ${getIndicatorBarColor()}`}
                 style={{
-                    top: (indicatorStyle.top as number || 0) + ((indicatorStyle.height as number || 0) - 32) / 2,
+                    top: 0,
+                    transform: `translateY(${(indicatorStyle.top as number || 0) + ((indicatorStyle.height as number || 0) - 32) / 2}px)`,
                     left: 0, 
                     opacity: indicatorStyle.opacity,
                     zIndex: 20
@@ -1554,8 +1572,7 @@ export default function App() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Theme button clicked');
-                    toggleTheme();
+                    toggleTheme(e);
                   }}
                   className="p-3 rounded-xl flex justify-center transition-all text-zinc-500 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-zinc-200 dark:hover:bg-zinc-900"
                   title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -1640,11 +1657,12 @@ export default function App() {
             <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar min-h-0 relative" ref={apiListContainerRef}>
               {/* Sliding Active Indicator for API List */}
               <div 
-                  className="absolute bg-blue-50 dark:bg-zinc-800 border-l-2 border-blue-500 !transition-all !duration-300 !ease-out pointer-events-none z-0"
+                  className="absolute bg-blue-50 dark:bg-zinc-800 border-l-2 border-blue-500 transition-[transform,opacity,background-color] duration-300 ease-out pointer-events-none z-0"
                   style={{
-                      top: apiIndicatorStyle.top,
+                      top: 0,
+                      transform: `translate3d(${apiIndicatorStyle.left || 0}px, ${apiIndicatorStyle.top || 0}px, 0)`,
                       height: apiIndicatorStyle.height,
-                      left: apiIndicatorStyle.left,
+                      left: 0,
                       width: apiIndicatorStyle.width,
                       opacity: apiIndicatorStyle.opacity
                   }}
@@ -1678,7 +1696,7 @@ export default function App() {
             ) : (
                 <div className="px-1 space-y-4 pt-2">
                     {tags.map(tag => {
-                        const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
+                        const tagEndpoints = (endpointsByTag.get(tag.name) || []);
                         if (tagEndpoints.length === 0) return null;
                         
                         const isExpanded = expandedSidebarTags[tag.name] !== false; // Default true
@@ -1960,7 +1978,7 @@ export default function App() {
             <div className="p-3 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                {/* URL Edit Modal */}
                  {isWsUrlModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="popup-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                              <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
                                 <h2 className="text-lg font-bold text-zinc-800 dark:text-white">Connection URL</h2>
@@ -2205,7 +2223,7 @@ export default function App() {
             <div className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
                {/* URL Edit Modal */}
                  {isIoUrlModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="popup-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                              <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
                                 <h2 className="text-lg font-bold text-zinc-800 dark:text-white">Connection URL</h2>
@@ -2267,7 +2285,7 @@ export default function App() {
 
                {/* Emit Modal */}
                  {isEmitModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="popup-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                              <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
                                 <h2 className="text-lg font-bold text-zinc-800 dark:text-white flex items-center gap-2"><Send size={18}/> Emit Event</h2>
@@ -2383,7 +2401,7 @@ export default function App() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto h-screen bg-zinc-50 dark:bg-zinc-950 relative w-full flex flex-col transition-colors">
+      <main ref={pageContentRef} className="flex-1 overflow-y-auto h-screen bg-zinc-50 dark:bg-zinc-950 relative w-full flex flex-col transition-colors">
         
         {activeModule === 'api' ? (
             <div key="api" className="w-full h-full flex flex-col">
@@ -2438,7 +2456,7 @@ export default function App() {
                                     {viewMode === 'list' ? (
                                         <div className="space-y-6">
                                             {tags.filter(tag => selectedTag === 'All' || selectedTag === tag.name).map(tag => {
-                                                const tagEndpoints = filteredEndpoints.filter(ep => ep.tags.includes(tag.name));
+                                                const tagEndpoints = (endpointsByTag.get(tag.name) || []);
                                                 return (
                                                     <TagSection 
                                                         key={tag.name} 
@@ -2628,7 +2646,7 @@ export default function App() {
 
         {/* MCP Connect Modal */}
         {isMcpConnectModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="popup-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-200">
                     <div className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
                         <div className="flex items-center justify-between mb-2">
