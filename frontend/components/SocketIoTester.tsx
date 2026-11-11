@@ -109,7 +109,7 @@ export const SocketIoTester: React.FC<SocketIoTesterProps> = ({
       
       {/* Error Toast */}
       {error && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setError(null)}>
+        <div className="popup-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setError(null)}>
           <div className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/50 rounded-xl shadow-2xl max-w-md w-full mx-4 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-start gap-4">

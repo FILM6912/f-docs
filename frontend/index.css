@@ -16,29 +16,126 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+@layer base {
+  :where(button, a[href], select, summary, [role="button"], [role="tab"],
+    [role="menuitem"], [role="option"], [role="switch"],
+    input[type="button"], input[type="submit"], input[type="reset"],
+    input[type="checkbox"], input[type="radio"], input[type="file"],
+    label[for], label:has(input[type="checkbox"], input[type="radio"])) {
+    cursor: pointer;
+  }
+
+  :where(button, select, input, textarea):disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* Short, compositor-friendly entrances shared by dialogs and popovers. */
+.popup-backdrop {
+  animation: popup-backdrop-in 160ms ease-out;
+}
+
+.popup-backdrop > div {
+  animation: popup-panel-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.popup-menu {
+  transform-origin: top right;
+  animation: popup-panel-in 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes popup-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popup-panel-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup-backdrop, .popup-backdrop > div, .popup-menu {
+    animation: none;
+  }
+}
+
+/* Neutral charcoal palette, scoped so the light theme keeps its colors. */
+html.dark {
+  color-scheme: dark;
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #ededed;
+  --color-zinc-200: #dedede;
+  --color-zinc-300: #cccccc;
+  --color-zinc-400: #a0a0a0;
+  --color-zinc-500: #858585;
+  --color-zinc-600: #626262;
+  --color-zinc-700: #454545;
+  --color-zinc-800: #353535;
+  --color-zinc-900: #202020;
+  --color-zinc-950: #181818;
+  --color-gray-50: var(--color-zinc-50);
+  --color-gray-100: var(--color-zinc-100);
+  --color-gray-200: var(--color-zinc-200);
+  --color-gray-300: var(--color-zinc-300);
+  --color-gray-400: var(--color-zinc-400);
+  --color-gray-500: var(--color-zinc-500);
+  --color-gray-600: var(--color-zinc-600);
+  --color-gray-700: var(--color-zinc-700);
+  --color-gray-800: var(--color-zinc-800);
+  --color-gray-900: var(--color-zinc-900);
+  --color-gray-950: var(--color-zinc-950);
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;
   overflow: hidden;
 }
 
-/* Smooth theme transition for all elements */
-html,
-html *,
-html *::before,
-html *::after {
-  transition: background-color 0.2s ease-in-out, 
-              color 0.2s ease-in-out, 
-              border-color 0.2s ease-in-out,
-              fill 0.2s ease-in-out,
-              stroke 0.2s ease-in-out !important;
+/* Capture the final palette immediately; animate the page reveal instead. */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: none !important;
 }
 
-/* Dark mode base - Pure gray/zinc tones */
+html.theme-transitioning::view-transition-old(root),
+html.theme-transitioning::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation: none;
+}
+
+html.theme-transitioning::view-transition-old(root) {
+  z-index: 1;
+}
+
+html.theme-transitioning::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-reveal 1400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--theme-reveal-x) var(--theme-reveal-y)); }
+  to { clip-path: circle(var(--theme-reveal-radius) at var(--theme-reveal-x) var(--theme-reveal-y)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html, html *, html *::before, html *::after {
+    transition: none !important;
+  }
+  html.theme-transitioning::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Dark mode base */
 html.dark,
 html.dark body,
 html.dark #root {
-  background-color: #09090b !important; /* zinc-950 */
+  background-color: var(--color-zinc-950) !important;
 }
 
 html.dark #root > * {
@@ -51,8 +148,8 @@ body {
 }
 
 html.dark body {
-  background-color: #09090b; /* zinc-950 */
-  color: #fafafa; /* zinc-50 */
+  background-color: var(--color-zinc-950);
+  color: var(--color-zinc-100);
 }
 
 /* Custom scrollbar - Pure gray */
@@ -62,7 +159,7 @@ html.dark body {
 }
 
 .dark .custom-scrollbar {
-  scrollbar-color: #3f3f46 transparent; /* zinc-700 */
+  scrollbar-color: var(--color-zinc-700) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -84,11 +181,11 @@ html.dark body {
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #3f3f46; /* zinc-700 */
+  background: var(--color-zinc-700);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #52525b; /* zinc-600 */
+  background: var(--color-zinc-600);
 }
 
 @keyframes errorPulse {

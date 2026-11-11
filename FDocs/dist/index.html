@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>F-Docs</title>
     <script>
-      // Immediate Theme Application - Pure Gray/Zinc
+      // Apply the charcoal background before the stylesheet loads.
       (function() {
         try {
           const saved = localStorage.getItem('theme');
@@ -14,7 +14,7 @@
           
           if (isDark) {
             document.documentElement.classList.add('dark');
-            document.documentElement.style.backgroundColor = '#09090b'; // zinc-950
+            document.documentElement.style.backgroundColor = '#181818';
           }
         } catch (e) {}
       })();
@@ -28,7 +28,7 @@
       (function() {
         try {
           if (document.documentElement.classList.contains('dark')) {
-            document.body.style.backgroundColor = '#09090b'; // zinc-950
+            document.body.style.backgroundColor = '#181818';
           }
         } catch (e) {}
       })();
